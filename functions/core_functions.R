@@ -9,30 +9,52 @@ icon_no_warning_fn = function(icon_name) {
 }
 
 # Generic data table
-make_table <- function(input_data_table,
-                       rows_to_display = 20
-){
+#make_table <- function(input_data_table,
+#                       rows_to_display = 20
+#){
 
   # Take out underscores in column names for display purposes
-  table_colnames  <-  gsub("_", " ", colnames(input_data_table))
+#  table_colnames  <-  gsub("_", " ", colnames(input_data_table))
 
-  dt <- DT::datatable(input_data_table, style = 'bootstrap',
-                      class = 'table-bordered table-condensed',
-                      rownames = FALSE,
-                      filter="top",
-                      colnames = table_colnames,
-                      options = list(pageLength = rows_to_display,
-                                     scrollX = FALSE,
-                                     scrollY = FALSE,
-                                     dom = 'tip',
-                                     autoWidth = TRUE,
-                                     # style header
-                                     initComplete = htmlwidgets::JS(
-                                       "function(settings, json) {",
-                                       "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
-                                       "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
-                                       "}")))
+#  dt <- DT::datatable(input_data_table, style = 'bootstrap',
+ #                     class = 'table-bordered table-condensed',
+  #                    rownames = FALSE,
+   #                   filter="top",
+    #                  colnames = table_colnames,
+     #                 options = list(pageLength = rows_to_display,
+      #                               scrollX = FALSE,
+       #                              scrollY = FALSE,
+        #                             dom = 'tip',
+         #                            autoWidth = TRUE,
+          #                           # style header
+           #                          initComplete = htmlwidgets::JS(
+            #                           "function(settings, json) {",
+             #                          "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+              #                         "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
+               #                        "}")))
+#
 
+ # return(dt)
+#}
 
-  return(dt)
-}
+# Creating dataframes for trees (for hierarchical checkboxes to work)
+
+domains_subs <- reviews_chart %>%
+  select(domain, subdomain) %>%
+  distinct(domain, subdomain) %>%
+  arrange(domain, subdomain)
+
+outcomes <- reviews_chart %>%
+  select(overall_outcome, outcome_definition) %>%
+  distinct(overall_outcome, outcome_definition) %>%
+  arrange(overall_outcome, outcome_definition)
+
+review_type <- reviews_chart %>%
+  select(review_type, type_of_review) %>%
+  distinct(review_type, type_of_review) %>%
+  arrange(review_type)
+
+intervention_exposure <- reviews_chart %>%
+  select(intervention_exposure_short, intervention_classification) %>%
+  distinct(intervention_exposure_short, intervention_classification) %>%
+  arrange(intervention_exposure_short)
