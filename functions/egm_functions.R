@@ -71,7 +71,7 @@ tab_egm <- function(chart_data, table_data){
 # Output
 output$egm <- renderPlot({
   draw_egm(filtered())
-},height = 1000, width = 1400)
+},height = 1200, width = 1500)
 
 output$data <- renderTable({
   tab_egm(filtered(), reviews_table)
@@ -85,9 +85,9 @@ filtered <- eventReactive(input$filter_update, {
     mutate(selected = NA,
            selected = if_else(subdomain %in% input$dom_sub &
                                 outcome_definition %in% input$outcome &
-                              #  type_of_review %in% input$review_type_input &
+                                type_of_review %in% input$review_type_input &
                                 intervention_exposure_short %in% input$intervention_exposure &
-                                (input$RCT == "No" | input$RCT == "Yes" & design_of_reviewed_studies == "Randomised controlled trials"),
+                                (input$RCT == "No" | input$RCT == "Yes" & design_of_reviewed_studies == "Randomised control trials"),
                               1,
                               NA))
 }, ignoreNULL = FALSE)

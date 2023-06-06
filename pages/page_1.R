@@ -31,23 +31,23 @@ output$page_1_ui <-  renderUI({
                 ),   
                    
         # Review type
-              treeInput(
-                  inputId = "review_type_input",
-                  label = "Select review type and sub-type:",
-                  choices = create_tree(review_type),
-                  selected = unique(review_type$type_of_review),
-                  returnValue = "text",
-                  closeDepth = 0
-                ),
+               treeInput(
+                   inputId = "review_type_input",
+                   label = "Select review type and sub-type:",
+                   choices = create_tree(review_type),
+                   selected = unique(review_type$type_of_review),
+                   returnValue = "text",
+                   closeDepth = 0
+                 ),
         # Intervention or exposure
-       # treeInput(
-      #    inputId = "intervention_exposure",
-       #   label = "Select intervention, exposure or attitude:",
-        #  choices = create_tree(intervention_exposure),
-         # selected = c(list(unique(intervention_exposure$intervention_classification), unique(intervention_exposure$intervention_exposure_short))),
-        #  returnValue = "text",
-        #  closeDepth = 0
-      #  ),
+        treeInput(
+          inputId = "intervention_exposure",
+          label = "Select intervention or exposure:",
+          choices = create_tree(intervention_exposure),
+          selected = unique(intervention_exposure$intervention_exposure_short),
+          returnValue = "text",
+          closeDepth = 0
+        ),
         # RCTs
             radioButtons(
               "RCT",

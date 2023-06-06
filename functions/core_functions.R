@@ -55,6 +55,6 @@ review_type <- reviews_chart %>%
   arrange(review_type)
 
 intervention_exposure <- reviews_chart %>%
-  select(intervention_exposure_short, intervention_classification) %>%
-  distinct(intervention_exposure_short, intervention_classification) %>%
+  select(intervention_exposure_short,) %>%
+  distinct(intervention_exposure_short) %>%
   arrange(intervention_exposure_short)
