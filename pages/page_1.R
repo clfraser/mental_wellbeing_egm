@@ -64,8 +64,8 @@ output$page_1_ui <-  renderUI({
     ## Main panel for displaying outputs ----
     mainPanel(
       tabsetPanel(type = "tabs",
-                  tabPanel("EGM", girafeOutput("egm", height = 1800, width = 1800)),
-                  tabPanel("Table", tableOutput("data")
+                  tabPanel("EGM", plotOutput("egm")),
+                  tabPanel("Study information", tableOutput("data")
       )))
 )
 ) # Sidebar layout

@@ -13,9 +13,8 @@ draw_egm <- function(data){
                 col = "black",
                 fill = intervention_exposure_short,
                 shape = intervention_exposure_short,
-                size = count,
-                tooltip = count)) +
-     geom_point_interactive(col = "#655E9D") +
+                size = count)) +
+     geom_point(col = "#655E9D") +
      #  xlim(0,11) +
      #  ylim(0,11) +
      scale_x_continuous(expand = expansion(add = 1)) +
@@ -49,8 +48,8 @@ draw_egm <- function(data){
      facet_nested(domain+subdomain~overall_outcome+outcome_definition,
                   scales = "free", switch="y",
                   labeller = labeller(outcome_definition = label_wrap_gen(width = 16)))
-  
-   girafe(ggobj = gg_egm)
+   
+   return(gg_egm)
 
 }
 
@@ -70,9 +69,9 @@ tab_egm <- function(chart_data, table_data){
 }
 
 # Output
-output$egm <- renderGirafe({
+output$egm <- renderPlot({
   draw_egm(filtered())
-})
+},height = 1000, width = 1400)
 
 output$data <- renderTable({
   tab_egm(filtered(), reviews_table)
