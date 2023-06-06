@@ -40,14 +40,14 @@ output$page_1_ui <-  renderUI({
                   closeDepth = 0
                 ),
         # Intervention or exposure
-        treeInput(
-          inputId = "intervention_exposure",
-          label = "Select intervention, exposure or attitude:",
-          choices = create_tree(intervention_exposure),
-          selected = c(list(unique(intervention_exposure$intervention_classification), unique(intervention_exposure$intervention_exposure_short))),
-          returnValue = "text",
-          closeDepth = 0
-        ),
+       # treeInput(
+      #    inputId = "intervention_exposure",
+       #   label = "Select intervention, exposure or attitude:",
+        #  choices = create_tree(intervention_exposure),
+         # selected = c(list(unique(intervention_exposure$intervention_classification), unique(intervention_exposure$intervention_exposure_short))),
+        #  returnValue = "text",
+        #  closeDepth = 0
+      #  ),
         # RCTs
             radioButtons(
               "RCT",

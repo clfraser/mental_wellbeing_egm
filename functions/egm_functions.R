@@ -85,7 +85,7 @@ filtered <- eventReactive(input$filter_update, {
     mutate(selected = NA,
            selected = if_else(subdomain %in% input$dom_sub &
                                 outcome_definition %in% input$outcome &
-                                type_of_review %in% input$review_type_input &
+                              #  type_of_review %in% input$review_type_input &
                                 intervention_exposure_short %in% input$intervention_exposure &
                                 (input$RCT == "No" | input$RCT == "Yes" & design_of_reviewed_studies == "Randomised controlled trials"),
                               1,
