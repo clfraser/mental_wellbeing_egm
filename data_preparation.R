@@ -98,7 +98,7 @@ df_separated <- df_pivot %>%
 # Add in some dummy outcomes for display purposes
 df_separated <- df_separated %>%
   mutate(overall_outcome = "Self-harm") %>%
-  add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 4", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Exposure and intervention", review_type = "Quantitative") %>%
+  add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 4", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
   add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 5", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
   add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 6", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative") %>%
   add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 7", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
@@ -109,11 +109,10 @@ df_separated <- df_separated %>%
 
 # Add x and y co-ordinates to keep intervention and exposure points together (might be able to delete this, with new way of size showing number of studies)
 df_separated <- df_separated %>%
-  mutate(pos_y = if_else(intervention_exposure_short %in% c("Exposure and intervention", "Intervention"), 1, 2),
-         pos_x = case_when(intervention_exposure_short == "Exposure and intervention" ~ 1,
-                           intervention_exposure_short == "Exposure" ~ 2,
-                           intervention_exposure_short == "Intervention" ~ 3,
-                           intervention_exposure_short == "Attitudes" ~ 4))
+  mutate(pos_y = if_else(intervention_exposure_short == "Intervention", 1, 2),
+         pos_x = case_when(intervention_exposure_short == "Exposure" ~ 1,
+                           intervention_exposure_short == "Intervention" ~ 2,
+                           intervention_exposure_short == "Attitudes" ~ 3))
 
 # Add an all subdomains column to the source table for the summary table. Then remove NAs.
 df_source <- df_source %>%
