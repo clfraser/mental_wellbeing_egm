@@ -44,7 +44,7 @@ output$page_1_ui <-  renderUI({
           inputId = "intervention_exposure",
           label = "Select reviews looking at interventions, exposures or attitudes:",
           choices = create_tree(intervention_exposure),
-          selected = unique(intervention_exposure$intervention_classification),
+          selected = c(unique(intervention_exposure$intervention_classification), "Attitudes"),
           returnValue = "text",
           closeDepth = 0
         ),
