@@ -42,9 +42,9 @@ output$page_1_ui <-  renderUI({
         # Intervention or exposure
         treeInput(
           inputId = "intervention_exposure",
-          label = "Select intervention, exposure or attitude:",
+          label = "Select reviews looking at interventions, exposures or attitudes:",
           choices = create_tree(intervention_exposure),
-          selected = c(list(unique(intervention_exposure$intervention_classification), unique(intervention_exposure$intervention_exposure_short))),
+          selected = unique(intervention_exposure$intervention_classification),
           returnValue = "text",
           closeDepth = 0
         ),
@@ -64,7 +64,7 @@ output$page_1_ui <-  renderUI({
     ## Main panel for displaying outputs ----
     mainPanel(
       tabsetPanel(type = "tabs",
-                  tabPanel("EGM", girafeOutput("egm", height = 1800, width = 1800)),
+                  tabPanel("EGM", plotOutput("egm", height = 1800, width = 1800)),
                   tabPanel("Table", tableOutput("data")
       )))
 )

@@ -8,14 +8,14 @@ draw_egm <- function(data){
     group_by(domain, subdomain, overall_outcome, outcome_definition, intervention_exposure_short, review_type, pos_x, pos_y) %>%
     summarise(count = sum(selected))
   
-   gg_egm <- grouped %>%
+grouped %>%
      ggplot(aes(x = pos_x, y = pos_y,
                 col = "black",
                 fill = intervention_exposure_short,
                 shape = intervention_exposure_short,
                 size = count,
                 tooltip = count)) +
-     geom_point_interactive(col = "#655E9D") +
+     geom_point(col = "#655E9D") +
      #  xlim(0,11) +
      #  ylim(0,11) +
      scale_x_continuous(expand = expansion(add = 1)) +
@@ -49,8 +49,6 @@ draw_egm <- function(data){
      facet_nested(domain+subdomain~overall_outcome+outcome_definition,
                   scales = "free", switch="y",
                   labeller = labeller(outcome_definition = label_wrap_gen(width = 16)))
-  
-   girafe(ggobj = gg_egm)
 
 }
 
@@ -70,7 +68,7 @@ tab_egm <- function(chart_data, table_data){
 }
 
 # Output
-output$egm <- renderGirafe({
+output$egm <- renderPlot({
   draw_egm(filtered())
 })
 
