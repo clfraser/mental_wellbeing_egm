@@ -76,11 +76,9 @@ df_pivot <- df_source %>%
                values_to = "subdomain") %>%
   drop_na(subdomain) %>%
   mutate(domain = to_sentence_case(domain),
-         intervention_exposure_short = case_when(str_detect(intervention_or_exposure, "exposures") & str_detect(intervention_or_exposure, "Intervention") ~ "Exposure and intervention",
-                                                 str_detect(intervention_or_exposure, "exposures") ~ "Exposure",
+         intervention_exposure_short = case_when(str_detect(intervention_or_exposure, "exposures") ~ "Exposure",
                                                  str_detect(intervention_or_exposure, "Intervention") ~ "Intervention",
                                                  intervention_or_exposure == "Attitudes" ~ "Attitudes"),
-         intervention_exposure_short = factor(intervention_exposure_short, levels = c("Exposure", "Intervention", "Exposure and intervention", "Attitudes")),
          outcome_definition = str_replace(outcome_definition, "SITB", "self-injurous thoughts and behaviours"),
          type_of_review = paste0(type_of_review, " (", review_type, ")"))
 
@@ -91,6 +89,7 @@ df_pivot <- df_source %>%
 df_separated <- df_pivot %>%
   separate_longer_delim(outcome_definition, delim = "; ") %>%
   separate_longer_delim(subdomain, delim = "; ") %>%
+  separate_longer_delim(intervention_or_exposure, delim = "; ") %>%
   separate_longer_delim(intervention_classification, delim = "; ") %>%
   mutate(subdomain = case_when(str_detect(subdomain,"Other:") ~ paste0("Other (", domain, ")"),
                                subdomain == "Parental health (including mental health)" ~ "Parental health",
