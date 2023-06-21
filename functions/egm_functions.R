@@ -5,7 +5,7 @@
 draw_egm <- function(data){
   ## create EGM plot    
   grouped <- data %>%
-    group_by(domain, subdomain, overall_outcome, outcome_definition, intervention_exposure_short, review_type, pos_x, pos_y) %>%
+    group_by(domain, subdomain, overall_outcome, intervention_exposure_short, review_type, pos_x, pos_y) %>%
     summarise(count = sum(selected))
   
   gg_egm <- grouped %>%
@@ -45,18 +45,22 @@ draw_egm <- function(data){
       strip.text.y = element_text(size = 12),
       strip.background = element_rect(fill="#B3D7F2"),
       strip.text.y.left = element_text(angle = 0)) +
-    facet_nested(domain+subdomain~overall_outcome+outcome_definition,
+    facet_nested(domain+subdomain~overall_outcome,
                  scales = "free",
                  switch = "y",
-                 labeller = labeller(outcome_definition = label_wrap_gen(width = 16)))
+                 labeller = labeller(overall_outcome = label_wrap_gen(width = 16)))
   
   ggplotly(gg_egm,
            tooltip = "text") %>%
-    layout(hovermode = "x",
-           hoverdistance = 100)
+    layout(hovermode = "x", # Shows multiple tooltips close to where the mouse is hovering (in this case, shows for the whole cell)
+           hoverdistance = 500)
 }
 
-# Table
+# Table - change what is shown depending on where on the EGM is clicked.
+# Start off only filtering on subdomain, and then add outcome area when we know this works.
+
+  # Set a reactive value to maintain the current subdomain
+    
 
 tab_egm <- function(chart_data, table_data){
   
