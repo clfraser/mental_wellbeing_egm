@@ -26,11 +26,11 @@ library(snakecase) # to reformat strings
 #setwd("/PHI_conf/PHSci/Catriona/EGM/Mental_health_EGM/")
 
 ## Load quantitative data and add review type column
-df_quant <- read_xlsx("data/230320 SH Phase 2 full data extract.xlsx")  %>%
+df_quant <- read_xlsx(here("data/230320 SH Phase 2 full data extract.xlsx"))  %>%
   mutate(review_type = "Quantitative")
 
 ## Load qualitative data, and review type column
-df_qual <- read_csv("data/230405 SH data_extract_qual.csv") %>%
+df_qual <- read_csv(here("data/230405 SH data_extract_qual.csv")) %>%
   mutate(review_type = "Qualitative")
 
 ## Bind quant and qual data together
@@ -76,7 +76,8 @@ df_pivot <- df_source %>%
                values_to = "subdomain") %>%
   drop_na(subdomain) %>%
   mutate(domain = to_sentence_case(domain),
-         intervention_exposure_short = case_when(str_detect(intervention_or_exposure, "exposures") ~ "Exposure",
+         intervention_exposure_short = case_when(str_detect(intervention_or_exposure, "exposures") & str_detect(intervention_or_exposure, "Intervention") ~ "Exposure; Intervention",
+                                                 str_detect(intervention_or_exposure, "exposures") ~ "Exposure",
                                                  str_detect(intervention_or_exposure, "Intervention") ~ "Intervention",
                                                  intervention_or_exposure == "Attitudes" ~ "Attitudes"),
          outcome_definition = str_replace(outcome_definition, "SITB", "self-injurous thoughts and behaviours"),
@@ -89,7 +90,7 @@ df_pivot <- df_source %>%
 df_separated <- df_pivot %>%
   separate_longer_delim(outcome_definition, delim = "; ") %>%
   separate_longer_delim(subdomain, delim = "; ") %>%
-  separate_longer_delim(intervention_or_exposure, delim = "; ") %>%
+  separate_longer_delim(intervention_exposure_short, delim = "; ") %>%
   separate_longer_delim(intervention_classification, delim = "; ") %>%
   mutate(subdomain = case_when(str_detect(subdomain,"Other:") ~ paste0("Other (", domain, ")"),
                                subdomain == "Parental health (including mental health)" ~ "Parental health",
