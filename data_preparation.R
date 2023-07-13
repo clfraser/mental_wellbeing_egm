@@ -115,14 +115,17 @@ df_separated <- df_separated %>%
                            intervention_exposure_short == "Intervention" ~ 2,
                            intervention_exposure_short == "Attitudes" ~ 3))
 
-# Add an all subdomains column to the source table for the summary table. Then remove NAs.
-df_source <- df_source %>%
-  mutate(all_subdomains = paste0(individual, "; ", family_and_friends, "; ", learning_environment, "; ", community, "; ", structural),
-         all_subdomains = gsub("NA; ", "", all_subdomains),
-         all_subdomains = gsub("; NA", "", all_subdomains))
+
+# Gather data to show in table
+df_table <- df_separated %>%
+  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -pos_y, -pos_x))) %>%
+  summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
+            subdomain= paste(unique(subdomain), collapse="; "),
+            intervention_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
+            intervention_classification = paste(unique(intervention_classification), collapse = "; "))
 
 # Save file for use in Shiny app
 saveRDS(df_separated, "data/self-harm_egm_chart_data.rds")
 
 # Save data that hasn't been separated into a separate file for the dashboard table
-saveRDS(df_source, "data/self-harm_egm_table_data.rds")
+saveRDS(df_table, "data/self-harm_egm_table_data.rds")
