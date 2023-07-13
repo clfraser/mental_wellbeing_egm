@@ -121,7 +121,7 @@ df_table <- df_separated %>%
   group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -pos_y, -pos_x))) %>%
   summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
             subdomain= paste(unique(subdomain), collapse="; "),
-            intervention_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
+            intervention_or_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
             intervention_classification = paste(unique(intervention_classification), collapse = "; "))
 
 # Save file for use in Shiny app
