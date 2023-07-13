@@ -19,7 +19,6 @@ library(ggiraph)
 library(here)
 
 # PHS styling packages ----
-# This is causing a problem with deploying and it seems to run ok without it, so commenting out for now
 library(phsstyles)
 
 ## Load in data
