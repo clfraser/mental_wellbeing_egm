@@ -5,6 +5,7 @@ library(tidyverse)
 library(plotly)
 library(ggh4x)
 library(janitor)
+library(purrr)
 
 # Set up data
 
@@ -19,6 +20,10 @@ grouped <- all_selected %>%
   group_by(domain, subdomain, overall_outcome, intervention_exposure_short, review_type, pos_x, pos_y) %>%
   summarise(count = sum(selected))
 
+# Create a list based on the grouped dataframe, so that both subdomain and overall_outcome can be assigned to customdata
+# Following instructions here: https://github.com/plotly/plotly.R/issues/1548
+grouped_list <- split(grouped, seq_len(nrow(grouped)))
+
 # Table data
 
 reviews_table <- readRDS(here("data/self-harm_egm_table_data.rds"))
@@ -32,6 +37,7 @@ ui <- fluidPage(
   plotlyOutput("egm"),
   textOutput("subdomain_event"),
   textOutput("subdomain_reac_val"),
+  textOutput("outcome_reac_val"),
   tableOutput("table")
 )
 
@@ -48,7 +54,7 @@ gg_egm <- grouped %>%
              shape = intervention_exposure_short,
              size = count,
              text = paste0(intervention_exposure_short, ": ", count),
-             customdata = subdomain)) +
+             customdata = grouped_list)) +
   geom_point(col = "#655E9D") +
   #  xlim(0,11) +
   #  ylim(0,11) +
@@ -100,10 +106,12 @@ output$egm <- renderPlotly({
 output$subdomain_event <- renderPrint({
   d <- event_data("plotly_click", source = "egm_click")
     print(d$customdata[1])
-    
+})    
 output$subdomain_reac_val <- renderPrint({
-  print(as.character(current_subdomain()))
+  print(as.character(current_click()$subdomain))
 })
+output$outcome_reac_val <- renderPrint({
+    print(as.character(current_click()$overall_outcome))
 })
 
 # Table
@@ -114,29 +122,28 @@ output$subdomain_reac_val <- renderPrint({
 
 
 # Set a reactive value to maintain the current subdomain
-current_subdomain <- reactiveVal()
+current_click <- reactiveVal()
 
 # update the current category when appropriate
 observe({
-  cd <- event_data("plotly_click", source = "egm_click")$customdata[1]
-  current_subdomain(cd)
+  cd <- event_data("plotly_click", source = "egm_click")$customdata[[1]]
+  current_click(cd)
 })
 
 
 table_data <- reactive({
   
-  subdomain_chosen <- as.character(current_subdomain())
-  
-  if (!length(current_subdomain())){
+  if (!length(current_click())){
     return(reviews_table %>%
-      select(study_id, title, aim_of_study, "Author conclusions" = summary, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, all_subdomains, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
+      select(study_id, title, aim_of_study, "Author conclusions" = summary, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
       arrange(study_id) %>%
       clean_names(., case = "title"))
   }
   reviews_table %>%
-    select(study_id, title, aim_of_study, "Author conclusions" = summary, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, all_subdomains, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
+    select(study_id, title, aim_of_study, "Author conclusions" = summary, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
     arrange(study_id) %>%
-    filter(str_detect(all_subdomains, subdomain_chosen)) %>%
+    filter(str_detect(subdomain, current_click()$subdomain),
+           overall_outcome == current_click()$overall_outcome) %>%
     clean_names(., case = "title")
   
   

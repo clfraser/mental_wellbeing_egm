@@ -5,10 +5,15 @@ library(shiny)
 library(shinycssloaders)
 library(shinymanager)
 library(shinyWidgets)
+library(reactable)
+library(reactablefmtr)
+library(tippy)
 
 # Data wrangling packages ----
 library(tidyverse)
 library(janitor)
+library(jsonlite)
+library(stringr)
 
 # Plotting packages ----
 library(plotly)

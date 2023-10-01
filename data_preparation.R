@@ -104,10 +104,41 @@ df_separated <- df_separated %>%
   add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 6", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative") %>%
   add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 7", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
   add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 8", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
-  add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 9", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative") %>%
-  mutate(overall_outcome = factor(overall_outcome, levels = c("Self-harm", "Outcome category 2", "Outcome category 3")),
-         subdomain = factor(subdomain, levels = c("Mental health", "Intrinsic characteristics", "Family relations", "Peer and friend relationships", "Exposure to harm", "Social media use", "Stigma and discrimination", "Social inclusion", "Health behaviours", "Physical health", "Parental health", "Safety", "Belonging", "Poverty and material deprivation", "Educational environment", "Body image", "Engagement in local activities", "Pressure and expectations", "Perinatal environment", "Early development", "Engagement with learning", "Equality", "Social support", "Physical environment", "Other (Individual)", "Other (Family and friends)", "Other (Learning environment)", "Other (Community)", "Other (Structural)")))
+  add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 9", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative")
 
+# Add in other subdomains that aren't in the data, to account for data gaps
+# Include a flag that these are dummy records, so they're not included in the map
+df_separated <- df_separated %>%
+  mutate(dummy = 0) %>%
+  add_row(domain = "Individual", subdomain = "Health behaviours", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Physical health", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Mental health", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Social media use", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Body image", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Perinatal environment", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Early development", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Intrinsic characteristics", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Family and friends", subdomain = "Family relations", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Family and friends", subdomain = "Parental health", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Family and friends", subdomain = "Peer and friend relationships", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Learning environment", subdomain = "Engagement with learning", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Learning environment", subdomain = "Educational environment", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Learning environment", subdomain = "Pressure and expectations", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Respect of young people", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Engagement in local activities", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Social support", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Safety", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Belonging", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Equality", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Poverty and material deprivation", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Social inclusion", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Stigma and discrimination", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Physical environment", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Societal optimism", overall_outcome = "Self-harm", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Exposure to harm", overall_outcome = "Self-harm", dummy = 1) %>%
+  mutate(overall_outcome = factor(overall_outcome, levels = c("Self-harm", "Outcome category 2", "Outcome category 3")),
+         subdomain = factor(subdomain, levels = c("Health behaviours", "Physical health", "Mental health", "Social media use", "Body image", "Perinatal environment", "Early development", "Intrinsic characteristics", "Family relations", "Parental health", "Peer and friend relationships", "Engagement with learning", "Educational environment", "Pressure and expectations", "Respect of young people", "Engagement in local activities", "Social support", "Safety", "Belonging", "Equality", "Poverty and material deprivation", "Social inclusion", "Stigma and discrimination", "Physical environment", "Societal optimism", "Exposure to harm", "Other (Individual)", "Other (Family and friends)", "Other (Learning environment)", "Other (Community)", "Other (Structural)")))
+  
 # Add x and y co-ordinates to keep intervention and exposure points together (might be able to delete this, with new way of size showing number of studies)
 df_separated <- df_separated %>%
   mutate(pos_y = if_else(intervention_exposure_short == "Intervention", 1, 2),
@@ -117,12 +148,14 @@ df_separated <- df_separated %>%
 
 
 # Gather data to show in table
+# Filter out dummy rows
 df_table <- df_separated %>%
   group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -pos_y, -pos_x))) %>%
   summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
             subdomain= paste(unique(subdomain), collapse="; "),
             intervention_or_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
-            intervention_classification = paste(unique(intervention_classification), collapse = "; "))
+            intervention_classification = paste(unique(intervention_classification), collapse = "; ")) %>%
+  filter(dummy == 0)
 
 # Save file for use in Shiny app
 saveRDS(df_separated, "data/self-harm_egm_chart_data.rds")

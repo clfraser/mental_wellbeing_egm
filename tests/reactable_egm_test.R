@@ -45,57 +45,57 @@ count_pivot <- grouped %>%
 
 # To set font size, use 'em', which changes the font size relative to the font size that's been set for the table. 1em = the set font size.
 # Function to normalise font size for all numeric columns
-set_font_size = function(study_count){
-  numeric_cols <- count_pivot[, 3:ncol(count_pivot)]
-  normalised <- (study_count - min(numeric_cols, na.rm = TRUE))/(max(numeric_cols, na.rm = TRUE) - min(numeric_cols, na.rm = TRUE)) * 10
-  return(list(fontSize = paste0(normalised,"em")))
-}
-
-set_font_size_for_icon = function(study_count){
-  numeric_cols <- count_pivot[, 3:ncol(count_pivot)]
-  normalised <- (study_count - min(numeric_cols, na.rm = TRUE))/(max(numeric_cols, na.rm = TRUE) - min(numeric_cols, na.rm = TRUE)) * 10
-  return(list(fontSize = normalised))
-}
-
-reactable(
-  count_pivot,
-  groupBy = "domain",
-  columns = list(
-    Self_harm.Exposure = colDef(name = "Exposure", aggregate = "sum",
-                                style = function(value){
-                                  set_font_size(value)
-                                }),
-    Self_harm.Intervention = colDef(name = "Intervention", aggregate = "sum",
-                                    style = function(value){
-                                      set_font_size(value)
-                                    }),
-    Self_harm.Attitudes = colDef(name = "Attitudes", aggregate = "sum",
-                                 style = function(value){
-                                   set_font_size(value)
-                                 }),
-    Outcome_category_2.Exposure = colDef(name = "Exposure", aggregate = "sum",
-                                         style = function(value){
-                                           set_font_size(value)
-                                         }),
-    Outcome_category_2.Intervention = colDef(name = "Intervention", aggregate = "sum",
-                                             style = function(value){
-                                               set_font_size(value)
-                                             }),
-    Outcome_category_3.Exposure = colDef(name = "Exposure", aggregate = "sum",
-                                         style = function(value){
-                                           set_font_size(value)
-                                         }),
-    Outcome_category_3.Intervention = colDef(name = "Intervention", aggregate = "sum",
-                                             style = function(value){
-                                               set_font_size(value)
-                                             })
-  ),
-  columnGroups = list(
-    colGroup(name = "Self-harm", columns = c("Self_harm.Exposure", "Self_harm.Intervention", "Self_harm.Attitudes")),
-    colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Exposure", "Outcome_category_2.Intervention")),
-    colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Exposure", "Outcome_category_3.Intervention"))
-  )
-)
+# set_font_size = function(study_count){
+#   numeric_cols <- count_pivot[, 3:ncol(count_pivot)]
+#   normalised <- (study_count - min(numeric_cols, na.rm = TRUE))/(max(numeric_cols, na.rm = TRUE) - min(numeric_cols, na.rm = TRUE)) * 10
+#   return(list(fontSize = paste0(normalised,"em")))
+# }
+# 
+# set_font_size_for_icon = function(study_count){
+#   numeric_cols <- count_pivot[, 3:ncol(count_pivot)]
+#   normalised <- (study_count - min(numeric_cols, na.rm = TRUE))/(max(numeric_cols, na.rm = TRUE) - min(numeric_cols, na.rm = TRUE)) * 10
+#   return(list(fontSize = normalised))
+# }
+# 
+# reactable(
+#   count_pivot,
+#   groupBy = "domain",
+#   columns = list(
+#     Self_harm.Exposure = colDef(name = "Exposure", aggregate = "sum",
+#                                 style = function(value){
+#                                   set_font_size(value)
+#                                 }),
+#     Self_harm.Intervention = colDef(name = "Intervention", aggregate = "sum",
+#                                     style = function(value){
+#                                       set_font_size(value)
+#                                     }),
+#     Self_harm.Attitudes = colDef(name = "Attitudes", aggregate = "sum",
+#                                  style = function(value){
+#                                    set_font_size(value)
+#                                  }),
+#     Outcome_category_2.Exposure = colDef(name = "Exposure", aggregate = "sum",
+#                                          style = function(value){
+#                                            set_font_size(value)
+#                                          }),
+#     Outcome_category_2.Intervention = colDef(name = "Intervention", aggregate = "sum",
+#                                              style = function(value){
+#                                                set_font_size(value)
+#                                              }),
+#     Outcome_category_3.Exposure = colDef(name = "Exposure", aggregate = "sum",
+#                                          style = function(value){
+#                                            set_font_size(value)
+#                                          }),
+#     Outcome_category_3.Intervention = colDef(name = "Intervention", aggregate = "sum",
+#                                              style = function(value){
+#                                                set_font_size(value)
+#                                              })
+#   ),
+#   columnGroups = list(
+#     colGroup(name = "Self-harm", columns = c("Self_harm.Exposure", "Self_harm.Intervention", "Self_harm.Attitudes")),
+#     colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Exposure", "Outcome_category_2.Intervention")),
+#     colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Exposure", "Outcome_category_3.Intervention"))
+#   )
+# )
 
 # Modify bubble_grid function for our purposes
 # Change some defaults so that it fits with what we're most likely to use

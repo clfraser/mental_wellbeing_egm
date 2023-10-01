@@ -64,9 +64,9 @@ output$page_1_ui <-  renderUI({
     ## Main panel for displaying outputs ----
     mainPanel(
       tabsetPanel(type = "tabs",
-                  tabPanel("EGM", plotlyOutput("egm", height = 1800, width = 1800)),
-                  tabPanel("Table", tableOutput("data")
-      )))
+                  id = "tabset",
+                  tabPanel("EGM", reactableOutput("egm", height = 1800, width = 1800), value = "graph"),
+                  tabPanel("Table", textOutput("print_click_details"), reactableOutput("data"), value = "table")))
 )
 ) # Sidebar layout
 }) # renderUI
