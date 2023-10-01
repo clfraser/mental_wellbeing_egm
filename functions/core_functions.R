@@ -197,17 +197,17 @@ bubble_grid_modified <- function(data,
           paste0(abs(value) / max(dplyr::select_if(data, is.numeric), na.rm = TRUE) * 100, "px")
           
           ### min_value provided
-        } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value)) {
+        } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value) & value > 0) { # Added condition that value must be > 0
           
           paste0((abs(value) - min_value) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
           
           ### max_value provided
-        } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value)) {
+        } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value) & value > 0) { # Added condition that value must be > 0
           
           paste0((abs(value) / max_value) * 100, "px")
           
           ### min and max provided
-        } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value)) {
+        } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value) & value > 0) { # Added condition that value must be > 0
           
           paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
           
@@ -614,3 +614,11 @@ bubble_grid_modified <- function(data,
   }
 }
 
+# CSV download button for table
+
+csvDownloadButton <- function(id, filename = "data.csv", label = "Download as CSV") {
+  tags$button(
+    tagList(icon("download"), label),
+    onclick = sprintf("Reactable.downloadDataCSV('%s', '%s')", id, filename)
+  )
+}

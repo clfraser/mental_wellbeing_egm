@@ -26,6 +26,9 @@ library(here)
 # PHS styling packages ----
 library(phsstyles)
 
+# HTML tools
+library(htmltools)
+
 ## Load in data
 
 ## Dataframe for plots

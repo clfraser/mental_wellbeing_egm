@@ -138,19 +138,15 @@ df_separated <- df_separated %>%
   add_row(domain = "Structural", subdomain = "Exposure to harm", overall_outcome = "Self-harm", dummy = 1) %>%
   mutate(overall_outcome = factor(overall_outcome, levels = c("Self-harm", "Outcome category 2", "Outcome category 3")),
          subdomain = factor(subdomain, levels = c("Health behaviours", "Physical health", "Mental health", "Social media use", "Body image", "Perinatal environment", "Early development", "Intrinsic characteristics", "Family relations", "Parental health", "Peer and friend relationships", "Engagement with learning", "Educational environment", "Pressure and expectations", "Respect of young people", "Engagement in local activities", "Social support", "Safety", "Belonging", "Equality", "Poverty and material deprivation", "Social inclusion", "Stigma and discrimination", "Physical environment", "Societal optimism", "Exposure to harm", "Other (Individual)", "Other (Family and friends)", "Other (Learning environment)", "Other (Community)", "Other (Structural)")))
-  
-# Add x and y co-ordinates to keep intervention and exposure points together (might be able to delete this, with new way of size showing number of studies)
+
+# Filter out qualitative reviews, because these will be displayed separately
 df_separated <- df_separated %>%
-  mutate(pos_y = if_else(intervention_exposure_short == "Intervention", 1, 2),
-         pos_x = case_when(intervention_exposure_short == "Exposure" ~ 1,
-                           intervention_exposure_short == "Intervention" ~ 2,
-                           intervention_exposure_short == "Attitudes" ~ 3))
-
-
+  filter(review_type == "Quantitative" | is.na(review_type))
+  
 # Gather data to show in table
 # Filter out dummy rows
 df_table <- df_separated %>%
-  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -pos_y, -pos_x))) %>%
+  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification))) %>%
   summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
             subdomain= paste(unique(subdomain), collapse="; "),
             intervention_or_exposure = paste(unique(intervention_exposure_short), collapse = "; "),

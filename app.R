@@ -43,7 +43,7 @@ tabPanel(title = "Introduction",
 ##############################################.
 tabPanel(title = "Evidence and gap map",
     # Look at https://fontawesome.com/search?m=free for icons
-    icon = icon_no_warning_fn("magnifying-glass"),
+    icon = icon_no_warning_fn("map"),
     value = "Evidence and gap map",
 
     h1("Evidence and gap map"),

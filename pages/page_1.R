@@ -66,7 +66,11 @@ output$page_1_ui <-  renderUI({
       tabsetPanel(type = "tabs",
                   id = "tabset",
                   tabPanel("EGM", reactableOutput("egm", height = 1800, width = 1800), value = "graph"),
-                  tabPanel("Table", textOutput("print_click_details"), reactableOutput("data"), value = "table")))
+                  tabPanel("Table",
+                           htmlOutput("print_click_details"),
+                           csvDownloadButton("data", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
+                           reactableOutput("data"),
+                           value = "table"))) # For switching tabs on click
 )
 ) # Sidebar layout
 }) # renderUI

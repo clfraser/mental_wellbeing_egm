@@ -32,14 +32,13 @@ output$egm <- renderReactable({
     count_pivot <- grouped %>%
       mutate(overall_outcome = gsub(" |-", "_", overall_outcome)) %>% # Replace spaces and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
       pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
-      mutate(across(Self_harm.Exposure:Outcome_category_3.Exposure, ~replace_na(., 0))) %>% # Replace NAs with 0
-      select(-Self_harm.NA) # Remove column for dummy sub-domains
+      mutate(across(Self_harm.Exposure:Outcome_category_3.Exposure, ~replace_na(., 0))) # Replace NAs with 0
     
     count_pivot %>%
       reactable(
         defaultColDef = colDef(
           align = 'center',
-          maxWidth = 60),
+          maxWidth = 150),
         groupBy = "domain",
         onClick = JS("function(rowInfo, column) {
         // Don't handle click events in the domain or subdomain columns
@@ -71,14 +70,6 @@ output$egm <- renderReactable({
                                             tooltip = TRUE,
                                             shape = "squares"
                                           )),
-          Self_harm.Attitudes = colDef(name = "",
-                                       vAlign = "top",
-                                       cell = bubble_grid_modified(
-                                         data = .,
-                                         colors = '#7570b3',
-                                         tooltip = TRUE,
-                                         shape = "triangles"
-                                       )),
           Outcome_category_2.Exposure = colDef(name = "",
                                                vAlign = "top",
                                                cell = bubble_grid_modified(
@@ -112,7 +103,7 @@ output$egm <- renderReactable({
                                                    ))
         ),
         columnGroups = list(
-          colGroup(name = "Self-harm", columns = c("Self_harm.Exposure", "Self_harm.Intervention", "Self_harm.Attitudes")),
+          colGroup(name = "Self-harm", columns = c("Self_harm.Exposure", "Self_harm.Intervention")),
           colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Exposure", "Outcome_category_2.Intervention")),
           colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Exposure", "Outcome_category_3.Intervention"))
         )
@@ -129,8 +120,7 @@ table_data <- reactive({
     if (!length(input$click_details)){
       return(filtered() %>%
                select(study_id, title, aim_of_study, "Author conclusions" = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
-               arrange(study_id)) #%>%
-               #clean_names(., case = "title"))
+               arrange(study_id))
     }
     return(filtered() %>%
              select(study_id, title, aim_of_study, "Author conclusions" = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
@@ -138,8 +128,7 @@ table_data <- reactive({
              filter(str_detect(subdomain, input$click_details$subdomain) &
                       overall_outcome == outcome_click &
                       str_detect(intervention_or_exposure, type_click)
-             )) #%>%
-             #clean_names(., case = "title"))
+             ))
     
   })
 
@@ -167,7 +156,7 @@ output$data <- renderReactable({
 })
 
 # Note: Rewrite code to only get click details once and use in multiple expressions
-output$print_click_details <- renderText({
+output$print_click_details <- renderUI({
   outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
   outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
   type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
@@ -175,7 +164,7 @@ output$print_click_details <- renderText({
    if(!length(input$click_details)){
      return("No selection from EGM")
    }
-  return(paste0("You have selected: Subdomain: ", input$click_details$subdomain, ", Outcome: ", outcome_click, ", Type: ", type_click))
+  return(HTML(paste0("You have selected:", "<br/>", "Subdomain: ", input$click_details$subdomain, "<br/>", "Outcome: ", outcome_click, "<br/>", "Type: ", type_click)))
   
 })
   
