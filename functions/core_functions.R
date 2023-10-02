@@ -59,7 +59,10 @@ intervention_exposure <- reviews_chart %>%
   distinct(intervention_exposure_short, intervention_classification) %>%
   arrange(intervention_exposure_short)
 
-
+sub_population <- reviews_chart %>%
+  select(overall_population, sub_population) %>%
+  distinct(overall_population, sub_population) %>%
+  arrange(overall_population)
 
 # Modify bubble_grid function for our purposes
 # Change some defaults so that it fits with what we're most likely to use

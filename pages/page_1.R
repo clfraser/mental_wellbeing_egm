@@ -11,50 +11,112 @@ output$page_1_ui <-  renderUI({
       sidebarPanel(width = 3,
           # Filters
           
-          # Domain and subdomain
-                treeInput(
-                inputId = "dom_sub",
-                label = "Select domain and subdomain:",
-                choices = create_tree(domains_subs),
-                selected = unique(domains_subs$domain),
-                returnValue = "text",
-                closeDepth = 0
+          # Outcome definition
+                checkboxGroupInput(
+                inputId = "outcome_def",
+                label = "Select outcome definition:",
+                choices = c("Any form of self-injurous thoughts and behaviours",
+                            "Exclusively non-suicidal self-harm",
+                            "Repetitive, compulsive self-injury"),
+                selected = c("Any form of self-injurous thoughts and behaviours",
+                             "Exclusively non-suicidal self-harm",
+                             "Repetitive, compulsive self-injury")
                    ),
-          # Overall outcome and sub-outcome
-                treeInput(
-                  inputId = "outcome",
-                  label = "Select overall outcome and sub-outcome area:",
-                  choices = create_tree(outcomes),
-                  selected = unique(outcomes$outcome_definition),
-                  returnValue = "text",
-                  closeDepth = 0
-                ),   
-                   
-        # Review type
-              treeInput(
-                  inputId = "review_type_input",
-                  label = "Select review type and sub-type:",
-                  choices = create_tree(review_type),
-                  selected = unique(review_type$type_of_review),
-                  returnValue = "text",
-                  closeDepth = 0
-                ),
-        # Intervention or exposure
-        treeInput(
-          inputId = "intervention_exposure",
-          label = "Select reviews looking at interventions, exposures or attitudes:",
-          choices = create_tree(intervention_exposure),
-          selected = c(unique(intervention_exposure$intervention_classification), "Attitudes"),
-          returnValue = "text",
-          closeDepth = 0
-        ),
-        # RCTs
+
+          # Population age
+          checkboxGroupInput(
+            inputId = "pop_age",
+            label = "Select population age:",
+            choices = c("Exclusively 0-18 years",
+                        "Up to 25 years",
+                        "All ages"),
+            selected = c("Exclusively 0-18 years",
+                        "Up to 25 years",
+                        "All ages")
+          ),
+          
+          # Population characteristics
+          treeInput(
+            inputId = "pop_characteristics",
+            label = "Select population characteristics:",
+            choices = create_tree(sub_population),
+            selected = c(unique(sub_population$sub_population), "General population"),
+            returnValue = "text",
+            closeDepth = 0
+          ),
+          
+          # Study setting
+          checkboxGroupInput(
+            inputId = "study_setting_input",
+            label = "Select study setting:",
+            choices = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres"),
+            selected = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres")
+          ),
+          
+          # Intervention classification
+          checkboxGroupInput(
+            inputId = "int_class_input",
+            label = "Select intervention classification:",
+            choices = c("Family therapy", "Individual therapy", "Information provision", "Multiple modalities", "Non-clinical therapy", "Pharmaceutical", "School based", "Other"),
+            selected = c("Family therapy", "Individual therapy", "Information provision", "Multiple modalities", "Non-clinical therapy", "Pharmaceutical", "School based", "Other")
+          ),
+          
+          # Intervention or exposure
+          checkboxGroupInput(
+            inputId = "intervention_exposure",
+            label = "Type of evidence:",
+            choices = c("Intervention", "Exposure"),
+            selected = c("Intervention", "Exposure")
+          ),
+          
+          # Type of synthesis
+          checkboxGroupInput(
+            inputId = "synth_type_input",
+            label = "Select type of synthesis:",
+            choices = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)"),
+            selected = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)")
+          ),
+          
+        # Quality appraisal
             radioButtons(
-              "RCT",
-              label = "Show reviews only containing RCTs?",
+              "qual_appraisal_input",
+              label = "Only show reviews that assess the quality of reviewed studies?",
               choices = c("Yes","No"),
               selected = "No"
             ),
+        
+        # Pre-registered protocol
+        radioButtons(
+          "pre_reg_input",
+          label = "Only show reviews that have a pre-registered protocol?",
+          choices = c("Yes","No"),
+          selected = "No"
+        ),
+        
+        # Study design
+        checkboxGroupInput(
+          inputId = "synth_type_input",
+          label = "Select type of synthesis:",
+          choices = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)"),
+          selected = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)")
+        ),
+        
+        # Study design of reviewed studies
+        checkboxGroupInput(
+          inputId = "study_design_input",
+          label = "Select study design of reviewed studies:",
+          choices = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Not reported", "Other", "Other quantiative designs", "Qualitative designs"),
+          selected = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Not reported", "Other", "Other quantiative designs", "Qualitative designs")
+        ),
+        
+        # Comparator details
+        checkboxGroupInput(
+          inputId = "comparator_details_input",
+          label = "Select intervention comparators:",
+          choices = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear"),
+          selected = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear")
+        ),
+        
         # Action button to update filters
         actionButton(
           "filter_update",
@@ -68,6 +130,9 @@ output$page_1_ui <-  renderUI({
                   tabPanel("EGM", reactableOutput("egm", height = 1800, width = 1800), value = "graph"),
                   tabPanel("Table",
                            htmlOutput("print_click_details"),
+                           linebreaks(1),
+                           p("Note: shaded rows indicate empty reviews"),
+                           linebreaks(1),
                            csvDownloadButton("data", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
                            reactableOutput("data"),
                            value = "table"))) # For switching tabs on click

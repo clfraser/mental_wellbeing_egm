@@ -9,11 +9,17 @@ filtered <- eventReactive(input$filter_update, {
   reviews_chart %>%
     mutate(selected = 0,
            selected = if_else(  dummy == 0 &
-                                subdomain %in% input$dom_sub &
-                                outcome_definition %in% input$outcome &
-                                type_of_review %in% input$review_type_input &
+                                outcome_definition %in% input$outcome_def &
+                                age %in% input$pop_age &
+                                sub_population %in% input$pop_characteristics &
+                                study_setting %in% input$study_setting_input &
+                                intervention_classification %in% input$int_class_input &
                                 intervention_exposure_short %in% input$intervention_exposure &
-                                (input$RCT == "No" | input$RCT == "Yes" & design_of_reviewed_studies == "Randomised control trials"),
+                                type_of_review %in% input$synth_type_input &
+                                (input$qual_appraisal_input == "No" | input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes") &
+                                (input$pre_reg_input == "No" | input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes") &
+                                design_of_reviewed_studies %in% input$study_design_input &
+                                comparator_details %in% input$comparator_details_input,
                               1,
                               0))
 }, ignoreNULL = FALSE)
@@ -32,7 +38,8 @@ output$egm <- renderReactable({
     count_pivot <- grouped %>%
       mutate(overall_outcome = gsub(" |-", "_", overall_outcome)) %>% # Replace spaces and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
       pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
-      mutate(across(Self_harm.Exposure:Outcome_category_3.Exposure, ~replace_na(., 0))) # Replace NAs with 0
+      mutate(across(Self_harm.Exposure:Outcome_category_3.Exposure, ~replace_na(., 0))) %>% # Replace NAs with 0
+      select(-Self_harm.NA)
     
     count_pivot %>%
       reactable(
@@ -110,50 +117,87 @@ output$egm <- renderReactable({
       )
   })
 
-  
 table_data <- reactive({
-
-    outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
-    outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-    type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
-
-    if (!length(input$click_details)){
-      return(filtered() %>%
-               select(study_id, title, aim_of_study, "Author conclusions" = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
-               arrange(study_id))
-    }
-    return(filtered() %>%
-             select(study_id, title, aim_of_study, "Author conclusions" = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies) %>%
-             arrange(study_id) %>%
-             filter(str_detect(subdomain, input$click_details$subdomain) &
-                      overall_outcome == outcome_click &
-                      str_detect(intervention_or_exposure, type_click)
-             ))
-    
-  })
-
-
-  output$print_click_details <- reactive({
-    outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
-    outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-    type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
-    
-  })
-
-# Output
-output$data <- renderReactable({
-  id_and_title <- unique(table_data()[, c("study_id", "title")])
   
-  id_and_title %>%
-    reactable(searchable = TRUE,
-              details = function(index) {
-      more_columns <- table_data()[table_data()$study_id == id_and_title$study_id[index], ] %>%
-        clean_names(., case = "title")
-      htmltools::div(style = "padding: 1rem",
-                     reactable(more_columns, outlined = TRUE)
-      )
+  outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
+  outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
+  type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
+  
+  only_selected <-
+    filtered() %>%
+    filter(selected == 1)
+  
+  if(is.null(input$click_details) | is.na(is.null(input$click_details))){
+    return(reviews_table %>%
+             filter(study_id %in% only_selected$study_id) %>%
+             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review) %>%
+             arrange(study_id))
+  }
+  
+  return(reviews_table %>%
+           filter(study_id %in% only_selected$study_id) %>%
+           arrange(study_id) %>%
+           filter(str_detect(subdomain, input$click_details$subdomain) &
+                    overall_outcome == outcome_click &
+                    str_detect(intervention_or_exposure, type_click)) %>%
+          dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review)
+           )
 })
+    
+# Output
+
+output$print_click_details <- reactive({
+    outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
+    outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
+    type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
+    
+  })
+
+
+output$data <- renderReactable({
+    
+  table_no_dups <- unique(table_data())
+  
+        table_no_dups %>%
+        reactable(
+        searchable = TRUE,
+        resizable = TRUE,
+        defaultColDef = colDef(
+        minWidth = 200),
+        height = 500,
+        rowStyle = function(index) {
+          if (table_no_dups[index, "empty_review"] == "Yes") {
+            list(background = "rgba(0, 0, 0, 0.05)")
+          }
+        },
+        columns = list(
+          study_id = colDef(name = "Author and date",
+                            sticky = "left",
+                            maxWidth = 100),
+          title = colDef(name = "Title",
+                         sticky = "left",
+                         # Add a right border style to visually distinguish the sticky column
+                         style = list(borderRight = "1px solid #eee"),
+                         headerStyle = list(borderRight = "1px solid #eee")),
+          aim_of_study = colDef(name = "Aim of study",
+                                minWidth = 300),
+          author_conclusions = colDef(minWidth = 400,
+                                      name = "Author conclusions"),
+          overall_outcome = colDef(name = "Overall outcome"),
+          outcome_definition = colDef(name = "Outcome definition"),
+          age = colDef(name = "Age of children or young people"), 
+          intervention_or_exposure = colDef(name = "Intervention or exposure"),
+          study_setting = colDef(name = "Study setting"),
+          overall_domain = colDef(name = "Domain"),
+          subdomain = colDef(name = "Subdomain"),
+          type_of_review = colDef(name = "Type of review"),
+          design_of_reviewed_studies = colDef(name = "Design of reviewed studies"),
+          number_of_primary_studies = colDef(name = "Number of primary studies"),
+          empty_review = colDef(name = "Empty review")
+        )
+    )
 })
+
 
 # Note: Rewrite code to only get click details once and use in multiple expressions
 output$print_click_details <- renderUI({
@@ -164,7 +208,7 @@ output$print_click_details <- renderUI({
    if(!length(input$click_details)){
      return("No selection from EGM")
    }
-  return(HTML(paste0("You have selected:", "<br/>", "Subdomain: ", input$click_details$subdomain, "<br/>", "Outcome: ", outcome_click, "<br/>", "Type: ", type_click)))
+  return(HTML(paste0("From the EGM, you have selected:", "<br/>", "  Subdomain: ", input$click_details$subdomain, "<br/>", "  Outcome: ", outcome_click, "<br/>", "  Type: ", type_click)))
   
 })
   

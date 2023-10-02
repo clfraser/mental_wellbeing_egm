@@ -21,6 +21,7 @@ library(tidyverse)
 library(janitor) # for tidying up variable names 
 library(readxl) # to read in Excel packages
 library(snakecase) # to reformat strings
+library(here)
 
 ## Set working directory - only need to do this if you can't get into the R project
 #setwd("/PHI_conf/PHSci/Catriona/EGM/Mental_health_EGM/")
@@ -84,27 +85,40 @@ df_pivot <- df_source %>%
          type_of_review = paste0(type_of_review, " (", review_type, ")"))
 
 
-# Create columns for each outcome definition,subdomain and intervention classification, since some studies have several
+# Create columns for each outcome definition,subdomain, study setting and intervention classification, since some studies have several
 # Also shorten any subdomains that contain 'other' descriptions to just be 'other'
 # The qualitative data has a subdomain of "Parental health (including mental health)", but the bit in brackets isn't there for the quantitative data. So, remove the brackets for consistency.
+# Also create column for population type filter
+# COME BACK TO TO SEE IF OTHER DEFINITIONS CAN BE KEPT IN TABLE
 df_separated <- df_pivot %>%
   separate_longer_delim(outcome_definition, delim = "; ") %>%
   separate_longer_delim(subdomain, delim = "; ") %>%
   separate_longer_delim(intervention_exposure_short, delim = "; ") %>%
   separate_longer_delim(intervention_classification, delim = "; ") %>%
+  separate_longer_delim(study_setting, delim = "; ") %>%
+  separate_longer_delim(design_of_reviewed_studies, delim = "; ") %>%
+  separate_longer_delim(comparator_details, delim = "; ") %>%
   mutate(subdomain = case_when(str_detect(subdomain,"Other:") ~ paste0("Other (", domain, ")"),
                                subdomain == "Parental health (including mental health)" ~ "Parental health",
-                               TRUE ~ subdomain))
+                               TRUE ~ subdomain),
+         intervention_classification = if_else(str_detect(intervention_classification, "Other:"), "Other", intervention_classification),
+         design_of_reviewed_studies = if_else(str_detect(design_of_reviewed_studies, "Other:"), "Other", design_of_reviewed_studies)) %>%
+  mutate(overall_population = case_when(general_population == "Yes" ~ "General population",
+                                        !is.na(sub_population_mental_health_characteristics) ~ "Sub-population mental health characteristics",
+                                        !is.na(other_sub_population_characteristics) ~ "Other sub-population characteristics"),
+         sub_population = case_when(!is.na(sub_population_mental_health_characteristics) ~ sub_population_mental_health_characteristics,
+                                    !is.na(other_sub_population_characteristics) ~ other_sub_population_characteristics,
+                                    TRUE ~ NA))
 
 # Add in some dummy outcomes for display purposes
 df_separated <- df_separated %>%
   mutate(overall_outcome = "Self-harm") %>%
-  add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 4", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
-  add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 5", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
-  add_row(overall_outcome = "Outcome category 2", outcome_definition = "Outcome 6", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative") %>%
-  add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 7", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
-  add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 8", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
-  add_row(overall_outcome = "Outcome category 3", outcome_definition = "Outcome 9", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative")
+  add_row(overall_outcome = "Outcome category 2", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
+  add_row(overall_outcome = "Outcome category 2", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
+  add_row(overall_outcome = "Outcome category 2", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative") %>%
+  add_row(overall_outcome = "Outcome category 3", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
+  add_row(overall_outcome = "Outcome category 3", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
+  add_row(overall_outcome = "Outcome category 3", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative")
 
 # Add in other subdomains that aren't in the data, to account for data gaps
 # Include a flag that these are dummy records, so they're not included in the map
@@ -146,12 +160,16 @@ df_separated <- df_separated %>%
 # Gather data to show in table
 # Filter out dummy rows
 df_table <- df_separated %>%
-  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification))) %>%
+  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -study_setting, -design_of_reviewed_studies, -comparator_details))) %>%
   summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
             subdomain= paste(unique(subdomain), collapse="; "),
             intervention_or_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
-            intervention_classification = paste(unique(intervention_classification), collapse = "; ")) %>%
-  filter(dummy == 0)
+            intervention_classification = paste(unique(intervention_classification), collapse = "; "),
+            study_setting = paste(unique(study_setting), collapse = "; "),
+            design_of_reviewed_studies = paste(unique(design_of_reviewed_studies), collapse = "; "),
+            comparator_details = paste(unique(comparator_details), collapse = "; ")) %>%
+  filter(dummy == 0) %>%
+  ungroup()
 
 # Save file for use in Shiny app
 saveRDS(df_separated, "data/self-harm_egm_chart_data.rds")
