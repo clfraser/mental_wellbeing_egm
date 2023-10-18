@@ -171,8 +171,17 @@ df_table <- df_separated %>%
   filter(dummy == 0) %>%
   ungroup()
 
+# Read in data with hyperlinks to papers
+# Select relevant columns and remove hash in covidence number column
+df_links <- read_csv(here("data/SH data for hyperlinks.csv")) %>%
+  select(covidence_number = "Covidence #", DOI) %>%
+  mutate(covidence_number = str_replace(covidence_number, "#", ""))
+
+# Merge with df table dataframe
+df_table_with_links <- merge(df_table, df_links, by = "covidence_number", all = TRUE)
+
 # Save file for use in Shiny app
 saveRDS(df_separated, "data/self-harm_egm_chart_data.rds")
 
-# Save data that hasn't been separated into a separate file for the dashboard table
-saveRDS(df_table, "data/self-harm_egm_table_data.rds")
+# Save data that has been gathered back together into a separate file for the dashboard table
+saveRDS(df_table_with_links, "data/self-harm_egm_table_data.rds")
