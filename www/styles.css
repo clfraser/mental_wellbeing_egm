@@ -90,7 +90,7 @@ th, td {
 /* Links */
   a {
     color: var(--phs-purple);
-    text-decoration: none;
+    text-decoration: underline;
   }
 
 /* Dropdown menu */

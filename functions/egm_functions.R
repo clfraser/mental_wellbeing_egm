@@ -135,7 +135,7 @@ table_data <- reactive({
   if(is.null(input$click_details) | is.na(is.null(input$click_details))){
     return(reviews_table %>%
              filter(study_id %in% only_selected$study_id) %>%
-             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review) %>%
+             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI) %>%
              arrange(study_id))
   }
   
@@ -145,7 +145,7 @@ table_data <- reactive({
            filter(str_detect(subdomain, input$click_details$subdomain) &
                     overall_outcome == outcome_click &
                     str_detect(intervention_or_exposure, type_click)) %>%
-          dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review)
+          dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI)
            )
 })
     
@@ -178,7 +178,9 @@ output$data <- renderReactable({
         columns = list(
           study_id = colDef(name = "Author and date",
                             sticky = "left",
-                            maxWidth = 100),
+                            html = TRUE, cell = function(value, index) {
+                              sprintf('<a href="%s" target="_blank">%s</a>', table_no_dups$DOI[index], value)
+                            }),
           title = colDef(name = "Title",
                          sticky = "left",
                          # Add a right border style to visually distinguish the sticky column
@@ -198,7 +200,11 @@ output$data <- renderReactable({
           type_of_review = colDef(name = "Type of review"),
           design_of_reviewed_studies = colDef(name = "Design of reviewed studies"),
           number_of_primary_studies = colDef(name = "Number of primary studies"),
-          empty_review = colDef(name = "Empty review")
+          empty_review = colDef(name = "Empty review"),
+          DOI = colDef(name = "DOI",
+                       cell = function(value) {
+                         htmltools::tags$a(href = value, target = "_blank", value)
+                       })
         )
     )
 })
