@@ -203,7 +203,6 @@ bubble_grid_modified <- function(data,
         } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value)) {
           
           paste0((abs(value) - min_value) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
-          #paste0((abs(value)) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
           
           ### max_value provided
         } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value)) {
@@ -213,7 +212,6 @@ bubble_grid_modified <- function(data,
           ### min and max provided
         } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value)) {
           
-          #paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
           paste0(min_value + (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE) * (max_value - min_value))
                  / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)) * 100, "px")
           
@@ -305,7 +303,6 @@ bubble_grid_modified <- function(data,
           } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value)) {
             
             paste0((abs(value) - min_value) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
-            #paste0((abs(value)) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
             
             ### max_value provided
           } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value)) {
@@ -315,7 +312,6 @@ bubble_grid_modified <- function(data,
             ### min and max provided
           } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value)) {
             
-            #paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
             paste0(min_value + (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE) * (max_value - min_value))
                    / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)), "px")
             
