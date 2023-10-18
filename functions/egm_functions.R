@@ -11,15 +11,15 @@ filtered <- eventReactive(input$filter_update, {
            selected = if_else(  dummy == 0 &
                                 outcome_definition %in% input$outcome_def &
                                 age %in% input$pop_age &
-                                sub_population %in% input$pop_characteristics &
+                                sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)) &
                                 study_setting %in% input$study_setting_input &
-                                intervention_classification %in% input$int_class_input &
+                                intervention_classification %in% input$int_class_input | is.na(intervention_classification) & # Come back to decide how NAs should work
                                 intervention_exposure_short %in% input$intervention_exposure &
                                 type_of_review %in% input$synth_type_input &
-                                (input$qual_appraisal_input == "No" | input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes") &
-                                (input$pre_reg_input == "No" | input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes") &
+                                (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
+                                (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
                                 design_of_reviewed_studies %in% input$study_design_input &
-                                comparator_details %in% input$comparator_details_input,
+                                (comparator_details %in% input$comparator_details_input | is.na(comparator_details)), # Come back to decide how NAs should work
                               1,
                               0))
 }, ignoreNULL = FALSE)
@@ -47,6 +47,7 @@ output$egm <- renderReactable({
           align = 'center',
           maxWidth = 150),
         groupBy = "domain",
+        defaultExpanded = TRUE,
         onClick = JS("function(rowInfo, column) {
         // Don't handle click events in the domain or subdomain columns
     if (column.id === 'domain' || column.id === 'subdomain') {
@@ -59,7 +60,11 @@ output$egm <- renderReactable({
   }"),
         columns = list(
           domain = colDef(name = "Domain",
-                          maxWidth = 150),
+                          maxWidth = 150,
+                          # Render grouped cells without the row count
+                          grouped = JS("function(cellInfo) {
+                          return cellInfo.value
+                          }")),
           subdomain = colDef(name = "Sub-domain",
                           maxWidth = 150),
           Self_harm.Exposure = colDef(name = "",

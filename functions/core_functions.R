@@ -73,8 +73,8 @@ bubble_grid_modified <- function(data,
                                  colors = c("#15607A", "#FFFFFF", "#FA8C00"),
                                  color_ref = NULL,
                                  color_by = NULL,
-                                 min_value = NULL,
-                                 max_value = NULL,
+                                 min_value = 7, # Default changed
+                                 max_value = 50, # Default changed
                                  opacity = 1,
                                  bias = 1,
                                  number_fmt = NULL,
@@ -195,24 +195,27 @@ bubble_grid_modified <- function(data,
         normalized <- (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE))
         
         ### width of data_bars
-        size <- if (is.numeric(value) & is.null(max_value) & is.null(min_value)) {
+        size <- if ((is.numeric(value) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
           
           paste0(abs(value) / max(dplyr::select_if(data, is.numeric), na.rm = TRUE) * 100, "px")
           
           ### min_value provided
-        } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value) & value > 0) { # Added condition that value must be > 0
+        } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value)) {
           
           paste0((abs(value) - min_value) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
+          #paste0((abs(value)) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
           
           ### max_value provided
-        } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value) & value > 0) { # Added condition that value must be > 0
+        } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value)) {
           
           paste0((abs(value) / max_value) * 100, "px")
           
           ### min and max provided
-        } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value) & value > 0) { # Added condition that value must be > 0
+        } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value)) {
           
-          paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
+          #paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
+          paste0(min_value + (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE) * (max_value - min_value))
+                 / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)) * 100, "px")
           
         } else if (!is.numeric(value)) {
           
@@ -249,7 +252,7 @@ bubble_grid_modified <- function(data,
             font_color <- assign_color(normalized)
             
             ### width of data_bars
-            size <- if (is.numeric(data[[color_by]][index]) & is.null(max_value) & is.null(min_value)) {
+            size <- if ((is.numeric(data[[color_by]][index]) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
               
               paste0(abs(data[[color_by]][index]) / max(abs(data[[color_by]]), na.rm = TRUE) * 100, "px")
               
@@ -294,14 +297,15 @@ bubble_grid_modified <- function(data,
           font_color <- assign_color(normalized)
           
           ### width of data_bars
-          size <- if (is.numeric(value) & is.null(max_value) & is.null(min_value)) {
+          size <- if ((is.numeric(value) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
             
             paste0(abs(value) / max(abs(data[[name]]), na.rm = TRUE) * 100, "px")
             
             ### min_value provided
           } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value)) {
             
-            paste0((abs(value) - min_value) / (max(abs(data[[name]]), na.rm = TRUE) - min_value) * 100, "px")
+            paste0((abs(value) - min_value) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
+            #paste0((abs(value)) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
             
             ### max_value provided
           } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value)) {
@@ -311,7 +315,9 @@ bubble_grid_modified <- function(data,
             ### min and max provided
           } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value)) {
             
-            paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
+            #paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
+            paste0(min_value + (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE) * (max_value - min_value))
+                   / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)), "px")
             
           }
           
@@ -618,10 +624,11 @@ bubble_grid_modified <- function(data,
 }
 
 # CSV download button for table
+# Make the separator a pipe, because there are commas in the data
 
 csvDownloadButton <- function(id, filename = "data.csv", label = "Download as CSV") {
   tags$button(
     tagList(icon("download"), label),
-    onclick = sprintf("Reactable.downloadDataCSV('%s', '%s')", id, filename)
+    onclick = sprintf("Reactable.downloadDataCSV('%s', '%s', {sep: '\t'})", id, filename)
   )
 }

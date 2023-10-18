@@ -93,20 +93,12 @@ output$page_1_ui <-  renderUI({
           selected = "No"
         ),
         
-        # Study design
-        checkboxGroupInput(
-          inputId = "synth_type_input",
-          label = "Select type of synthesis:",
-          choices = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)"),
-          selected = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)")
-        ),
-        
         # Study design of reviewed studies
         checkboxGroupInput(
           inputId = "study_design_input",
           label = "Select study design of reviewed studies:",
-          choices = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Not reported", "Other", "Other quantiative designs", "Qualitative designs"),
-          selected = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Not reported", "Other", "Other quantiative designs", "Qualitative designs")
+          choices = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Other quantitative designs", "Reviews", "Qualitative designs", "Other", "Not reported"),
+          selected = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Other quantitative designs", "Reviews", "Qualitative designs", "Other", "Not reported")
         ),
         
         # Comparator details
@@ -125,6 +117,22 @@ output$page_1_ui <-  renderUI({
     ), # sidebar panel
     ## Main panel for displaying outputs ----
     mainPanel(
+      # Add in message when data is loading
+      tags$head(tags$style(type="text/css", "
+             #loadmessage {
+               position: fixed;
+               top: 50px;
+               left: 0px;
+               width: 100%;
+               padding: 5px 0px 5px 0px;
+               text-align: center;
+               font-weight: bold;
+               font-size: 100%;
+               color: #000000;
+               background-color: #FF5733;
+               z-index: 105;
+             }
+          ")),
       tabsetPanel(type = "tabs",
                   id = "tabset",
                   tabPanel("EGM", reactableOutput("egm", height = 1800, width = 1800), value = "graph"),
@@ -136,7 +144,10 @@ output$page_1_ui <-  renderUI({
                            csvDownloadButton("data", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
                            reactableOutput("data"),
                            value = "table"))) # For switching tabs on click
-)
-) # Sidebar layout
+),
+# Panel to show when map etc. is loading
+conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                 tags$div("Loading...",id="loadmessage"))
+)# Sidebar layout
 }) # renderUI
 
