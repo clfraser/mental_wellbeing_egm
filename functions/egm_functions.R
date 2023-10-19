@@ -15,8 +15,6 @@ filtered <- eventReactive(input$filter_update, {
                                   study_setting %in% input$study_setting_input &
                                   (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
                                      intervention_classification %in% input$intervention_exposure) &
-                                  (("Not applicable (exposure studies)" %in% input$comparator_details_input & intervention_exposure_short == "Exposure") |
-                                     comparator_details %in% input$comparator_details_input) &
                                   type_of_review %in% input$synth_type_input &
                                   (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
                                   (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &

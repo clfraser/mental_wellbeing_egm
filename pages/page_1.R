@@ -63,14 +63,6 @@ output$page_1_ui <-  renderUI({
             closeDepth = 0
           ),
           
-          # Comparator details
-          checkboxGroupInput(
-            inputId = "comparator_details_input",
-            label = "Select intervention comparators:",
-            choices = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear", "Not applicable (exposure studies)"),
-            selected = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear", "Not applicable (exposure studies)")
-          ),
-          
           # Type of synthesis
           checkboxGroupInput(
             inputId = "synth_type_input",
