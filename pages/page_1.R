@@ -63,6 +63,14 @@ output$page_1_ui <-  renderUI({
             closeDepth = 0
           ),
           
+          # Comparator details
+          checkboxGroupInput(
+            inputId = "comparator_details_input",
+            label = "Select intervention comparators:",
+            choices = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear", "Not applicable (exposure studies)"),
+            selected = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear", "Not applicable (exposure studies)")
+          ),
+          
           # Type of synthesis
           checkboxGroupInput(
             inputId = "synth_type_input",
@@ -93,14 +101,6 @@ output$page_1_ui <-  renderUI({
           label = "Select study design of reviewed studies:",
           choices = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Other quantitative designs", "Reviews", "Qualitative designs", "Other", "Not reported"),
           selected = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Other quantitative designs", "Reviews", "Qualitative designs", "Other", "Not reported")
-        ),
-        
-        # Comparator details
-        checkboxGroupInput(
-          inputId = "comparator_details_input",
-          label = "Select intervention comparators:",
-          choices = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear"),
-          selected = c("Between groups - alternative treatment", "Within group - before/after", "Wait list", "Other: None", "Other: Unclear")
         ),
         
         # Action button to update filters
