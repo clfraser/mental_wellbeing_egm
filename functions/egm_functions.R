@@ -11,10 +11,10 @@ filtered <- eventReactive(input$filter_update, {
            selected = if_else(  dummy == 0 &
                                 outcome_definition %in% input$outcome_def &
                                 age %in% input$pop_age &
-                                sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)) &
+                                (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
                                 study_setting %in% input$study_setting_input &
-                                intervention_classification %in% input$int_class_input | is.na(intervention_classification) & # Come back to decide how NAs should work
-                                intervention_exposure_short %in% input$intervention_exposure &
+                                (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
+                                intervention_classification %in% input$intervention_exposure) &
                                 type_of_review %in% input$synth_type_input &
                                 (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
                                 (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
@@ -135,7 +135,7 @@ table_data <- reactive({
   if(is.null(input$click_details) | is.na(is.null(input$click_details))){
     return(reviews_table %>%
              filter(study_id %in% only_selected$study_id) %>%
-             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI) %>%
+             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI) %>%
              arrange(study_id))
   }
   
@@ -145,7 +145,7 @@ table_data <- reactive({
            filter(str_detect(subdomain, input$click_details$subdomain) &
                     overall_outcome == outcome_click &
                     str_detect(intervention_or_exposure, type_click)) %>%
-          dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, intervention_or_exposure, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI)
+          dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI)
            )
 })
     
@@ -192,8 +192,11 @@ output$data <- renderReactable({
                                       name = "Author conclusions"),
           overall_outcome = colDef(name = "Overall outcome"),
           outcome_definition = colDef(name = "Outcome definition"),
-          age = colDef(name = "Age of children or young people"), 
+          age = colDef(name = "Age of children or young people"),
+          overall_population = colDef(name = "Population category"),
+          sub_population = colDef(name = "Sub-population of children or young people"),
           intervention_or_exposure = colDef(name = "Intervention or exposure"),
+          intervention_classification = colDef(name = "Type of intervention"),
           study_setting = colDef(name = "Study setting"),
           overall_domain = colDef(name = "Domain"),
           subdomain = colDef(name = "Subdomain"),

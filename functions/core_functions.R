@@ -56,6 +56,7 @@ review_type <- reviews_chart %>%
 
 intervention_exposure <- reviews_chart %>%
   select(intervention_exposure_short, intervention_classification) %>%
+  mutate(intervention_classification = if_else(intervention_exposure_short == "Exposure", NA, intervention_classification)) %>%
   distinct(intervention_exposure_short, intervention_classification) %>%
   arrange(intervention_exposure_short)
 

@@ -53,20 +53,14 @@ output$page_1_ui <-  renderUI({
             selected = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres")
           ),
           
-          # Intervention classification
-          checkboxGroupInput(
-            inputId = "int_class_input",
-            label = "Select intervention classification:",
-            choices = c("Family therapy", "Individual therapy", "Information provision", "Multiple modalities", "Non-clinical therapy", "Pharmaceutical", "School based", "Other"),
-            selected = c("Family therapy", "Individual therapy", "Information provision", "Multiple modalities", "Non-clinical therapy", "Pharmaceutical", "School based", "Other")
-          ),
-          
-          # Intervention or exposure
-          checkboxGroupInput(
+          # Intervention or exposure and intervention classification
+          treeInput(
             inputId = "intervention_exposure",
-            label = "Type of evidence:",
-            choices = c("Intervention", "Exposure"),
-            selected = c("Intervention", "Exposure")
+            label = "Select reviews looking at interventions or exposures, and the intervention classification:",
+            choices = create_tree(intervention_exposure),
+            selected = c(unique(intervention_exposure$intervention_classification), "Exposure"),
+            returnValue = "text",
+            closeDepth = 0
           ),
           
           # Type of synthesis
@@ -129,7 +123,7 @@ output$page_1_ui <-  renderUI({
                font-weight: bold;
                font-size: 100%;
                color: #000000;
-               background-color: #FF5733;
+               background-color: #4B999D;
                z-index: 105;
              }
           ")),
