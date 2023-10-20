@@ -5,7 +5,9 @@
 # Filtered dataframe
 # Create when the app starts (using the ignoreNULL = FALSE argument), and then only update when the Update filter button is pressed
 
-filtered <- eventReactive(input$filter_update, {
+filtered <- eventReactive({input$filter_update
+                          input$select_all_filters
+                          input$clear_all_filters}, {
   reviews_chart %>%
     mutate(selected = 0,
            selected = if_else(  dummy == 0 &
@@ -14,7 +16,7 @@ filtered <- eventReactive(input$filter_update, {
                                   (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
                                   study_setting %in% input$study_setting_input &
                                   (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
-                                     intervention_classification %in% input$intervention_exposure) &
+                                     (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention")) &
                                   type_of_review %in% input$synth_type_input &
                                   (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
                                   (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
@@ -23,6 +25,40 @@ filtered <- eventReactive(input$filter_update, {
                                 0))
 }, ignoreNULL = FALSE)
 
+# Reset filters when button clicked
+# Reset from the shinyjs package doesn't reset the tree (nested) checkboxes, so add these separately
+
+observeEvent(input$select_all_filters, {
+  shinyjs::reset("filter_panel")
+  updateTreeInput(inputId = "pop_characteristics",
+                  selected = c(unique(sub_population$sub_population), "General population"))
+  updateTreeInput(inputId = "intervention_exposure",
+                  selected = c(unique(intervention_exposure$intervention_classification), "Exposure"))
+})
+
+# Clear filters when button clicked
+
+observeEvent(input$clear_all_filters, {
+  updateCheckboxGroupInput(inputId = "outcome_def",
+                           selected = character(0))
+  updateCheckboxGroupInput(inputId = "pop_age",
+                           selected = character(0))
+  updateTreeInput(inputId = "pop_characteristics",
+                  selected = character(0))
+  updateCheckboxGroupInput(inputId = "study_setting_input",
+                           selected = character(0))
+  updateTreeInput(inputId = "intervention_exposure",
+                  selected = character(0))
+  updateCheckboxGroupInput(inputId = "synth_type_input",
+                           selected = character(0))
+  updateRadioButtons(inputId = "outcome_def",
+                           selected = "No")
+  updateRadioButtons(inputId = "pre_reg_input",
+                     selected = "No")
+  updateCheckboxGroupInput(inputId = "study_design_input",
+                           selected = character(0))
+  
+})
 
 output$egm <- renderReactable({
   ## create EGM plot    
@@ -166,6 +202,7 @@ output$data <- renderReactable({
     reactable(
       searchable = TRUE,
       resizable = TRUE,
+      filterable = TRUE,
       defaultColDef = colDef(
         minWidth = 200),
       height = 500,

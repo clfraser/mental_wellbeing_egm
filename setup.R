@@ -8,6 +8,7 @@ library(shinyWidgets)
 library(reactable)
 library(reactablefmtr)
 library(tippy)
+library(shinyjs)
 
 # Data wrangling packages ----
 library(tidyverse)

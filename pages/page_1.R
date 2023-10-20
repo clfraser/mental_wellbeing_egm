@@ -9,6 +9,31 @@ output$page_1_ui <-  renderUI({
     ## Inputs
     sidebarLayout(
       sidebarPanel(width = 3,
+          # Set to use Shinyjs and set ID, so that checkboxes can be automatically reset
+          shinyjs::useShinyjs(),
+          id = "filter_panel",
+          
+          
+          # Action button to update filters
+          actionButton(
+            "filter_update",
+            "Apply filters"
+          ),
+          
+          # Action button to select all filter options
+          actionButton(
+            "select_all_filters",
+            "Select all"
+          ),
+          
+          # Action button to clear filters
+          actionButton(
+            "clear_all_filters",
+            "Clear all"
+          ),
+          
+          linebreaks(2),
+          
           # Filters
           
           # Outcome definition
@@ -98,8 +123,21 @@ output$page_1_ui <-  renderUI({
         # Action button to update filters
         actionButton(
           "filter_update",
-          "Update filters"
-        )
+          "Apply filters"
+        ),
+        
+        # Action button to reset filters
+        actionButton(
+          "select_all_filters",
+          "Select all"
+        ),
+        
+        # Action button to clear filters
+        actionButton(
+          "clear_all_filters",
+          "Clear all"
+        ),
+        
     ), # sidebar panel
     ## Main panel for displaying outputs ----
     mainPanel(
