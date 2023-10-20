@@ -5,7 +5,7 @@
 # Reset filters when button clicked
 # Reset from the shinyjs package doesn't reset the tree (nested) checkboxes, so add these separately
 
-observeEvent(list(input$select_all_filters_top, input$select_all_filters_bottom), {
+observeEvent(input$select_all_filters_top, {
   shinyjs::reset("filter_panel")
   updateTreeInput(inputId = "pop_characteristics",
                   selected = c(unique(sub_population$sub_population), "General population"))
@@ -15,24 +15,24 @@ observeEvent(list(input$select_all_filters_top, input$select_all_filters_bottom)
 
 # Clear filters when button clicked
 
-observeEvent(list(input$clear_all_filters_top, input$clear_all_filters_bottom), {
-  updateCheckboxGroupInput(inputId = "outcome_def",
+observeEvent(input$clear_all_filters_top, {
+  updateCheckboxGroupInput(session, inputId = "outcome_def",
                            selected = character(0))
-  updateCheckboxGroupInput(inputId = "pop_age",
+  updateCheckboxGroupInput(session, inputId = "pop_age",
                            selected = character(0))
   updateTreeInput(inputId = "pop_characteristics",
                   selected = character(0))
-  updateCheckboxGroupInput(inputId = "study_setting_input",
+  updateCheckboxGroupInput(session, inputId = "study_setting_input",
                            selected = character(0))
   updateTreeInput(inputId = "intervention_exposure",
                   selected = character(0))
-  updateCheckboxGroupInput(inputId = "synth_type_input",
+  updateCheckboxGroupInput(session, inputId = "synth_type_input",
                            selected = character(0))
-  updateRadioButtons(inputId = "outcome_def",
+  updateRadioButtons(session, inputId = "outcome_def",
                      selected = "No")
-  updateRadioButtons(inputId = "pre_reg_input",
+  updateRadioButtons(session, inputId = "pre_reg_input",
                      selected = "No")
-  updateCheckboxGroupInput(inputId = "study_design_input",
+  updateCheckboxGroupInput(session, inputId = "study_design_input",
                            selected = character(0))
   
 })
@@ -41,22 +41,22 @@ observeEvent(list(input$clear_all_filters_top, input$clear_all_filters_bottom), 
 # Create when the app starts (using the ignoreNULL = FALSE argument), and then only update when the Update filter button is pressed
 
 filtered <- eventReactive(list(input$filter_update_top, input$filter_update_bottom), {
-    reviews_chart %>%
-      mutate(selected = 0,
-             selected = if_else(  dummy == 0 &
-                                    outcome_definition %in% input$outcome_def &
-                                    age %in% input$pop_age &
-                                    (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
-                                    study_setting %in% input$study_setting_input &
-                                    (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
-                                       (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention")) &
-                                    type_of_review %in% input$synth_type_input &
-                                    (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
-                                    (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
-                                    design_of_reviewed_studies %in% input$study_design_input,
-                                  1,
-                                  0))
-  }, ignoreNULL = FALSE)
+  reviews_chart %>%
+    mutate(selected = 0,
+           selected = if_else(  dummy == 0 &
+                                  outcome_definition %in% input$outcome_def &
+                                  age %in% input$pop_age &
+                                  (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
+                                  study_setting %in% input$study_setting_input &
+                                  (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
+                                     (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention")) &
+                                  type_of_review %in% input$synth_type_input &
+                                  (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
+                                  (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
+                                  design_of_reviewed_studies %in% input$study_design_input,
+                                1,
+                                0))
+}, ignoreNULL = FALSE)
 
 
 output$egm <- renderReactable({
