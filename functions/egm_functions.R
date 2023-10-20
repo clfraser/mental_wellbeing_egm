@@ -34,6 +34,8 @@ filtered <- eventReactive(list(input$filter_update_top, input$filter_update_bott
                                 0))
 }, ignoreNULL = FALSE)
 
+# Create a reactive value to keep the map selection
+map_selection <- reactiveVal()
 
 output$egm <- renderReactable({
   ## create EGM plot    
@@ -132,17 +134,24 @@ output$egm <- renderReactable({
     )
 })
 
+observe({
+  if(!is.null(input$click_details)){
+  map_selection(input$click_details)
+  }
+})
+
+
 table_data <- reactive({
   
-  outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
+  outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
   outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
+  type_click <- sub(".*\\.", "", map_selection()$outcome_and_type)
   
   only_selected <-
     filtered() %>%
     filter(selected == 1)
   
-  if(is.null(input$click_details) | is.na(is.null(input$click_details))){
+  if(is.null(map_selection()) | is.na(is.null(map_selection()))){
     return(reviews_table %>%
              filter(study_id %in% only_selected$study_id) %>%
              dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI) %>%
@@ -162,9 +171,9 @@ table_data <- reactive({
 # Output
 
 output$print_click_details <- reactive({
-  outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
+  outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
   outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
+  type_click <- sub(".*\\.", "", map_selecion()$outcome_and_type)
   
 })
 
@@ -228,14 +237,14 @@ output$data <- renderReactable({
 
 # Note: Rewrite code to only get click details once and use in multiple expressions
 output$print_click_details <- renderUI({
-  outcome_extract <- sub("\\..*", "", input$click_details$outcome_and_type)
+  outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
   outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub(".*\\.", "", input$click_details$outcome_and_type)
+  type_click <- sub(".*\\.", "", map_selection()$outcome_and_type)
   
-  if(!length(input$click_details)){
+  if(!length(map_selection())){
     return("No selection from EGM")
   }
-  return(HTML(paste0("From the EGM, you have selected:", "<br/>", "  Subdomain: ", input$click_details$subdomain, "<br/>", "  Outcome: ", outcome_click, "<br/>", "  Type: ", type_click)))
+  return(HTML(paste0("From the EGM, you have selected:", "<br/>", "  Subdomain: ", map_selection()$subdomain, "<br/>", "  Outcome: ", outcome_click, "<br/>", "  Type: ", type_click)))
   
 })
 
@@ -245,3 +254,6 @@ observeEvent(input$click_details, {
   # use tabsetPanel 'id' argument to change tabs
   updateTabsetPanel(session, "tabset", selected = "table")
 })
+
+# Clear map selection when button pressed
+observeEvent(input$reset_map_selection, map_selection(NULL))

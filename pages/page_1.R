@@ -25,6 +25,12 @@ output$page_1_ui <-  renderUI({
                      "Select all"
                    ),
                    
+                   # Action button to clear click from map
+                   actionButton(
+                     "reset_map_selection",
+                     "Reset map selection"
+                   ),
+                   
                    linebreaks(2),
                    
                    # Filters
