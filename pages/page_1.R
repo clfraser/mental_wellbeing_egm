@@ -13,22 +13,21 @@ output$page_1_ui <-  renderUI({
           shinyjs::useShinyjs(),
           id = "filter_panel",
           
-          
           # Action button to update filters
           actionButton(
-            "filter_update",
+            "filter_update_top",
             "Apply filters"
           ),
           
           # Action button to select all filter options
           actionButton(
-            "select_all_filters",
+            "select_all_filters_top",
             "Select all"
           ),
           
           # Action button to clear filters
           actionButton(
-            "clear_all_filters",
+            "clear_all_filters_top",
             "Clear all"
           ),
           
@@ -122,19 +121,19 @@ output$page_1_ui <-  renderUI({
         
         # Action button to update filters
         actionButton(
-          "filter_update",
+          "filter_update_bottom",
           "Apply filters"
         ),
         
         # Action button to reset filters
         actionButton(
-          "select_all_filters",
+          "select_all_filters_bottom",
           "Select all"
         ),
         
         # Action button to clear filters
         actionButton(
-          "clear_all_filters",
+          "clear_all_filters_bottom",
           "Clear all"
         ),
         

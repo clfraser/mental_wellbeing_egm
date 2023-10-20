@@ -2,33 +2,10 @@
 
 #### function for creating egm plot --------------------------------------------
 
-# Filtered dataframe
-# Create when the app starts (using the ignoreNULL = FALSE argument), and then only update when the Update filter button is pressed
-
-filtered <- eventReactive({input$filter_update
-                          input$select_all_filters
-                          input$clear_all_filters}, {
-  reviews_chart %>%
-    mutate(selected = 0,
-           selected = if_else(  dummy == 0 &
-                                  outcome_definition %in% input$outcome_def &
-                                  age %in% input$pop_age &
-                                  (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
-                                  study_setting %in% input$study_setting_input &
-                                  (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
-                                     (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention")) &
-                                  type_of_review %in% input$synth_type_input &
-                                  (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
-                                  (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
-                                  design_of_reviewed_studies %in% input$study_design_input,
-                                1,
-                                0))
-}, ignoreNULL = FALSE)
-
 # Reset filters when button clicked
 # Reset from the shinyjs package doesn't reset the tree (nested) checkboxes, so add these separately
 
-observeEvent(input$select_all_filters, {
+observeEvent(list(input$select_all_filters_top, input$select_all_filters_bottom), {
   shinyjs::reset("filter_panel")
   updateTreeInput(inputId = "pop_characteristics",
                   selected = c(unique(sub_population$sub_population), "General population"))
@@ -38,7 +15,7 @@ observeEvent(input$select_all_filters, {
 
 # Clear filters when button clicked
 
-observeEvent(input$clear_all_filters, {
+observeEvent(list(input$clear_all_filters_top, input$clear_all_filters_bottom), {
   updateCheckboxGroupInput(inputId = "outcome_def",
                            selected = character(0))
   updateCheckboxGroupInput(inputId = "pop_age",
@@ -52,13 +29,35 @@ observeEvent(input$clear_all_filters, {
   updateCheckboxGroupInput(inputId = "synth_type_input",
                            selected = character(0))
   updateRadioButtons(inputId = "outcome_def",
-                           selected = "No")
+                     selected = "No")
   updateRadioButtons(inputId = "pre_reg_input",
                      selected = "No")
   updateCheckboxGroupInput(inputId = "study_design_input",
                            selected = character(0))
   
 })
+
+# Filtered dataframe
+# Create when the app starts (using the ignoreNULL = FALSE argument), and then only update when the Update filter button is pressed
+
+filtered <- eventReactive(list(input$filter_update_top, input$filter_update_bottom), {
+    reviews_chart %>%
+      mutate(selected = 0,
+             selected = if_else(  dummy == 0 &
+                                    outcome_definition %in% input$outcome_def &
+                                    age %in% input$pop_age &
+                                    (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
+                                    study_setting %in% input$study_setting_input &
+                                    (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
+                                       (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention")) &
+                                    type_of_review %in% input$synth_type_input &
+                                    (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
+                                    (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
+                                    design_of_reviewed_studies %in% input$study_design_input,
+                                  1,
+                                  0))
+  }, ignoreNULL = FALSE)
+
 
 output$egm <- renderReactable({
   ## create EGM plot    
@@ -170,7 +169,7 @@ table_data <- reactive({
   if(is.null(input$click_details) | is.na(is.null(input$click_details))){
     return(reviews_table %>%
              filter(study_id %in% only_selected$study_id) %>%
-             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI) %>%
+             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI) %>%
              arrange(study_id))
   }
   
@@ -180,7 +179,7 @@ table_data <- reactive({
            filter(str_detect(subdomain, input$click_details$subdomain) &
                     overall_outcome == outcome_click &
                     str_detect(intervention_or_exposure, type_click)) %>%
-           dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, empty_review, DOI)
+           dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI)
   )
 })
 
@@ -239,6 +238,8 @@ output$data <- renderReactable({
         type_of_review = colDef(name = "Type of review"),
         design_of_reviewed_studies = colDef(name = "Design of reviewed studies"),
         number_of_primary_studies = colDef(name = "Number of primary studies"),
+        quality_appraisal = colDef(name = "Does review assess quality of reviewed studies?"),
+        pre_registered_protocol = colDef(name = "Does review have a pre-registered protocol?"),
         empty_review = colDef(name = "Empty review"),
         DOI = colDef(name = "DOI",
                      cell = function(value) {
