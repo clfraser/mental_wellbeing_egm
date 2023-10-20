@@ -25,12 +25,6 @@ output$page_1_ui <-  renderUI({
                      "Select all"
                    ),
                    
-                   # Action button to clear filters
-                   actionButton(
-                     "clear_all_filters_top",
-                     "Clear all"
-                   ),
-                   
                    linebreaks(2),
                    
                    # Filters

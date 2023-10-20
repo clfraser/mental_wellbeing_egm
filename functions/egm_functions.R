@@ -13,30 +13,6 @@ observeEvent(input$select_all_filters_top, {
                   selected = c(unique(intervention_exposure$intervention_classification), "Exposure"))
 })
 
-# Clear filters when button clicked
-
-observeEvent(input$clear_all_filters_top, {
-  updateCheckboxGroupInput(session, inputId = "outcome_def",
-                           selected = character(0))
-  updateCheckboxGroupInput(session, inputId = "pop_age",
-                           selected = character(0))
-  updateTreeInput(inputId = "pop_characteristics",
-                  selected = character(0))
-  updateCheckboxGroupInput(session, inputId = "study_setting_input",
-                           selected = character(0))
-  updateTreeInput(inputId = "intervention_exposure",
-                  selected = character(0))
-  updateCheckboxGroupInput(session, inputId = "synth_type_input",
-                           selected = character(0))
-  updateRadioButtons(session, inputId = "outcome_def",
-                     selected = "No")
-  updateRadioButtons(session, inputId = "pre_reg_input",
-                     selected = "No")
-  updateCheckboxGroupInput(session, inputId = "study_design_input",
-                           selected = character(0))
-  
-})
-
 # Filtered dataframe
 # Create when the app starts (using the ignoreNULL = FALSE argument), and then only update when the Update filter button is pressed
 
