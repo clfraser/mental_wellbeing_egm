@@ -25,12 +25,6 @@ output$page_1_ui <-  renderUI({
                      "Select all"
                    ),
                    
-                   # Action button to clear click from map
-                   actionButton(
-                     "reset_map_selection",
-                     "Reset map selection"
-                   ),
-                   
                    linebreaks(2),
                    
                    # Filters
@@ -150,6 +144,12 @@ output$page_1_ui <-  renderUI({
                     tabPanel("Table",
                              htmlOutput("print_click_details"),
                              linebreaks(1),
+                             # Action button to clear click from map
+                             actionButton(
+                               "reset_map_selection",
+                               "Reset map selection"
+                             ),
+                             linebreaks(2),
                              p("Note: shaded rows indicate empty reviews"),
                              linebreaks(1),
                              csvDownloadButton("data", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)

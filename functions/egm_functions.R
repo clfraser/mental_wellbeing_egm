@@ -60,6 +60,8 @@ output$egm <- renderReactable({
         maxWidth = 150),
       groupBy = "domain",
       defaultExpanded = TRUE,
+      bordered = TRUE,
+      striped = TRUE,
       onClick = JS("function(rowInfo, column) {
         // Don't handle click events in the domain or subdomain columns
     if (column.id === 'domain' || column.id === 'subdomain') {
@@ -189,7 +191,6 @@ output$data <- renderReactable({
       filterable = TRUE,
       defaultColDef = colDef(
         minWidth = 200),
-      height = 500,
       rowStyle = function(index) {
         if (table_no_dups[index, "empty_review"] == "Yes") {
           list(background = "rgba(0, 0, 0, 0.05)")
