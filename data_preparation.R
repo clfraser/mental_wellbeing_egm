@@ -77,8 +77,8 @@ df_pivot <- df_source %>%
                values_to = "subdomain") %>%
   drop_na(subdomain) %>%
   mutate(domain = to_sentence_case(domain),
-         intervention_exposure_short = case_when(str_detect(intervention_or_exposure, "exposures") & str_detect(intervention_or_exposure, "Intervention") ~ "Exposure; Intervention",
-                                                 str_detect(intervention_or_exposure, "exposures") ~ "Exposure",
+         intervention_exposure_short = case_when(str_detect(intervention_or_exposure, "exposures") & str_detect(intervention_or_exposure, "Intervention") ~ "Risk/protective factor; Intervention",
+                                                 str_detect(intervention_or_exposure, "exposures") ~ "Risk/protective factor",
                                                  str_detect(intervention_or_exposure, "Intervention") ~ "Intervention",
                                                  intervention_or_exposure == "Attitudes" ~ "Attitudes"),
          outcome_definition = str_replace(outcome_definition, "SITB", "self-injurous thoughts and behaviours"),
@@ -115,10 +115,10 @@ df_separated <- df_separated %>%
   mutate(overall_outcome = "Self-harm") %>%
   add_row(overall_outcome = "Outcome category 2", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
   add_row(overall_outcome = "Outcome category 2", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
-  add_row(overall_outcome = "Outcome category 2", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative") %>%
+  add_row(overall_outcome = "Outcome category 2", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Risk/protective factor", review_type = "Quantitative") %>%
   add_row(overall_outcome = "Outcome category 3", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
   add_row(overall_outcome = "Outcome category 3", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
-  add_row(overall_outcome = "Outcome category 3", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Exposure", review_type = "Quantitative")
+  add_row(overall_outcome = "Outcome category 3", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Risk/protective factor", review_type = "Quantitative")
 
 # Add in other subdomains that aren't in the data, to account for data gaps
 # Include a flag that these are dummy records, so they're not included in the map

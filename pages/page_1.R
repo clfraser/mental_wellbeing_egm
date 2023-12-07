@@ -74,9 +74,9 @@ output$page_1_ui <-  renderUI({
                    # Intervention or exposure and intervention classification
                    treeInput(
                      inputId = "intervention_exposure",
-                     label = "Select reviews looking at interventions or exposures, and the intervention classification:",
+                     label = "Select reviews looking at interventions or risk/protective factos, and the intervention classification:",
                      choices = create_tree(intervention_exposure),
-                     selected = c(unique(intervention_exposure$intervention_classification), "Exposure"),
+                     selected = c(unique(intervention_exposure$intervention_classification), "Risk/protective factor"),
                      returnValue = "text",
                      closeDepth = 0
                    ),

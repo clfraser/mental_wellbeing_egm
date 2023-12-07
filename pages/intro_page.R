@@ -12,11 +12,11 @@ output$intro_page_ui <-  renderUI({
       h2("How the map is organised"),
       p("The map is organised into a matrix format. Reviews are thematically categorised by",
         tags$a(href = "https://publichealthscotland.scot/publications/children-and-young-people-mental-health-indicator-resources/", "domains/subdomains"),
-        "which are mapped into rows, and the health outcomes of interest which are allocated to columns (such as any form of self-injurious thoughts and behaviours, exclusive non-suicidal self-harm, repetitive compulsive self-injury). The intersecting cell in the matrix shows all reviews for that combination of domain/subdomain and outcome. Within a cell a coloured shape indicates reviews relating to an exposure, intervention, exposure and intervention or attitudes. Collectively, the size of the shapes gives an indication of the quantity of available reviews on an exposure/intervention/attitudes/exposure and intervention and outcome. Clicking on the shapes in the cell retrieves the underlying reference(s) and the underlying study detail. Empty cells indicate review-level evidence is lacking."),
+        "which are mapped into rows, and the health outcomes of interest which are allocated to columns (such as any form of self-injurious thoughts and behaviours, exclusive non-suicidal self-harm, repetitive compulsive self-injury). The intersecting cell in the matrix shows all reviews for that combination of domain/subdomain and outcome. Within a cell a coloured shape indicates reviews relating to an intervention or risk/protective factor. Collectively, the size of the shapes gives an indication of the quantity of available reviews on an intervention or risk/protective factor and outcome. Clicking on the shapes in the cell retrieves the underlying reference(s) and the underlying study detail. Empty cells indicate review-level evidence is lacking."),
       p("Filters are a feature of EGMs and help to refine a search by:"),
       tags$ul(
         tags$li("Domains and subdomains"), 
-        tags$li("Reviews that only contain intervention, exposures, intervention and exposure, attitudes"), 
+        tags$li("Reviews that only contain interventions and risk/protective factors"), 
         tags$li("Reviews that only contain RCTs"),
         tags$li("Different types of evidence ie qualitative or quantitative studies")
       ),

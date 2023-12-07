@@ -56,7 +56,7 @@ review_type <- reviews_chart %>%
 
 intervention_exposure <- reviews_chart %>%
   select(intervention_exposure_short, intervention_classification) %>%
-  mutate(intervention_classification = if_else(intervention_exposure_short == "Exposure", NA, intervention_classification)) %>%
+  mutate(intervention_classification = if_else(intervention_exposure_short == "Risk/protective factor", NA, intervention_classification)) %>%
   distinct(intervention_exposure_short, intervention_classification) %>%
   arrange(intervention_exposure_short)
 
@@ -402,7 +402,7 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::div(
+          htmltools::tags$button(
             style = list(background = cell_color,
                          color = text_color,
                          display = "inline-flex",
@@ -425,7 +425,7 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::div(label,
+        htmltools::tags$button(label,
                        style = list(background = cell_color,
                                     color = text_color,
                                     display = "inline-flex",
@@ -447,7 +447,7 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::div(
+          htmltools::tags$button(
             style = list(background = cell_color,
                          color = text_color,
                          display = "inline-flex",
@@ -469,7 +469,7 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::div(label,
+        htmltools::tags$button(label,
                        style = list(background = cell_color,
                                     color = text_color,
                                     display = "inline-flex",
@@ -490,7 +490,7 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::div(
+          htmltools::tags$button(
             style = list(background = cell_color,
                          display = "inline-flex",
                          justifyContent = "center",
@@ -512,7 +512,7 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::div(label,
+        htmltools::tags$button(label,
                        style = list(background = cell_color,
                                     display = "inline-flex",
                                     justifyContent = "center",
@@ -533,7 +533,7 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::div(
+          htmltools::tags$button(
             style = list(background = cell_color,
                          display = "inline-flex",
                          justifyContent = "center",
@@ -555,7 +555,7 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::div(label,
+        htmltools::tags$button(label,
                        style = list(background = cell_color,
                                     display = "inline-flex",
                                     justifyContent = "center",
@@ -576,7 +576,7 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::div(
+          htmltools::tags$button(
             style = list(background = cell_color,
                          color = font_color,
                          display = "inline-flex",
@@ -599,7 +599,7 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::div(label,
+        htmltools::tags$button(label,
                        style = list(background = cell_color,
                                     color = font_color,
                                     display = "inline-flex",

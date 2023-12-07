@@ -10,7 +10,7 @@ observeEvent(input$select_all_filters_top, {
   updateTreeInput(inputId = "pop_characteristics",
                   selected = c(unique(sub_population$sub_population), "General population"))
   updateTreeInput(inputId = "intervention_exposure",
-                  selected = c(unique(intervention_exposure$intervention_classification), "Exposure"))
+                  selected = c(unique(intervention_exposure$intervention_classification), "Risk/protective factor"))
 })
 
 # Filtered dataframe
@@ -24,7 +24,7 @@ filtered <- eventReactive(list(input$filter_update_top, input$filter_update_bott
                                   age %in% input$pop_age &
                                   (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
                                   study_setting %in% input$study_setting_input &
-                                  (("Exposure" %in% input$intervention_exposure & intervention_exposure_short == "Exposure") |
+                                  (("Risk/protective factor" %in% input$intervention_exposure & intervention_exposure_short == "Risk/protective factor") |
                                      (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention")) &
                                   type_of_review %in% input$synth_type_input &
                                   (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
@@ -48,9 +48,10 @@ output$egm <- renderReactable({
   
   # Pivot data into the right format
   count_pivot <- grouped %>%
-    mutate(overall_outcome = gsub(" |-", "_", overall_outcome)) %>% # Replace spaces and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
+    mutate(overall_outcome = gsub(" |-", "_", overall_outcome),
+           intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
     pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
-    mutate(across(Self_harm.Exposure:Outcome_category_3.Exposure, ~replace_na(., 0))) %>% # Replace NAs with 0
+    mutate(across(Self_harm.Risk_protective_factor:Outcome_category_3.Risk_protective_factor, ~replace_na(., 0))) %>% # Replace NAs with 0
     select(-Self_harm.NA)
   
   count_pivot %>%
@@ -81,7 +82,7 @@ output$egm <- renderReactable({
                           }")),
         subdomain = colDef(name = "Sub-domain",
                            maxWidth = 150),
-        Self_harm.Exposure = colDef(name = "",
+        Self_harm.Risk_protective_factor = colDef(name = "",
                                     vAlign = "top",
                                     cell = bubble_grid_modified(
                                       data = .,
@@ -96,7 +97,7 @@ output$egm <- renderReactable({
                                           tooltip = TRUE,
                                           shape = "squares"
                                         )),
-        Outcome_category_2.Exposure = colDef(name = "",
+        Outcome_category_2.Risk_protective_factor = colDef(name = "",
                                              vAlign = "top",
                                              cell = bubble_grid_modified(
                                                data = .,
@@ -111,7 +112,7 @@ output$egm <- renderReactable({
                                                    tooltip = TRUE,
                                                    shape = "squares"
                                                  )),
-        Outcome_category_3.Exposure = colDef(name = "",
+        Outcome_category_3.Risk_protective_factor = colDef(name = "",
                                              vAlign = "top",
                                              cell = bubble_grid_modified(
                                                data = .,
@@ -129,9 +130,9 @@ output$egm <- renderReactable({
                                                  ))
       ),
       columnGroups = list(
-        colGroup(name = "Self-harm", columns = c("Self_harm.Exposure", "Self_harm.Intervention")),
-        colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Exposure", "Outcome_category_2.Intervention")),
-        colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Exposure", "Outcome_category_3.Intervention"))
+        colGroup(name = "Self-harm", columns = c("Self_harm.Risk_protective_factor", "Self_harm.Intervention")),
+        colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Risk_protective_factor", "Outcome_category_2.Intervention")),
+        colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Risk_protective_factor", "Outcome_category_3.Intervention"))
       )
     )
 })
@@ -216,7 +217,7 @@ output$data <- renderReactable({
         age = colDef(name = "Age of children or young people"),
         overall_population = colDef(name = "Population category"),
         sub_population = colDef(name = "Sub-population of children or young people"),
-        intervention_or_exposure = colDef(name = "Intervention or exposure"),
+        intervention_or_exposure = colDef(name = "Intervention or risk/protective factor"),
         intervention_classification = colDef(name = "Type of intervention"),
         study_setting = colDef(name = "Study setting"),
         overall_domain = colDef(name = "Domain"),
