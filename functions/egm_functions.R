@@ -13,6 +13,58 @@ observeEvent(input$select_all_filters_top, {
                   selected = c(unique(intervention_exposure$intervention_classification), "Risk/protective factor"))
 })
 
+## Show modals with definitions for filter options
+
+# Write a function to create appropriate modals
+defs_topic_modal <- function(topic){
+  defs_filtered <- glossary_list %>%
+    filter(Topic == topic) %>%
+    select(-Topic)
+  
+  output$defs_table <- renderTable(defs_filtered)
+  
+  showModal(modalDialog(
+    title = paste(topic, "definitions"),
+    tableOutput("defs_table"),
+    easyClose = TRUE
+  ))
+}
+
+# Create observe events for clicking each info button
+# Some information is different from the list of definitions in the glossary
+
+# Outcomes information
+observeEvent(input$outcome_defs, {
+             outcome_defs_filtered <- glossary_list %>%
+               filter(Topic == "Outcomes") %>%
+               select(-Topic)
+             
+             output$outcome_defs_table <- renderTable(outcome_defs_filtered)
+             
+             showModal(modalDialog(
+               title = "Outcome definitions",
+               "All reviews have a synthesis for some form of self-harm. Selecting 'exclusively non-suicidal self-harm', for example, returns reviews where the results only consider self-harm with the specific measure of non-suicidal self-injury.",
+               linebreaks(2),
+               tableOutput("outcome_defs_table"),
+               easyClose = TRUE))
+})
+
+# Population age information
+observeEvent(input$pop_age_defs,
+             {showModal(modalDialog(
+               title = "Population age information",
+               "All reviews have some kind of synthesis that applies to young people under 18yrs, but by selecting 'exclusively 0-18 years' you can see reviews where ALL the results are relevant to under 18 years.",
+               easyClose = TRUE))})
+
+# All other definitions
+observeEvent(input$pop_characteristics_defs, {defs_topic_modal("Population characteristics")})
+observeEvent(input$study_setting_defs, {defs_topic_modal("Study setting")})
+observeEvent(input$int_exposure_defs, {defs_topic_modal("Interventions and risk/protective factors")})
+observeEvent(input$synth_type_defs, {defs_topic_modal("Type of synthesis")})
+observeEvent(input$quality_appraisal_defs, {defs_topic_modal("Quality appraisal")})
+observeEvent(input$pre_reg_defs, {defs_topic_modal("Pre-registration")})
+observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of reviewed literature)")})
+
 # Filtered dataframe
 # Create when the app starts (using the ignoreNULL = FALSE argument), and then only update when the Update filter button is pressed
 

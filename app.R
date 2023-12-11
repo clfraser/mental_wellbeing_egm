@@ -49,7 +49,19 @@ tabPanel(title = "Evidence and gap map",
     h1("Evidence and gap map"),
     uiOutput("page_1_ui")
 
-    ) # tabpanel
+    ), # tabpanel
+##############################################.
+# Glossary ----
+##############################################.
+tabPanel(title = "Glossary",
+         # Look at https://fontawesome.com/search?m=free for icons
+         icon = icon_no_warning_fn("circle-info"),
+         value = "Glossary",
+         
+         h1("Glossary"),
+         uiOutput("glossary_ui")
+         
+) # tabpanel
          
 ) # navbar
 ) # taglist
@@ -75,6 +87,7 @@ server <- function(input, output, session) {
     # Get content for individual pages
     source(file.path("pages/intro_page.R"), local = TRUE)$value
     source(file.path("pages/page_1.R"), local = TRUE)$value
+    source(file.path("pages/glossary.R"), local = TRUE)$value
 
 }
 

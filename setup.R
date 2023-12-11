@@ -9,12 +9,14 @@ library(reactable)
 library(reactablefmtr)
 library(tippy)
 library(shinyjs)
+library(shinyBS)
 
 # Data wrangling packages ----
 library(tidyverse)
 library(janitor)
 library(jsonlite)
 library(stringr)
+library(readxl)
 
 # Plotting packages ----
 library(plotly)
@@ -39,6 +41,8 @@ reviews_chart <- readRDS(here("data/self-harm_egm_chart_data.rds"))
 # Dataframe for table
 reviews_table <- readRDS(here("data/self-harm_egm_table_data.rds"))
 
+# Dataframe for glossary list
+glossary_list <- read_xlsx(here("data/Definitions.xlsx"), sheet = "List")
 
 # Load core functions functions ----
 source("functions/core_functions.R")
