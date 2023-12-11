@@ -3,6 +3,8 @@
 output$page_1_ui <-  renderUI({
   
   fluidPage(
+    # Set checkbox colour
+    tags$head(tags$style("input[type=checkbox] { accent-color: DodgerBlue; }")),
     ## Page titles
     titlePanel(
       "Common mental health conditions in childhood"),
