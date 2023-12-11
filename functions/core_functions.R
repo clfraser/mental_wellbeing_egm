@@ -179,11 +179,11 @@ bubble_grid_modified <- function(data,
     
     if (is.null(number_fmt)) {
       
-      label <- paste0(sub(".*\\.", "", name), ": ", value) # Include the sub-column name in the tooltip (the text after the dot in the column name). Note that the . has to be 'escaped' with "\\".
+      label <- paste0(sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", name)), ": ", value) # Include the sub-column name in the tooltip (the text after the dot in the column name). Note that the . has to be 'escaped' with "\\".
       
     } else {
       
-      label <- paste0(sub(".*\\.", "", name), ": ", number_fmt(value))
+      label <- paste0(sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", name)), ": ", number_fmt(value))
       
     }
     

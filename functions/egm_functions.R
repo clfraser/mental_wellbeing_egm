@@ -200,7 +200,7 @@ table_data <- reactive({
   
   outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
   outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub(".*\\.", "", map_selection()$outcome_and_type)
+  type_click <- sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))
   
   only_selected <-
     filtered() %>%
@@ -228,8 +228,7 @@ table_data <- reactive({
 output$print_click_details <- reactive({
   outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
   outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub(".*\\.", "", map_selecion()$outcome_and_type)
-  
+  type_click <- sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))
 })
 
 
@@ -293,7 +292,7 @@ output$data <- renderReactable({
 output$print_click_details <- renderUI({
   outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
   outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub(".*\\.", "", map_selection()$outcome_and_type)
+  type_click <- sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))
   
   if(!length(map_selection())){
     return("No selection from EGM")
