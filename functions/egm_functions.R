@@ -93,7 +93,7 @@ output$egm <- renderReactable({
   ## create EGM plot    
   grouped <- filtered() %>%
     group_by(domain, subdomain, overall_outcome, intervention_exposure_short) %>%
-    summarise(count = length(unique(study_id[selected == 1]))) %>% # Count the study IDs for studies that have been selected
+    summarise(count = length(unique(covidence_number[selected == 1]))) %>% # Count the covidence numbers (IDs) for studies that have been selected
     ungroup()
   
   ## Create a reactable
@@ -208,13 +208,13 @@ table_data <- reactive({
   
   if(is.null(map_selection()) | is.na(is.null(map_selection()))){
     return(reviews_table %>%
-             filter(study_id %in% only_selected$study_id) %>%
+             filter(covidence_number %in% only_selected$covidence_number) %>%
              dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI) %>%
              arrange(study_id))
   }
   
   return(reviews_table %>%
-           filter(study_id %in% only_selected$study_id) %>%
+           filter(covidence_number %in% only_selected$covidence_number) %>%
            arrange(study_id) %>%
            filter(str_detect(subdomain, input$click_details$subdomain) &
                     overall_outcome == outcome_click &
