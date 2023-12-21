@@ -5,12 +5,12 @@
 # Reset filters when button clicked
 # Reset from the shinyjs package doesn't reset the tree (nested) checkboxes, so add these separately
 
-observeEvent(input$select_all_filters_top, {
+observeEvent(input$clear_all_filters_top, {
   shinyjs::reset("filter_panel")
   updateTreeInput(inputId = "pop_characteristics",
-                  selected = c(unique(sub_population$sub_population), "General population"))
+                  selected = character(0))
   updateTreeInput(inputId = "intervention_exposure",
-                  selected = c(unique(intervention_exposure$intervention_classification), "Risk/protective factor"))
+                  selected = character(0))
 })
 
 ## Show modals with definitions for filter options
@@ -70,20 +70,17 @@ observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of review
 
 filtered <- eventReactive(list(input$filter_update_top, input$filter_update_bottom), {
   reviews_chart %>%
-    mutate(selected = 0,
-           selected = if_else(  dummy == 0 &
-                                  outcome_definition %in% input$outcome_def &
-                                  age %in% input$pop_age &
-                                  (sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population))) &
-                                  study_setting %in% input$study_setting_input &
-                                  (("Risk/protective factor" %in% input$intervention_exposure & intervention_exposure_short == "Risk/protective factor") |
-                                     (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention")) &
-                                  type_of_review %in% input$synth_type_input &
-                                  (input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes")) &
-                                  (input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes")) &
-                                  design_of_reviewed_studies %in% input$study_design_input,
-                                1,
-                                0))
+    mutate(outcomes_filter = if(is.null(input$outcome)) TRUE else if_else(outcome_definition %in% input$outcome, TRUE, FALSE),
+           age_filter = if(is.null(input$pop_age)) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
+           sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
+           study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
+           int_exposure_filter = if(is.null(input$intervention_exposure)) TRUE else if_else(("Risk/protective factor" %in% input$intervention_exposure & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention"), TRUE, FALSE),
+           synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
+           qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
+           pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
+           design_filter = if(is.null(input$study_design_input)) TRUE else if_else(design_of_reviewed_studies %in% input$study_design_input, TRUE, FALSE),
+           selected = if_else(outcomes_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter +
+                                qual_appraisal_filter + pre_reg_filter + design_filter + dummy == 9, 1, 0)) # All of the filter checks are true, but the record isn't a dummy one
 }, ignoreNULL = FALSE)
 
 # Create a reactive value to keep the map selection
@@ -93,7 +90,7 @@ output$egm <- renderReactable({
   ## create EGM plot    
   grouped <- filtered() %>%
     group_by(domain, subdomain, overall_outcome, intervention_exposure_short) %>%
-    summarise(count = length(unique(study_id[selected == 1]))) %>% # Count the study IDs for studies that have been selected
+    summarise(count = length(unique(covidence_number[selected == 1]))) %>% # Count the covidence numbers (unique IDs) for studies that have been selected
     ungroup()
   
   ## Create a reactable
@@ -208,13 +205,13 @@ table_data <- reactive({
   
   if(is.null(map_selection()) | is.na(is.null(map_selection()))){
     return(reviews_table %>%
-             filter(study_id %in% only_selected$study_id) %>%
+             filter(covidence_number %in% only_selected$covidence_number) %>%
              dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI) %>%
              arrange(study_id))
   }
   
   return(reviews_table %>%
-           filter(study_id %in% only_selected$study_id) %>%
+           filter(covidence_number %in% only_selected$covidence_number) %>%
            arrange(study_id) %>%
            filter(str_detect(subdomain, input$click_details$subdomain) &
                     overall_outcome == outcome_click &
@@ -241,10 +238,11 @@ output$data <- renderReactable({
       searchable = TRUE,
       resizable = TRUE,
       filterable = TRUE,
+      height = 5000,
       defaultColDef = colDef(
         minWidth = 200),
       rowStyle = function(index) {
-        if (table_no_dups[index, "empty_review"] == "Yes") {
+        if (table_no_dups[index, "empty_review"] == "Yes" & !is.na(table_no_dups[index, "empty_review"])) {
           list(background = "rgba(0, 0, 0, 0.05)")
         }
       },

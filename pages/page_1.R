@@ -23,8 +23,8 @@ output$page_1_ui <-  renderUI({
                    
                    # Action button to select all filter options
                    actionButton(
-                     "select_all_filters_top",
-                     "Select all"
+                     "clear_all_filters_top",
+                     "Clear all"
                    ),
                    
                    linebreaks(2),
@@ -33,16 +33,14 @@ output$page_1_ui <-  renderUI({
                    
                    # Outcome definition
                    checkboxGroupInput(
-                     inputId = "outcome_def",
+                     inputId = "outcome",
                      label = tags$span(
                        "Select outcome definition", 
                        actionButton("outcome_defs", "", icon = icon("circle-info"))),
                      choices = c("Any form of self-injurous thoughts and behaviours",
                                  "Exclusively non-suicidal self-harm",
                                  "Repetitive, compulsive self-injury"),
-                     selected = c("Any form of self-injurous thoughts and behaviours",
-                                  "Exclusively non-suicidal self-harm",
-                                  "Repetitive, compulsive self-injury")
+                     selected = NULL
                    ),
                    
                    # Population age
@@ -53,9 +51,7 @@ output$page_1_ui <-  renderUI({
                      choices = c("Exclusively 0-18 years",
                                  "Up to 25 years",
                                  "All ages"),
-                     selected = c("Exclusively 0-18 years",
-                                  "Up to 25 years",
-                                  "All ages")
+                     selected = NULL
                    ),
                    
                    # Population characteristics
@@ -64,7 +60,7 @@ output$page_1_ui <-  renderUI({
                      label = tags$span("Select population characteristics:",
                                        actionButton("pop_characteristics_defs", "", icon = icon("circle-info"))),
                      choices = create_tree(sub_population),
-                     selected = c(unique(sub_population$sub_population), "General population"),
+                     selected = NULL,
                      returnValue = "text",
                      closeDepth = 0
                    ),
@@ -75,7 +71,7 @@ output$page_1_ui <-  renderUI({
                      label = tags$span("Select study setting:",
                                        actionButton("study_setting_defs", "", icon = icon("circle-info"))),
                      choices = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres"),
-                     selected = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres")
+                     selected = NULL
                    ),
                    
                    # Intervention or exposure and intervention classification
@@ -84,7 +80,7 @@ output$page_1_ui <-  renderUI({
                      label = tags$span("Select reviews looking at interventions or risk/protective factos, and the intervention classification:",
                                        actionButton("int_exposure_defs", "", icon = icon("circle-info"))),
                      choices = create_tree(intervention_exposure),
-                     selected = c(unique(intervention_exposure$intervention_classification), "Risk/protective factor"),
+                     selected = NULL,
                      returnValue = "text",
                      closeDepth = 0
                    ),
@@ -95,7 +91,7 @@ output$page_1_ui <-  renderUI({
                      label = tags$span("Select type of synthesis:",
                                        actionButton("synth_type_defs", "", icon = icon("circle-info"))),
                      choices = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)"),
-                     selected = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)")
+                     selected = NULL
                    ),
                    
                    # Quality appraisal
@@ -122,7 +118,7 @@ output$page_1_ui <-  renderUI({
                      label = tags$span("Select study design of reviewed studies:",
                                        actionButton("study_design_defs", "", icon = icon("circle-info"))),
                      choices = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Other quantitative designs", "Reviews", "Qualitative designs", "Other", "Not reported"),
-                     selected = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Other quantitative designs", "Reviews", "Qualitative designs", "Other", "Not reported")
+                     selected = NULL
                    ),
                    
                    # Action button to update filters
