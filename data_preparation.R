@@ -82,7 +82,8 @@ df_pivot <- df_source %>%
                                                  str_detect(intervention_or_exposure, "Intervention") ~ "Intervention",
                                                  intervention_or_exposure == "Attitudes" ~ "Attitudes"),
          outcome_definition = str_replace(outcome_definition, "SITB", "self-injurous thoughts and behaviours"),
-         type_of_review = paste0(type_of_review, " (", review_type, ")"))
+         type_of_review = paste0(type_of_review, " (", review_type, ")"),
+         sub_population_mental_health_characteristics = sub("\\s\\((.*)\\)\\?", "", sub_population_mental_health_characteristics)) # Take out text in brackets in one of the sub-population descriptions
 
 
 # Create columns for each outcome definition,subdomain, study setting and intervention classification, since some studies have several
@@ -95,6 +96,8 @@ df_separated <- df_pivot %>%
   separate_longer_delim(subdomain, delim = "; ") %>%
   separate_longer_delim(intervention_exposure_short, delim = "; ") %>%
   separate_longer_delim(intervention_classification, delim = "; ") %>%
+  separate_longer_delim(sub_population_mental_health_characteristics, delim = "; ") %>%
+  separate_longer_delim(other_sub_population_characteristics, delim = "; ") %>%
   separate_longer_delim(study_setting, delim = "; ") %>%
   separate_longer_delim(design_of_reviewed_studies, delim = "; ") %>%
   separate_longer_delim(comparator_details, delim = "; ") %>%
@@ -160,11 +163,13 @@ df_separated <- df_separated %>%
 # Gather data to show in table
 # Filter out dummy rows
 df_table <- df_separated %>%
-  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -study_setting, -design_of_reviewed_studies, -comparator_details))) %>%
+  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, other_sub_population_characteristics, -sub_population_mental_health_characteristics, -study_setting, -design_of_reviewed_studies, -comparator_details))) %>%
   summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
             subdomain= paste(unique(subdomain), collapse="; "),
             intervention_or_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
             intervention_classification = paste(unique(intervention_classification), collapse = "; "),
+            other_sub_population_characteristics = paste(unique(other_sub_population_characteristics), collapse = "; "),
+            sub_population_mental_health_characteristics = paste(unique(sub_population_mental_health_characteristics), collapse = "; "),
             study_setting = paste(unique(study_setting), collapse = "; "),
             design_of_reviewed_studies = paste(unique(design_of_reviewed_studies), collapse = "; "),
             comparator_details = paste(unique(comparator_details), collapse = "; ")) %>%
