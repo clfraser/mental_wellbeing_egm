@@ -196,7 +196,9 @@ bubble_grid_modified <- function(data,
         normalized <- (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE))
         
         ### width of data_bars
-        size <- if ((is.numeric(value) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
+        size <- if (max(value == 0)){ "0px" } # Show nothing on the chart if everything has been filtered out
+        
+          else if ((is.numeric(value) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
           
           paste0(abs(value) / max(dplyr::select_if(data, is.numeric), na.rm = TRUE) * 100, "px")
           
