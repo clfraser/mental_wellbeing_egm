@@ -100,8 +100,9 @@ output$egm <- renderReactable({
     mutate(overall_outcome = gsub(" |-", "_", overall_outcome),
            intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
     pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
-    mutate(across(Self_harm.Risk_protective_factor:Outcome_category_3.Risk_protective_factor, ~replace_na(., 0))) %>% # Replace NAs with 0
-    select(-Self_harm.NA)
+    mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
+    select(-Self_harm.NA) %>%
+    arrange(domain)
   
   count_pivot %>%
     reactable(

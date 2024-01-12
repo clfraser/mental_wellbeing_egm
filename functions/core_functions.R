@@ -39,31 +39,32 @@ dt <- DT::datatable(input_data_table, style = 'bootstrap',
 
 # Creating dataframes for trees (for hierarchical checkboxes to work)
 
-domains_subs <- reviews_chart %>%
+domains_subs_for_tree <- reviews_chart %>%
   select(domain, subdomain) %>%
   distinct(domain, subdomain) %>%
   arrange(domain, subdomain)
 
-outcomes <- reviews_chart %>%
-  select(overall_outcome, outcome_definition) %>%
-  distinct(overall_outcome, outcome_definition) %>%
-  arrange(overall_outcome, outcome_definition)
+sub_outcomes_for_tree <- data.frame(
+  first_level = rep("Any form of self-injurious thoughts and behaviours", 2),
+  second_level = c("Exclusively non-suicidal self-harm", "Repetitive, compulsive self-injury")
+)
 
-review_type <- reviews_chart %>%
-  select(review_type, type_of_review) %>%
-  distinct(review_type, type_of_review) %>%
-  arrange(review_type)
+age_for_tree <- data.frame(
+  first_level = rep("All ages", 2),
+  second_level = c("Exclusively 0-18 years", "Up to 25 years")
+)
 
-intervention_exposure <- reviews_chart %>%
+intervention_exposure_for_tree <- reviews_chart %>%
   select(intervention_exposure_short, intervention_classification) %>%
   mutate(intervention_classification = if_else(intervention_exposure_short == "Risk/protective factor", NA, intervention_classification)) %>%
   distinct(intervention_exposure_short, intervention_classification) %>%
   arrange(intervention_exposure_short)
 
-sub_population <- reviews_chart %>%
+sub_population_for_tree <- reviews_chart %>%
   select(overall_population, sub_population) %>%
   distinct(overall_population, sub_population) %>%
   arrange(overall_population)
+
 
 # Modify bubble_grid function for our purposes
 # Change some defaults so that it fits with what we're most likely to use

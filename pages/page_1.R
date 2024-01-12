@@ -31,27 +31,27 @@ output$page_1_ui <-  renderUI({
                    
                    # Filters
                    
-                   # Outcome definition
-                   checkboxGroupInput(
+                   # Sub-outcome definition
+                   treeInput(
                      inputId = "outcome",
                      label = tags$span(
                        "Select outcome definition", 
                        actionButton("outcome_defs", "", icon = icon("circle-info"))),
-                     choices = c("Any form of self-injurous thoughts and behaviours",
-                                 "Exclusively non-suicidal self-harm",
-                                 "Repetitive, compulsive self-injury"),
-                     selected = NULL
+                     choices = create_tree(sub_outcomes_for_tree),
+                     selected = NULL,
+                     returnValue = "text",
+                     closeDepth = 0
                    ),
                    
                    # Population age
-                   checkboxGroupInput(
+                   treeInput(
                      inputId = "pop_age",
                      label = tags$span("Select population age:",
                                        actionButton("pop_age_defs", "", icon = icon("circle-info"))),
-                     choices = c("Exclusively 0-18 years",
-                                 "Up to 25 years",
-                                 "All ages"),
-                     selected = NULL
+                     choices = create_tree(age_for_tree),
+                     selected = NULL,
+                     returnValue = "text",
+                     closeDepth = 0
                    ),
                    
                    # Population characteristics
@@ -59,7 +59,7 @@ output$page_1_ui <-  renderUI({
                      inputId = "pop_characteristics",
                      label = tags$span("Select population characteristics:",
                                        actionButton("pop_characteristics_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(sub_population),
+                     choices = create_tree(sub_population_for_tree),
                      selected = NULL,
                      returnValue = "text",
                      closeDepth = 0
@@ -79,7 +79,7 @@ output$page_1_ui <-  renderUI({
                      inputId = "intervention_exposure",
                      label = tags$span("Select reviews looking at interventions or risk/protective factos, and the intervention classification:",
                                        actionButton("int_exposure_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(intervention_exposure),
+                     choices = create_tree(intervention_exposure_for_tree),
                      selected = NULL,
                      returnValue = "text",
                      closeDepth = 0

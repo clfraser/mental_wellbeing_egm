@@ -41,33 +41,6 @@ df_source <- rbind(df_quant, df_qual)
 df_source <- df_source %>% 
   clean_names()
 
-# Come back to this - why is it needed?
-
-## add whitespace to exposure and outcome variables to make all same length
-#max_exp_char <- max(nchar(df$exposure_domain))
-#max_out_char <- max(nchar(df$outcome_definition))
-
-
-#df <- df %>% 
-#mutate(exposure_definition = str_pad(exposure_definition,max_exp_char,"Exposure and intervention"),
-#       outcome_definition = str_pad(outcome_definition,max_exp_char,"Exposure and intervention"))
-
-
-
-## EGM specification: ----------------------------------------------------------
-# Columns - Outcomes of interest 
-# Rows    - Exposures or interventions of interest 
-# Colour  - Review or primary study (fixed for now)
-# Size    - fixed
-# Shape   - Study quality
-# Filters - Exposure or intervention
-#         - Exposure domain
-#         - Age bands (or CYP or adult)
-#         - Gender 
-#         - Geographical location - e.g. Scotland/UK/EU/High income 
-#         - Effect direction 
-## -----------------------------------------------------------------------------
-
 # Pivot to create a subdomain column from the current separate subdomain columns
 # Drop rows where subdomain is NA and change domain to sentence case
 # Create a column to code for exposure, intervention or Exposure and intervention
@@ -154,6 +127,7 @@ df_separated <- df_separated %>%
   add_row(domain = "Structural", subdomain = "Societal optimism", overall_outcome = "Self-harm", dummy = 1) %>%
   add_row(domain = "Structural", subdomain = "Exposure to harm", overall_outcome = "Self-harm", dummy = 1) %>%
   mutate(overall_outcome = factor(overall_outcome, levels = c("Self-harm", "Outcome category 2", "Outcome category 3")),
+         domain = factor(domain, levels = c("Individual", "Family and friends", "Learning environment", "Community", "Structural")),
          subdomain = factor(subdomain, levels = c("Health behaviours", "Physical health", "Mental health", "Social media use", "Body image", "Perinatal environment", "Early development", "Intrinsic characteristics", "Family relations", "Parental health", "Peer and friend relationships", "Engagement with learning", "Educational environment", "Pressure and expectations", "Respect of young people", "Engagement in local activities", "Social support", "Safety", "Belonging", "Equality", "Poverty and material deprivation", "Social inclusion", "Stigma and discrimination", "Physical environment", "Societal optimism", "Exposure to harm", "Other (Individual)", "Other (Family and friends)", "Other (Learning environment)", "Other (Community)", "Other (Structural)")))
 
 # Filter out qualitative reviews, because these will be displayed separately
