@@ -137,11 +137,12 @@ df_separated <- df_separated %>%
 # Gather data to show in table
 # Filter out dummy rows
 df_table <- df_separated %>%
-  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, other_sub_population_characteristics, -sub_population_mental_health_characteristics, -study_setting, -design_of_reviewed_studies, -comparator_details))) %>%
+  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -sub_population, -other_sub_population_characteristics, -sub_population_mental_health_characteristics, -study_setting, -design_of_reviewed_studies, -comparator_details))) %>%
   summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
             subdomain= paste(unique(subdomain), collapse="; "),
             intervention_or_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
             intervention_classification = paste(unique(intervention_classification), collapse = "; "),
+            sub_population = paste(unique(sub_population), collapse = "; "),
             other_sub_population_characteristics = paste(unique(other_sub_population_characteristics), collapse = "; "),
             sub_population_mental_health_characteristics = paste(unique(sub_population_mental_health_characteristics), collapse = "; "),
             study_setting = paste(unique(study_setting), collapse = "; "),
