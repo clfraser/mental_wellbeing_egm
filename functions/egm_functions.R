@@ -2,15 +2,28 @@
 
 #### function for creating egm plot --------------------------------------------
 
+# Define full dataframe (can't seem to define filtered dataframe since it's reactive)
+
+full_dataframe <- reviews_chart %>%
+                  mutate(selected = if_else(dummy == 0, 1, 0))
+
 # Reset filters when button clicked
 # Reset from the shinyjs package doesn't reset the tree (nested) checkboxes, so add these separately
 
 observeEvent(input$clear_all_filters_top, {
   shinyjs::reset("filter_panel")
+  updateTreeInput(inputId = "outcome",
+                  selected = character(0))
+  updateTreeInput(inputId = "domains",
+                  selected = character(0))
+  updateTreeInput(inputId = "pop_age",
+                  selected = character(0))
   updateTreeInput(inputId = "pop_characteristics",
                   selected = character(0))
   updateTreeInput(inputId = "intervention_exposure",
                   selected = character(0))
+  
+  chart_data(full_dataframe)
 })
 
 ## Show modals with definitions for filter options
@@ -65,30 +78,37 @@ observeEvent(input$quality_appraisal_defs, {defs_topic_modal("Quality appraisal"
 observeEvent(input$pre_reg_defs, {defs_topic_modal("Pre-registration")})
 observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of reviewed literature)")})
 
-# Filtered dataframe
-# Create when the app starts (using the ignoreNULL = FALSE argument), and then only update when the Update filter button is pressed
+# Create a reactive value for chart data and set it as the full dataframe initially
 
-filtered <- eventReactive(list(input$filter_update_top, input$filter_update_bottom), {
-  reviews_chart %>%
-    mutate(outcomes_filter = if(is.null(input$outcome)) TRUE else if_else(outcome_definition %in% input$outcome, TRUE, FALSE),
-           age_filter = if(is.null(input$pop_age)) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
-           sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
-           study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
-           int_exposure_filter = if(is.null(input$intervention_exposure)) TRUE else if_else(("Risk/protective factor" %in% input$intervention_exposure & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention"), TRUE, FALSE),
-           synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
-           qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
-           pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
-           design_filter = if(is.null(input$study_design_input)) TRUE else if_else(design_of_reviewed_studies %in% input$study_design_input, TRUE, FALSE),
-           selected = if_else(outcomes_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter +
-                                qual_appraisal_filter + pre_reg_filter + design_filter + dummy == 9, 1, 0)) # All of the filter checks are true, but the record isn't a dummy one
-}, ignoreNULL = FALSE)
+chart_data <- reactiveVal()
+chart_data(full_dataframe)
+
+# Filtered dataframe
+
+observeEvent(input$filter_update_top, {
+  chart_data(reviews_chart %>%
+               mutate(outcomes_filter = if(is.null(input$outcome) | "Any form of self-injurious thoughts and behaviours" %in% input$outcome) TRUE else if_else(outcome_definition %in% input$outcome, TRUE, FALSE),
+                      domains_filter = if(is.null(input$domains)) TRUE else if_else(subdomain %in% input$domains, TRUE, FALSE),
+                      age_filter = if(is.null(input$pop_age) | "All ages" %in% input$pop_age) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
+                      sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
+                      study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
+                      int_exposure_filter = if(is.null(input$intervention_exposure)) TRUE else if_else(("Risk/protective factor" %in% input$intervention_exposure & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention"), TRUE, FALSE),
+                      synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
+                      qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
+                      pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
+                      design_filter = if(is.null(input$study_design_input)) TRUE else if_else(design_of_reviewed_studies %in% input$study_design_input, TRUE, FALSE),
+                      selected = if_else(outcomes_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter +
+                                           qual_appraisal_filter +
+                                           pre_reg_filter +
+                                           design_filter + domains_filter + dummy == 10, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+  })
 
 # Create a reactive value to keep the map selection
 map_selection <- reactiveVal()
 
 output$egm <- renderReactable({
   ## create EGM plot    
-  grouped <- filtered() %>%
+  grouped <- chart_data() %>%
     group_by(domain, subdomain, overall_outcome, intervention_exposure_short) %>%
     summarise(count = length(unique(covidence_number[selected == 1]))) %>% # Count the covidence numbers (unique IDs) for studies that have been selected
     ungroup()
@@ -193,15 +213,15 @@ observe({
   }
 })
 
+# Get click details from map
+
+outcome_click <- reactive({sub("_", "-", sub("\\..*", "", map_selection()$outcome_and_type))})
+type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))})
 
 table_data <- reactive({
   
-  outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
-  outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))
-  
   only_selected <-
-    filtered() %>%
+    chart_data() %>%
     filter(selected == 1)
   
   if(is.null(map_selection()) | is.na(is.null(map_selection()))){
@@ -215,20 +235,13 @@ table_data <- reactive({
            filter(covidence_number %in% only_selected$covidence_number) %>%
            arrange(study_id) %>%
            filter(str_detect(subdomain, input$click_details$subdomain) &
-                    overall_outcome == outcome_click &
-                    str_detect(intervention_or_exposure, type_click)) %>%
+                    overall_outcome == outcome_click() &
+                    str_detect(intervention_or_exposure, type_click())) %>%
            dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI)
   )
 })
 
 # Output
-
-output$print_click_details <- reactive({
-  outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
-  outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))
-})
-
 
 output$data <- renderReactable({
   
@@ -239,7 +252,7 @@ output$data <- renderReactable({
       searchable = TRUE,
       resizable = TRUE,
       filterable = TRUE,
-      height = 5000,
+      height = 1000,
       defaultColDef = colDef(
         minWidth = 200),
       rowStyle = function(index) {
@@ -287,16 +300,12 @@ output$data <- renderReactable({
 })
 
 
-# Note: Rewrite code to only get click details once and use in multiple expressions
 output$print_click_details <- renderUI({
-  outcome_extract <- sub("\\..*", "", map_selection()$outcome_and_type)
-  outcome_click <- sub("_", "-", outcome_extract) # The outcome has an underscore in the original but we need it to have a hyphen for filtering
-  type_click <- sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))
   
   if(!length(map_selection())){
     return("No selection from EGM")
   }
-  return(HTML(paste0("From the EGM, you have selected:", "<br/>", "  Subdomain: ", map_selection()$subdomain, "<br/>", "  Outcome: ", outcome_click, "<br/>", "  Type: ", type_click)))
+  return(HTML(paste0("From the EGM, you have selected:", "<br/>", "  Subdomain: ", map_selection()$subdomain, "<br/>", "  Outcome: ", outcome_click(), "<br/>", "  Type: ", type_click())))
   
 })
 
