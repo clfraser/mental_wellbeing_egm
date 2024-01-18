@@ -43,6 +43,18 @@ output$page_1_ui <-  renderUI({
                      closeDepth = 0
                    ),
                    
+                   # Domains and sub-domains
+                   treeInput(
+                     inputId = "domains",
+                     label = tags$span(
+                       "Select domain and sub-domain", 
+                       actionButton("domains_defs", "", icon = icon("circle-info"))),
+                     choices = create_tree(domains_subs_for_tree),
+                     selected = NULL,
+                     returnValue = "text",
+                     closeDepth = 0
+                   ),
+                   
                    # Population age
                    treeInput(
                      inputId = "pop_age",
@@ -150,7 +162,6 @@ output$page_1_ui <-  renderUI({
                     id = "tabset",
                     tabPanel("EGM", reactableOutput("egm", height = 1800, width = 1800), value = "graph"),
                     tabPanel("Table",
-                             htmlOutput("print_click_details"),
                              linebreaks(1),
                              # Action button to clear click from map
                              actionButton(
