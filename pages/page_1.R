@@ -40,7 +40,7 @@ output$page_1_ui <-  renderUI({
                      choices = create_tree(sub_outcomes_for_tree),
                      selected = NULL,
                      returnValue = "text",
-                     closeDepth = 0
+                     closeDepth = 2
                    ),
                    
                    # Domains and sub-domains
@@ -52,7 +52,18 @@ output$page_1_ui <-  renderUI({
                      choices = create_tree(domains_subs_for_tree),
                      selected = NULL,
                      returnValue = "text",
-                     closeDepth = 0
+                     closeDepth = 1
+                   ),
+                   
+                   # Intervention or exposure and intervention classification
+                   treeInput(
+                     inputId = "intervention_exposure",
+                     label = tags$span("Select reviews looking at interventions or risk/protective factors, and the intervention classification:",
+                                       actionButton("int_exposure_defs", "", icon = icon("circle-info"))),
+                     choices = create_tree(intervention_exposure_for_tree),
+                     selected = NULL,
+                     returnValue = "text",
+                     closeDepth = 1
                    ),
                    
                    # Population age
@@ -84,17 +95,6 @@ output$page_1_ui <-  renderUI({
                                        actionButton("study_setting_defs", "", icon = icon("circle-info"))),
                      choices = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres"),
                      selected = NULL
-                   ),
-                   
-                   # Intervention or exposure and intervention classification
-                   treeInput(
-                     inputId = "intervention_exposure",
-                     label = tags$span("Select reviews looking at interventions or risk/protective factos, and the intervention classification:",
-                                       actionButton("int_exposure_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(intervention_exposure_for_tree),
-                     selected = NULL,
-                     returnValue = "text",
-                     closeDepth = 0
                    ),
                    
                    # Type of synthesis
@@ -163,12 +163,8 @@ output$page_1_ui <-  renderUI({
                     tabPanel("EGM", reactableOutput("egm", height = 1800, width = 1800), value = "graph"),
                     tabPanel("Table",
                              linebreaks(1),
-                             # Action button to clear click from map
-                             actionButton(
-                               "reset_map_selection",
-                               "Reset map selection"
-                             ),
-                             linebreaks(2),
+                             textOutput("record_count"),
+                             linebreaks(1),
                              p("Note: shaded rows indicate empty reviews"),
                              linebreaks(1),
                              csvDownloadButton("data", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)

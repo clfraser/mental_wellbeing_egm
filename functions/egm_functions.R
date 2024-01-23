@@ -2,10 +2,17 @@
 
 #### function for creating egm plot --------------------------------------------
 
+## Reactive values
+
 # Define full dataframe (can't seem to define filtered dataframe since it's reactive)
 
 full_dataframe <- reviews_chart %>%
                   mutate(selected = if_else(dummy == 0, 1, 0))
+
+# Create a reactive value for chart data and set it as the full dataframe initially
+
+chart_data <- reactiveVal()
+chart_data(full_dataframe)
 
 # Reset filters when button clicked
 # Reset from the shinyjs package doesn't reset the tree (nested) checkboxes, so add these separately
@@ -78,11 +85,6 @@ observeEvent(input$quality_appraisal_defs, {defs_topic_modal("Quality appraisal"
 observeEvent(input$pre_reg_defs, {defs_topic_modal("Pre-registration")})
 observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of reviewed literature)")})
 
-# Create a reactive value for chart data and set it as the full dataframe initially
-
-chart_data <- reactiveVal()
-chart_data(full_dataframe)
-
 # Filtered dataframe
 
 observeEvent(input$filter_update_top, {
@@ -102,9 +104,6 @@ observeEvent(input$filter_update_top, {
                                            pre_reg_filter +
                                            design_filter + domains_filter + dummy == 10, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
   })
-
-# Create a reactive value to keep the map selection
-map_selection <- reactiveVal()
 
 output$egm <- renderReactable({
   ## create EGM plot    
@@ -166,57 +165,77 @@ output$egm <- renderReactable({
                                           colors = '#d95f02',
                                           tooltip = TRUE,
                                           shape = "squares"
-                                        )),
-        Outcome_category_2.Risk_protective_factor = colDef(name = "",
-                                             vAlign = "top",
-                                             cell = bubble_grid_modified(
-                                               data = .,
-                                               colors = '#1b9e77',
-                                               tooltip = TRUE
-                                             )),
-        Outcome_category_2.Intervention = colDef(name = "",
-                                                 vAlign = "bottom",
-                                                 cell = bubble_grid_modified(
-                                                   data = .,
-                                                   colors = '#d95f02',
-                                                   tooltip = TRUE,
-                                                   shape = "squares"
-                                                 )),
-        Outcome_category_3.Risk_protective_factor = colDef(name = "",
-                                             vAlign = "top",
-                                             cell = bubble_grid_modified(
-                                               data = .,
-                                               colors = '#7570b3',
-                                               tooltip = TRUE,
-                                               shape = "triangles"
-                                             )),
-        Outcome_category_3.Intervention = colDef(name = "",
-                                                 vAlign = "bottom",
-                                                 cell = bubble_grid_modified(
-                                                   data = .,
-                                                   colors = '#d95f02',
-                                                   tooltip = TRUE,
-                                                   shape = "squares"
-                                                 ))
+                                        ))
+        #,
+        # Outcome_category_2.Risk_protective_factor = colDef(name = "",
+        #                                      vAlign = "top",
+        #                                      cell = bubble_grid_modified(
+        #                                        data = .,
+        #                                        colors = '#1b9e77',
+        #                                        tooltip = TRUE
+        #                                      )),
+        # Outcome_category_2.Intervention = colDef(name = "",
+        #                                          vAlign = "bottom",
+        #                                          cell = bubble_grid_modified(
+        #                                            data = .,
+        #                                            colors = '#d95f02',
+        #                                            tooltip = TRUE,
+        #                                            shape = "squares"
+        #                                          )),
+        # Outcome_category_3.Risk_protective_factor = colDef(name = "",
+        #                                      vAlign = "top",
+        #                                      cell = bubble_grid_modified(
+        #                                        data = .,
+        #                                        colors = '#7570b3',
+        #                                        tooltip = TRUE,
+        #                                        shape = "triangles"
+        #                                      )),
+        # Outcome_category_3.Intervention = colDef(name = "",
+        #                                          vAlign = "bottom",
+        #                                          cell = bubble_grid_modified(
+        #                                            data = .,
+        #                                            colors = '#d95f02',
+        #                                            tooltip = TRUE,
+        #                                            shape = "squares"
+        #                                          ))
       ),
       columnGroups = list(
-        colGroup(name = "Self-harm", columns = c("Self_harm.Risk_protective_factor", "Self_harm.Intervention")),
-        colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Risk_protective_factor", "Outcome_category_2.Intervention")),
-        colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Risk_protective_factor", "Outcome_category_3.Intervention"))
+        colGroup(name = "Self-harm", columns = c("Self_harm.Risk_protective_factor", "Self_harm.Intervention"))
+        # ,
+        # colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Risk_protective_factor", "Outcome_category_2.Intervention")),
+        # colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Risk_protective_factor", "Outcome_category_3.Intervention"))
       )
     )
 })
 
-observe({
-  if(!is.null(input$click_details)){
-  map_selection(input$click_details)
-  }
-})
-
 # Get click details from map
 
-outcome_click <- reactive({sub("_", "-", sub("\\..*", "", map_selection()$outcome_and_type))})
-type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", map_selection()$outcome_and_type))})
+outcome_click <- reactive({sub("_", "-", sub("\\..*", "", input$click_details$outcome_and_type))})
+type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", input$click_details$outcome_and_type))})
+
+# When the map is clicked, select the relevant filters and then filter the dataframe
+
+observeEvent(input$click_details, {
+  updateTreeInput(inputId = "outcome",
+                  selected = "Any form of self-injurious thoughts and behaviours") # When there is more than one outcome, this will need to change
+  updateTreeInput(inputId = "domains",
+                  selected = input$click_details$subdomain)
+  updateTreeInput(inputId = "intervention_exposure",
+                  selected = type_click())
+  chart_data(reviews_chart %>%
+               mutate(outcomes_filter = TRUE, # Would need to be more sophisticated if other outcomes
+                      domains_filter = if_else(subdomain %in% input$click_details$subdomain, TRUE, FALSE),
+                      int_exposure_filter = if_else(("Risk/protective factor" %in% type_click() & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% type_click() & intervention_exposure_short == "Intervention"), TRUE, FALSE),
+                      age_filter = if(is.null(input$pop_age) | "All ages" %in% input$pop_age) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
+                      sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
+                      study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
+                      synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
+                      qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
+                      pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
+                      design_filter = if(is.null(input$study_design_input)) TRUE else if_else(design_of_reviewed_studies %in% input$study_design_input, TRUE, FALSE),
+                      selected = if_else(outcomes_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter + qual_appraisal_filter + pre_reg_filter + design_filter + domains_filter +
+                                          dummy == 10, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+})
 
 table_data <- reactive({
   
@@ -224,21 +243,10 @@ table_data <- reactive({
     chart_data() %>%
     filter(selected == 1)
   
-  if(is.null(map_selection()) | is.na(is.null(map_selection()))){
-    return(reviews_table %>%
+  reviews_table %>%
              filter(covidence_number %in% only_selected$covidence_number) %>%
              dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI) %>%
-             arrange(study_id))
-  }
-  
-  return(reviews_table %>%
-           filter(covidence_number %in% only_selected$covidence_number) %>%
-           arrange(study_id) %>%
-           filter(str_detect(subdomain, input$click_details$subdomain) &
-                    overall_outcome == outcome_click() &
-                    str_detect(intervention_or_exposure, type_click())) %>%
-           dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI)
-  )
+             arrange(study_id)
 })
 
 # Output
@@ -300,13 +308,8 @@ output$data <- renderReactable({
 })
 
 
-output$print_click_details <- renderUI({
-  
-  if(!length(map_selection())){
-    return("No selection from EGM")
-  }
-  return(HTML(paste0("From the EGM, you have selected:", "<br/>", "  Subdomain: ", map_selection()$subdomain, "<br/>", "  Outcome: ", outcome_click(), "<br/>", "  Type: ", type_click())))
-  
+output$record_count <- renderText({
+  paste(nrow(table_data()), "records returned")
 })
 
 # Switch tabset panel on click
@@ -315,6 +318,3 @@ observeEvent(input$click_details, {
   # use tabsetPanel 'id' argument to change tabs
   updateTabsetPanel(session, "tabset", selected = "table")
 })
-
-# Clear map selection when button pressed
-observeEvent(input$reset_map_selection, map_selection(NULL))
