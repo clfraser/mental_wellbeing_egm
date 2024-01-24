@@ -74,7 +74,7 @@ output$page_1_ui <-  renderUI({
                      choices = create_tree(age_for_tree),
                      selected = NULL,
                      returnValue = "text",
-                     closeDepth = 0
+                     closeDepth = 1
                    ),
                    
                    # Population characteristics
@@ -85,7 +85,7 @@ output$page_1_ui <-  renderUI({
                      choices = create_tree(sub_population_for_tree),
                      selected = NULL,
                      returnValue = "text",
-                     closeDepth = 0
+                     closeDepth = 1
                    ),
                    
                    # Study setting
@@ -122,21 +122,6 @@ output$page_1_ui <-  renderUI({
                                        actionButton("pre_reg_defs", "", icon = icon("circle-info"))),
                      choices = c("Yes","No"),
                      selected = "No"
-                   ),
-                   
-                   # Study design of reviewed studies
-                   checkboxGroupInput(
-                     inputId = "study_design_input",
-                     label = tags$span("Select study design of reviewed studies:",
-                                       actionButton("study_design_defs", "", icon = icon("circle-info"))),
-                     choices = c("Grey literature", "Longitudinal designs", "Non-randomised control trials", "Randomised control trials", "Other quantitative designs", "Reviews", "Qualitative designs", "Other", "Not reported"),
-                     selected = NULL
-                   ),
-                   
-                   # Action button to update filters
-                   actionButton(
-                     "filter_update_bottom",
-                     "Apply filters"
                    )
                    
       ), # sidebar panel

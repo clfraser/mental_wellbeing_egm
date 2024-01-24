@@ -98,11 +98,9 @@ observeEvent(input$filter_update_top, {
                       synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
                       qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
                       pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
-                      design_filter = if(is.null(input$study_design_input)) TRUE else if_else(design_of_reviewed_studies %in% input$study_design_input, TRUE, FALSE),
-                      selected = if_else(outcomes_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter +
+                      selected = if_else(outcomes_filter + domains_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter +
                                            qual_appraisal_filter +
-                                           pre_reg_filter +
-                                           design_filter + domains_filter + dummy == 10, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+                                           pre_reg_filter  + dummy == 9, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
   })
 
 output$egm <- renderReactable({
@@ -225,16 +223,15 @@ observeEvent(input$click_details, {
   chart_data(reviews_chart %>%
                mutate(outcomes_filter = TRUE, # Would need to be more sophisticated if other outcomes
                       domains_filter = if_else(subdomain %in% input$click_details$subdomain, TRUE, FALSE),
-                      int_exposure_filter = if_else(("Risk/protective factor" %in% type_click() & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% type_click() & intervention_exposure_short == "Intervention"), TRUE, FALSE),
+                      int_exposure_filter = if_else((type_click() == "Risk/protective factor" & intervention_exposure_short == "Risk/protective factor") | (type_click() == "Intervention" & intervention_exposure_short == "Intervention"), TRUE, FALSE),
                       age_filter = if(is.null(input$pop_age) | "All ages" %in% input$pop_age) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
                       sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
                       study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
                       synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
                       qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
                       pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
-                      design_filter = if(is.null(input$study_design_input)) TRUE else if_else(design_of_reviewed_studies %in% input$study_design_input, TRUE, FALSE),
-                      selected = if_else(outcomes_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter + qual_appraisal_filter + pre_reg_filter + design_filter + domains_filter +
-                                          dummy == 10, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+                      selected = if_else(outcomes_filter + domains_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter + qual_appraisal_filter + pre_reg_filter +
+                                          dummy == 9, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
 })
 
 table_data <- reactive({
@@ -309,7 +306,7 @@ output$data <- renderReactable({
 
 
 output$record_count <- renderText({
-  paste(nrow(table_data()), "records returned")
+  paste("Number of unique reviews:", nrow(table_data()))
 })
 
 # Switch tabset panel on click
