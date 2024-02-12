@@ -55,7 +55,6 @@ df_pivot <- df_source %>%
                                                  str_detect(intervention_or_exposure, "Intervention") ~ "Intervention",
                                                  intervention_or_exposure == "Attitudes" ~ "Attitudes"),
          outcome_definition = str_replace(outcome_definition, "SITB", "self-injurous thoughts and behaviours"),
-         type_of_review = paste0(type_of_review, " (", review_type, ")"),
          sub_population_mental_health_characteristics = sub("\\s\\((.*)\\)\\?", "", sub_population_mental_health_characteristics)) # Take out text in brackets in one of the sub-population descriptions
 
 
@@ -84,7 +83,8 @@ df_separated <- df_pivot %>%
                                         !is.na(other_sub_population_characteristics) ~ "Other sub-population characteristics"),
          sub_population = case_when(!is.na(sub_population_mental_health_characteristics) ~ sub_population_mental_health_characteristics,
                                     !is.na(other_sub_population_characteristics) ~ other_sub_population_characteristics,
-                                    TRUE ~ NA))
+                                    TRUE ~ NA),
+         sub_population = gsub("Other: ", "", sub_population)) # If the sub-population starts with 'Other', remove this
 
 # Add in some dummy outcomes for display purposes
 df_separated <- df_separated %>%
