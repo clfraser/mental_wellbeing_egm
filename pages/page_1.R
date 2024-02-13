@@ -3,6 +3,7 @@
 output$page_1_ui <-  renderUI({
   
   fluidPage(
+    use_cicerone(), # Include Cicerone to give a guide of the page
     # Set checkbox colour
     tags$head(tags$style("input[type=checkbox] { accent-color: DodgerBlue; }")),
     ## Page titles
@@ -102,7 +103,7 @@ output$page_1_ui <-  renderUI({
                      inputId = "synth_type_input",
                      label = tags$span("Select type of synthesis:",
                                        actionButton("synth_type_defs", "", icon = icon("circle-info"))),
-                     choices = c("Systematic review with meta-analysis (Quantitative)", "Systematic review with narrative synthesis (Quantitative)", "Other review with narrative synthesis (Quantitative)", "Other: Scoping evidence mapping (Quantitative)"),
+                     choices = c("Systematic review with meta-analysis", "Systematic review with narrative synthesis", "Other review with narrative synthesis", "Scoping evidence mapping"),
                      selected = NULL
                    ),
                    
@@ -127,38 +128,23 @@ output$page_1_ui <-  renderUI({
       ), # sidebar panel
       ## Main panel for displaying outputs ----
       mainPanel(
-        # Add in message when data is loading
-        tags$head(tags$style(type="text/css", "
-             #loadmessage {
-               position: fixed;
-               top: 50px;
-               left: 0px;
-               width: 100%;
-               padding: 5px 0px 5px 0px;
-               text-align: center;
-               font-weight: bold;
-               font-size: 100%;
-               color: #000000;
-               background-color: #4B999D;
-               z-index: 105;
-             }
-          ")),
         tabsetPanel(type = "tabs",
                     id = "tabset",
-                    tabPanel("EGM", reactableOutput("egm", height = 1800, width = 1800), value = "graph"),
+                    tabPanel("EGM",
+                             linebreaks(1),
+                             actionButton("show_egm_numbers", "See EGM as a table"),
+                             linebreaks(2),
+                             withNavySpinner(reactableOutput("egm")), value = "graph"),
                     tabPanel("Table",
                              linebreaks(1),
                              textOutput("record_count"),
                              linebreaks(1),
                              p("Note: shaded rows indicate empty reviews"),
                              linebreaks(1),
-                             csvDownloadButton("data", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
-                             reactableOutput("data"),
+                             csvDownloadButton("reviews_table", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
+                             withNavySpinner(reactableOutput("reviews_table")),
                              value = "table"))) # For switching tabs on click
-    ),
-    # Panel to show when map etc. is loading
-    conditionalPanel(condition="$('html').hasClass('shiny-busy')",
-                     tags$div("Loading...",id="loadmessage"))
+    )
   )# Sidebar layout
 }) # renderUI
 
