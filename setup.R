@@ -10,6 +10,7 @@ library(reactablefmtr)
 library(tippy)
 library(shinyjs)
 library(shinyBS)
+library(cicerone)
 
 # Data wrangling packages ----
 library(tidyverse)
@@ -59,3 +60,15 @@ yaxis_plots <- list(title = FALSE, rangemode="tozero", fixedrange=TRUE, size = 4
 bttn_remove <-  list('select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d',
                      'autoScale2d',   'toggleSpikelines',  'hoverCompareCartesian',
                      'hoverClosestCartesian')
+
+# Home list for introduction tab
+
+home_list<- c("About"= "about",
+              "Using the dashboard"= "use",
+              "Accessibility"= "accessibility",
+              "Last updated" = "last_updated",
+              "Contact us"= "contact")
+
+# Set navy colour
+
+navy <- "#010068"
