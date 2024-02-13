@@ -649,11 +649,16 @@ bubble_grid_modified <- function(data,
 }
 
 # CSV download button for table
-# Make the separator a pipe, because there are commas in the data
 
 csvDownloadButton <- function(id, filename = "data.csv", label = "Download as CSV") {
   tags$button(
     tagList(icon("download"), label),
-    onclick = sprintf("Reactable.downloadDataCSV('%s', '%s', {sep: '\t'})", id, filename)
+    onclick = sprintf("Reactable.downloadDataCSV('%s', '%s')", id, filename)
   )
+}
+
+# Show a navy navigation spinner
+
+withNavySpinner <- function(out){
+  withSpinner(out, color = navy)
 }
