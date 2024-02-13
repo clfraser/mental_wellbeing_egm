@@ -1,5 +1,10 @@
 ####################### EGM functions #######################
 
+# source(file.path("functions/guided_tours.R"), local = TRUE)$value
+# 
+# # initialise then start the Cicerone guide
+# egm_guide$init()$start()
+
 #### function for creating egm plot --------------------------------------------
 
 ## Reactive values
@@ -103,33 +108,36 @@ observeEvent(input$filter_update_top, {
                                            pre_reg_filter  + dummy == 9, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
   })
 
-output$egm <- renderReactable({
-  ## create EGM plot    
-  grouped <- chart_data() %>%
+# Get data into the right format for the EGM
+count_pivot <- reactive({
+  chart_data() %>%
     group_by(domain, subdomain, overall_outcome, intervention_exposure_short) %>%
     summarise(count = length(unique(covidence_number[selected == 1]))) %>% # Count the covidence numbers (unique IDs) for studies that have been selected
-    ungroup()
-  
-  ## Create a reactable
-  
-  # Pivot data into the right format
-  count_pivot <- grouped %>%
+    ungroup() %>%
     mutate(overall_outcome = gsub(" |-", "_", overall_outcome),
            intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
     pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
     mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
     select(-Self_harm.NA) %>%
     arrange(domain)
+})
+
+# Create EGM plot
+
+output$egm <- renderReactable({
   
-  count_pivot %>%
+  ## Create a reactable
+  count_pivot() %>%
     reactable(
       defaultColDef = colDef(
         align = 'center',
-        maxWidth = 150),
+        width = 150),
       groupBy = "domain",
       defaultExpanded = TRUE,
       bordered = TRUE,
       striped = TRUE,
+      fullWidth = FALSE,
+      height = 2050,
       onClick = JS("function(rowInfo, column) {
         // Don't handle click events in the domain or subdomain columns
     if (column.id === 'domain' || column.id === 'subdomain') {
@@ -142,25 +150,25 @@ output$egm <- renderReactable({
   }"),
       columns = list(
         domain = colDef(name = "Domain",
-                        maxWidth = 150,
+                        width = 150,
                         # Render grouped cells without the row count
                         grouped = JS("function(cellInfo) {
                           return cellInfo.value
                           }")),
         subdomain = colDef(name = "Sub-domain",
-                           maxWidth = 150),
+                           width = 150),
         Self_harm.Risk_protective_factor = colDef(name = "",
                                     vAlign = "top",
                                     cell = bubble_grid_modified(
                                       data = .,
-                                      colors = '#1b9e77',
+                                      colors = '#3F3685',
                                       tooltip = TRUE
                                     )),
         Self_harm.Intervention = colDef(name = "",
                                         vAlign = "bottom",
                                         cell = bubble_grid_modified(
                                           data = .,
-                                          colors = '#d95f02',
+                                          colors = '#83BB26',
                                           tooltip = TRUE,
                                           shape = "squares"
                                         ))
@@ -246,9 +254,55 @@ table_data <- reactive({
              arrange(study_id)
 })
 
-# Output
+# Table with numbers for the EGM, rather than shapes
 
-output$data <- renderReactable({
+output$egm_numbers <- renderReactable({
+  count_pivot() %>%
+    reactable(
+      defaultColDef = colDef(
+        align = 'center',
+        width = 150),
+      groupBy = "domain",
+      defaultExpanded = TRUE,
+      bordered = TRUE,
+      striped = TRUE,
+      fullWidth = FALSE,
+      #height = 2050,
+      columns = list(
+        domain = colDef(name = "Domain",
+                        width = 150,
+                        # Render grouped cells without the row count
+                        grouped = JS("function(cellInfo) {
+                          return cellInfo.value
+                          }")),
+        subdomain = colDef(name = "Sub-domain",
+                           width = 150),
+        Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor",
+                                                  aggregate = "sum"),
+        Self_harm.Intervention = colDef(name = "Intervention",
+                                        aggregate = "sum")
+      ),
+      columnGroups = list(
+        colGroup(name = "Self-harm", columns = c("Self_harm.Risk_protective_factor", "Self_harm.Intervention"))
+      )
+    )
+})
+
+# Show numeric table on click
+
+observeEvent(input$show_egm_numbers, {
+  showModal(modalDialog(
+    title = "Evidence and gap map counts",
+    csvDownloadButton("egm_numbers", filename = "egm_counts.csv"), # To download table as a CSV (defined in core functions script)
+    linebreaks(1),
+    reactableOutput("egm_numbers"),
+    easyClose = TRUE,
+    size = "l"))
+})
+
+# Output data for table
+
+output$reviews_table <- renderReactable({
   
   table_no_dups <- unique(table_data())
   
@@ -262,7 +316,7 @@ output$data <- renderReactable({
         minWidth = 200),
       rowStyle = function(index) {
         if (table_no_dups[index, "empty_review"] == "Yes" & !is.na(table_no_dups[index, "empty_review"])) {
-          list(background = "rgba(0, 0, 0, 0.05)")
+          list(background = "rgba(210, 210, 210, 0.97)")
         }
       },
       columns = list(
@@ -304,6 +358,7 @@ output$data <- renderReactable({
     )
 })
 
+# Output the number of unique records
 
 output$record_count <- renderText({
   paste("Number of unique reviews:", nrow(table_data()))
