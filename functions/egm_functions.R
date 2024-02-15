@@ -1,9 +1,11 @@
 ####################### EGM functions #######################
 
-# source(file.path("functions/guided_tours.R"), local = TRUE)$value
-# 
-# # initialise then start the Cicerone guide
-# egm_guide$init()$start()
+# # initialise the Cicerone guide
+egm_guide$init()
+
+observeEvent(input$egm_guide_button, {
+  egm_guide$start()
+})
 
 #### function for creating egm plot --------------------------------------------
 
@@ -163,7 +165,8 @@ output$egm <- renderReactable({
                                       data = .,
                                       colors = '#3F3685',
                                       tooltip = TRUE
-                                    )),
+                                    ),
+                                    aggregate = "sum"),
         Self_harm.Intervention = colDef(name = "",
                                         vAlign = "bottom",
                                         cell = bubble_grid_modified(
@@ -171,7 +174,8 @@ output$egm <- renderReactable({
                                           colors = '#83BB26',
                                           tooltip = TRUE,
                                           shape = "squares"
-                                        ))
+                                        ),
+                                        aggregate = "sum")
         #,
         # Outcome_category_2.Risk_protective_factor = colDef(name = "",
         #                                      vAlign = "top",

@@ -17,8 +17,3 @@ output$glossary_table <- DT::renderDataTable({
 })
 
 output$glossary_table_simple <- renderTable(glossary_list)
-
-# Plotly plot example
-output$test_plot <- renderPlotly({
-  mtcars_plot(datasets::mtcars)
-})

@@ -72,3 +72,7 @@ home_list<- c("About"= "about",
 # Set navy colour
 
 navy <- "#010068"
+
+# Get Cicerone functions
+
+source(file.path("functions/guided_tours.R"), local = TRUE)$value

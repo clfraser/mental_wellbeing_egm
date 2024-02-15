@@ -1,9 +1,8 @@
 ####################### Page 1 UI #######################
 
-output$page_1_ui <-  renderUI({
-  
   fluidPage(
     use_cicerone(), # Include Cicerone to give a guide of the page
+    actionButton("egm_guide_button", "Click here for a guided tour of the page"),
     # Set checkbox colour
     tags$head(tags$style("input[type=checkbox] { accent-color: DodgerBlue; }")),
     ## Page titles
@@ -23,7 +22,7 @@ output$page_1_ui <-  renderUI({
                    ),
                    
                    # Action button to select all filter options
-                   actionButton(
+                     actionButton(
                      "clear_all_filters_top",
                      "Clear all"
                    ),
@@ -146,5 +145,3 @@ output$page_1_ui <-  renderUI({
                              value = "table"))) # For switching tabs on click
     )
   )# Sidebar layout
-}) # renderUI
-
