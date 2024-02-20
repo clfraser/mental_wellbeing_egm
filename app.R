@@ -12,7 +12,7 @@ source("setup.R")
 
 # UI
 ui <- 
-  # secure_app(
+  secure_app( # For password protection
   
   fluidPage(
 tagList(
@@ -90,7 +90,7 @@ tabPanel(title = "Useful links",
 ) # navbar
 ) # taglist
 ) # ui fluidpage
-# ) # Secure app, for password protection
+ ) # Secure app, for password protection
 
 # Server
 
