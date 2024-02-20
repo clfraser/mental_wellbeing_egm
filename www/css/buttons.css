@@ -232,3 +232,8 @@ color:white;
     font-weight:bold;
     outline: 0px !Important;
 }
+
+/* Any shape buttons inside an expanded class */
+.expanded-header .shape-button {
+  display: none !Important;
+}

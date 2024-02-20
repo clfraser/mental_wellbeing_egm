@@ -7,7 +7,7 @@
     tags$head(tags$style("input[type=checkbox] { accent-color: DodgerBlue; }")),
     ## Page titles
     titlePanel(
-      "Common mental health conditions in childhood"),
+      "Self-harm in children and young people"),
     ## Inputs
     sidebarLayout(
       sidebarPanel(width = 3,
@@ -30,7 +30,7 @@
                    linebreaks(2),
                    
                    # Filters
-                   
+                  div(id = "all_filters", # Create div for the Cicerone tour
                    # Sub-outcome definition
                    treeInput(
                      inputId = "outcome",
@@ -123,7 +123,7 @@
                      choices = c("Yes","No"),
                      selected = "No"
                    )
-                   
+                  ) #div
       ), # sidebar panel
       ## Main panel for displaying outputs ----
       mainPanel(

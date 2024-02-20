@@ -75,8 +75,8 @@ bubble_grid_modified <- function(data,
                                  colors = c("#15607A", "#FFFFFF", "#FA8C00"),
                                  color_ref = NULL,
                                  color_by = NULL,
-                                 min_value = 7, # Default changed
-                                 max_value = 50, # Default changed
+                                 min_value = 7, # Was 7
+                                 max_value = 70, # Was 50
                                  opacity = 1,
                                  bias = 1,
                                  number_fmt = NULL,
@@ -412,6 +412,7 @@ bubble_grid_modified <- function(data,
         htmltools::tagAppendChild(
           htmltools::tags$button(
             type = "button",
+            class = "shape-button",
             style = list(background = cell_color,
                          color = text_color,
                          display = display_var,
@@ -426,7 +427,8 @@ bubble_grid_modified <- function(data,
                          fontSize = text_size,
                          transition = animation,
                          clipPath = clippath,
-                         borderStyle = none)),
+                         borderStyle = none,
+                         padding = "0px")),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -437,6 +439,7 @@ bubble_grid_modified <- function(data,
         
         htmltools::tags$button(label,
                                type = "button",
+                               class = "shape-button",
                        style = list(background = cell_color,
                                     color = text_color,
                                     display = display_var,
@@ -451,7 +454,8 @@ bubble_grid_modified <- function(data,
                                     fontSize = text_size,
                                     transition = animation,
                                     clipPath = clippath,
-                                    borderStyle = "none"))
+                                    borderStyle = "none",
+                                    padding = "0px"))
       }
       
     } else if (brighten_text == TRUE & !is.null(text_color_ref) & show_text == TRUE) {
@@ -461,6 +465,7 @@ bubble_grid_modified <- function(data,
         htmltools::tagAppendChild(
           htmltools::tags$button(
             type = "button",
+            class = "shape-button",
             style = list(background = cell_color,
                          color = text_color,
                          display = display_var,
@@ -474,7 +479,8 @@ bubble_grid_modified <- function(data,
                          fontSize = text_size,
                          transition = animation,
                          clipPath = clippath,
-                         borderStyle = "none")),
+                         borderStyle = "none",
+                         padding = "0px")),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -485,6 +491,7 @@ bubble_grid_modified <- function(data,
         
         htmltools::tags$button(label,
                                type = "button",
+                               class = "shape-button",
                        style = list(background = cell_color,
                                     color = text_color,
                                     display = display_var,
@@ -498,7 +505,8 @@ bubble_grid_modified <- function(data,
                                     fontSize = text_size,
                                     transition = animation,
                                     clipPath = clippath,
-                                    borderStyle = "none"))
+                                    borderStyle = "none",
+                                    padding = "0px"))
       }
       
     } else if (brighten_text == FALSE & show_text == FALSE) {
@@ -508,6 +516,7 @@ bubble_grid_modified <- function(data,
         htmltools::tagAppendChild(
           htmltools::tags$button(
             type = "button",
+            class = "shape-button",
             style = list(background = cell_color,
                          display = display_var,
                          justifyContent = "center",
@@ -521,7 +530,8 @@ bubble_grid_modified <- function(data,
                          fontSize = text_size,
                          transition = animation,
                          clipPath = clippath,
-                         borderStyle = "none")),
+                         borderStyle = "none",
+                         padding = "0px")),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -532,6 +542,7 @@ bubble_grid_modified <- function(data,
         
         htmltools::tags$button(label,
                                type = "button",
+                               class = "shape-button",
                        style = list(background = cell_color,
                                     display = display_var,
                                     justifyContent = "center",
@@ -545,7 +556,8 @@ bubble_grid_modified <- function(data,
                                     fontSize = text_size,
                                     transition = animation,
                                     clipPath = clippath,
-                                    borderStyle = "none"))
+                                    borderStyle = "none",
+                                    padding = "0px"))
       }
       
     } else if (brighten_text == TRUE & show_text == FALSE) {
@@ -555,6 +567,7 @@ bubble_grid_modified <- function(data,
         htmltools::tagAppendChild(
           htmltools::tags$button(
             type = "button",
+            class = "shape-button",
             style = list(background = cell_color,
                          display = display_var,
                          justifyContent = "center",
@@ -568,7 +581,8 @@ bubble_grid_modified <- function(data,
                          fontSize = text_size,
                          transition = animation,
                          clipPath = clippath,
-                         borderStyle = "none")),
+                         borderStyle = "none",
+                         padding = "0px")),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -579,6 +593,7 @@ bubble_grid_modified <- function(data,
         
         htmltools::tags$button(label,
                                type = "button",
+                               class = "shape-button",
                        style = list(background = cell_color,
                                     display = display_var,
                                     justifyContent = "center",
@@ -592,7 +607,8 @@ bubble_grid_modified <- function(data,
                                     fontSize = text_size,
                                     transition = animation,
                                     clipPath = clippath,
-                                    borderStyle = "none"))
+                                    borderStyle = "none",
+                                    padding = "0px"))
       }
       
     } else {
@@ -602,6 +618,7 @@ bubble_grid_modified <- function(data,
         htmltools::tagAppendChild(
           htmltools::tags$button(
             type = "button",
+            class = "shape-button",
             style = list(background = cell_color,
                          color = font_color,
                          display = display_var,
@@ -616,7 +633,8 @@ bubble_grid_modified <- function(data,
                          fontSize = text_size,
                          transition = animation,
                          clipPath = clippath,
-                         borderStyle = "none")),
+                         borderStyle = "none",
+                         padding = "0px")),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -627,6 +645,7 @@ bubble_grid_modified <- function(data,
         
         htmltools::tags$button(label,
                                type = "button",
+                               class = "shape-button",
                        style = list(background = cell_color,
                                     color = font_color,
                                     display = display_var,
@@ -641,7 +660,8 @@ bubble_grid_modified <- function(data,
                                     fontSize = text_size,
                                     transition = animation,
                                     clipPath = clippath,
-                                    borderStyle = "none"))
+                                    borderStyle = "none",
+                                    padding = "0px"))
         
       }
     }
@@ -662,3 +682,16 @@ csvDownloadButton <- function(id, filename = "data.csv", label = "Download as CS
 withNavySpinner <- function(out){
   withSpinner(out, color = navy)
 }
+
+# Get click data
+
+get_click_data <- JS("function(rowInfo, column) {
+        // Don't handle click events in the domain or subdomain columns
+    if (column.id === 'domain' || column.id === 'subdomain') {
+      return
+    }
+    // Send the click event to Shiny, which will be available in input$click_details
+    if (window.Shiny) {
+      Shiny.setInputValue('click_details', { domain: rowInfo.values.domain, subdomain: rowInfo.values.subdomain, outcome_and_type: column.id }, { priority: 'event' })
+    }
+  }")

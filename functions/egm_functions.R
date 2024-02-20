@@ -121,103 +121,112 @@ count_pivot <- reactive({
     pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
     mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
     select(-Self_harm.NA) %>%
-    arrange(domain)
+    arrange(domain) %>%
+    mutate(padding = "") %>%
+    relocate(padding)
+})
+
+# Create aggregated EGM table
+
+egm_aggregated_count <- reactive({
+  chart_data() %>%
+    group_by(domain, overall_outcome, intervention_exposure_short) %>%
+    summarise(count = length(unique(covidence_number[selected == 1]))) %>% # Count the covidence numbers (unique IDs) for studies that have been selected
+    ungroup() %>%
+    mutate(overall_outcome = gsub(" |-", "_", overall_outcome),
+           intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
+    pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
+    mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
+    select(-Self_harm.NA) %>%
+    arrange(domain) %>%
+    mutate(subdomain = "") %>%
+    relocate(subdomain, .after = domain)
+})
+
+# Create table with both aggregated and disaggregated data
+
+egm_agg_disag <- reactive({
+  count_pivot() %>%
+    select(-padding) %>%
+    rbind(egm_aggregated_count())
 })
 
 # Create EGM plot
 
 output$egm <- renderReactable({
-  
-  ## Create a reactable
-  count_pivot() %>%
-    reactable(
-      defaultColDef = colDef(
-        align = 'center',
-        width = 150),
-      groupBy = "domain",
-      defaultExpanded = TRUE,
-      bordered = TRUE,
-      striped = TRUE,
-      fullWidth = FALSE,
-      height = 2050,
-      onClick = JS("function(rowInfo, column) {
-        // Don't handle click events in the domain or subdomain columns
-    if (column.id === 'domain' || column.id === 'subdomain') {
-      return
-    }
-    // Send the click event to Shiny, which will be available in input$click_details
-    if (window.Shiny) {
-      Shiny.setInputValue('click_details', { subdomain: rowInfo.values.subdomain, outcome_and_type: column.id }, { priority: 'event' })
-    }
-  }"),
-      columns = list(
-        domain = colDef(name = "Domain",
-                        width = 150,
-                        # Render grouped cells without the row count
-                        grouped = JS("function(cellInfo) {
-                          return cellInfo.value
-                          }")),
-        subdomain = colDef(name = "Sub-domain",
-                           width = 150),
-        Self_harm.Risk_protective_factor = colDef(name = "",
-                                    vAlign = "top",
-                                    cell = bubble_grid_modified(
-                                      data = .,
-                                      colors = '#3F3685',
-                                      tooltip = TRUE
-                                    ),
-                                    aggregate = "sum"),
-        Self_harm.Intervention = colDef(name = "",
-                                        vAlign = "bottom",
-                                        cell = bubble_grid_modified(
-                                          data = .,
-                                          colors = '#83BB26',
-                                          tooltip = TRUE,
-                                          shape = "squares"
-                                        ),
-                                        aggregate = "sum")
-        #,
-        # Outcome_category_2.Risk_protective_factor = colDef(name = "",
-        #                                      vAlign = "top",
-        #                                      cell = bubble_grid_modified(
-        #                                        data = .,
-        #                                        colors = '#1b9e77',
-        #                                        tooltip = TRUE
-        #                                      )),
-        # Outcome_category_2.Intervention = colDef(name = "",
-        #                                          vAlign = "bottom",
-        #                                          cell = bubble_grid_modified(
-        #                                            data = .,
-        #                                            colors = '#d95f02',
-        #                                            tooltip = TRUE,
-        #                                            shape = "squares"
-        #                                          )),
-        # Outcome_category_3.Risk_protective_factor = colDef(name = "",
-        #                                      vAlign = "top",
-        #                                      cell = bubble_grid_modified(
-        #                                        data = .,
-        #                                        colors = '#7570b3',
-        #                                        tooltip = TRUE,
-        #                                        shape = "triangles"
-        #                                      )),
-        # Outcome_category_3.Intervention = colDef(name = "",
-        #                                          vAlign = "bottom",
-        #                                          cell = bubble_grid_modified(
-        #                                            data = .,
-        #                                            colors = '#d95f02',
-        #                                            tooltip = TRUE,
-        #                                            shape = "squares"
-        #                                          ))
-      ),
-      columnGroups = list(
-        colGroup(name = "Self-harm", columns = c("Self_harm.Risk_protective_factor", "Self_harm.Intervention"))
-        # ,
-        # colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Risk_protective_factor", "Outcome_category_2.Intervention")),
-        # colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Risk_protective_factor", "Outcome_category_3.Intervention"))
-      )
-    )
-})
 
+reactable(
+  egm_aggregated_count(),
+  # Only show shapes in header rows when they are expanded. See buttons.css for the CSS.
+  rowClass = JS("function(rowInfo) {if (rowInfo.expanded == true) {
+                                    return 'expanded-header'
+                                    }}"),
+  defaultColDef = colDef(
+    align = 'center',
+    width = 150),
+  bordered = TRUE,
+  fullWidth = FALSE,
+  sortable = FALSE,
+  defaultExpanded = TRUE,
+  onClick = get_click_data, # Function defined in core functions
+  theme = reactableTheme(backgroundColor = "#BCD9DA"),
+  columns = list(
+    domain = colDef(name = "Domain"),
+    subdomain = colDef(name = "Sub-domain"),
+    Self_harm.Intervention = colDef(name = "Intervention",
+                                    cell = bubble_grid_modified(
+                                      data = egm_agg_disag(),
+                                      colors = '#83BB26',
+                                      tooltip = TRUE,
+                                      shape = "squares"
+                                    )),
+    Self_harm.Risk_protective_factor = colDef(name = "Risk/preventative factor",
+                           cell = bubble_grid_modified(
+                             data = egm_agg_disag(),
+                             colors = '#3F3685',
+                             tooltip = TRUE
+                           ))
+  ),
+  details = function(index) {
+    data_sub <- count_pivot()[count_pivot()$domain == egm_aggregated_count()$domain[index], ]
+    reactable(data_sub,
+              defaultColDef = colDef(
+                align = 'center',
+                width = 150),
+              bordered = TRUE,
+              striped = TRUE,
+              fullWidth = FALSE,
+              sortable = FALSE,
+              class = "hidden-column-headers", # Use custom CSS in tables.css script. See: https://github.com/glin/reactable/issues/102
+              onClick = get_click_data, # Function defined in core functions
+              columns = list(
+                padding = colDef(name = "",
+                                 width = 44),
+                domain = colDef(name = "Domain",
+                                width = 150),
+                subdomain = colDef(name = "Sub-domain",
+                                   width = 150),
+                Self_harm.Intervention = colDef(name = "",
+                                                vAlign = "bottom",
+                                                cell = bubble_grid_modified(
+                                                  data = egm_agg_disag(),
+                                                  colors = '#83BB26',
+                                                  tooltip = TRUE,
+                                                  shape = "squares"
+                                                )),
+                Self_harm.Risk_protective_factor = colDef(name = "",
+                                                          vAlign = "top",
+                                                          cell = bubble_grid_modified(
+                                                            data = egm_agg_disag(),
+                                                            colors = '#3F3685',
+                                                            tooltip = TRUE
+                                                          ))
+              ))
+  }
+  
+)
+}) # renderReactable
+  
 # Get click details from map
 
 outcome_click <- reactive({sub("_", "-", sub("\\..*", "", input$click_details$outcome_and_type))})
@@ -229,12 +238,16 @@ observeEvent(input$click_details, {
   updateTreeInput(inputId = "outcome",
                   selected = "Any form of self-injurious thoughts and behaviours") # When there is more than one outcome, this will need to change
   updateTreeInput(inputId = "domains",
-                  selected = input$click_details$subdomain)
+                  selected = if_else(input$click_details$subdomain == "", input$click_details$domain, input$click_details$subdomain))
   updateTreeInput(inputId = "intervention_exposure",
                   selected = type_click())
   chart_data(reviews_chart %>%
                mutate(outcomes_filter = TRUE, # Would need to be more sophisticated if other outcomes
-                      domains_filter = if_else(subdomain %in% input$click_details$subdomain, TRUE, FALSE),
+                      domains_filter = 
+                        if (input$click_details$subdomain == "")
+                                if_else(domain %in% input$click_details$domain, TRUE, FALSE)
+                       else
+                                if_else(subdomain %in% input$click_details$subdomain, TRUE, FALSE),
                       int_exposure_filter = if_else((type_click() == "Risk/protective factor" & intervention_exposure_short == "Risk/protective factor") | (type_click() == "Intervention" & intervention_exposure_short == "Intervention"), TRUE, FALSE),
                       age_filter = if(is.null(input$pop_age) | "All ages" %in% input$pop_age) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
                       sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
@@ -262,6 +275,7 @@ table_data <- reactive({
 
 output$egm_numbers <- renderReactable({
   count_pivot() %>%
+    select(-padding) %>% # Remove padding column that's used for nested EGM tables
     reactable(
       defaultColDef = colDef(
         align = 'center',

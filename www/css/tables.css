@@ -56,3 +56,18 @@ th {
   background-color: var(--navy);
   color: var(--navy);
 }
+
+/* table with no headers */
+```{css}
+/* Visually hide column headers, but keep them accessible to screen reader users. */
+.hidden-column-headers .rt-thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+```
