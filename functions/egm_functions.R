@@ -295,10 +295,8 @@ output$egm_numbers <- renderReactable({
                           }")),
         subdomain = colDef(name = "Sub-domain",
                            width = 150),
-        Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor",
-                                                  aggregate = "sum"),
-        Self_harm.Intervention = colDef(name = "Intervention",
-                                        aggregate = "sum")
+        Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor"),
+        Self_harm.Intervention = colDef(name = "Intervention")
       ),
       columnGroups = list(
         colGroup(name = "Self-harm", columns = c("Self_harm.Risk_protective_factor", "Self_harm.Intervention"))
