@@ -1,7 +1,7 @@
 ############### Home/introduction page server ###################
 
 #Naviagtion buttons on intro page
-observeEvent(input$jump_to_egm, {updateTabsetPanel(session, "intabset", selected = "egm")})
+observeEvent(input$jump_to_egm, {updateTabsetPanel(session, "intabset", selected = "main_page")})
 observeEvent(input$jump_to_glossary, {updateTabsetPanel(session, "intabset", selected = "glossary")})
 observeEvent(input$jump_to_links, {updateTabsetPanel(session, "intabset", selected = "useful_links")})
 
