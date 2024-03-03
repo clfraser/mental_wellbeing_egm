@@ -32,15 +32,6 @@
                    # Filters
                   div(id = "all_filters", # Create div for the Cicerone tour
                       
-                      # Sub-outcome definition
-                      virtualSelectInput(
-                        inputId = "sel2",
-                        label = "Group choices:",
-                        choices = prepare_choices(domains_subs_for_tree, subdomain, subdomain, domain),
-                        multiple = TRUE,
-                        disableOptionGroupCheckbox = FALSE
-                      ),
-                      
                    # Sub-outcome definition
                    treeInput(
                      inputId = "outcome",
@@ -51,15 +42,6 @@
                      selected = NULL,
                      returnValue = "text",
                      closeDepth = 2
-                   ),
-                   
-                   # Domains and sub-domains with shinyTree
-                   shinyTree(
-                     "domain_subs_tree",
-                     checkbox = TRUE,
-                     themeIcons = FALSE,
-                     themeDots = FALSE,
-                     
                    ),
                    
                    # Domains and sub-domains
