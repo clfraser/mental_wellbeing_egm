@@ -26,6 +26,12 @@ egm_guide <- Cicerone$
     description = "The size of the shapes correspond to the number of reviews. Hover over each shape to see the number of reviews.
     Click the shape to see a table with review details."
   )$
+  # step(
+  #   el = ".shape-button",
+  #   title = "Expand and collapse domains",
+  #   description = "Use this arrow to expand and collapse domains.",
+  #   is_id = FALSE
+  # )$
   step(
     "show_egm_numbers",
     "See EGM as a table",
