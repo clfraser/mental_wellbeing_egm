@@ -1,96 +1,127 @@
-####################### Core functions #######################
+######## Test to build EGM using Reactable package
 
-# Add n linebreaks
-linebreaks <- function(n){HTML(strrep(br(), n))}
+#install.packages("reactable")
+#install.packages("reactablefmtr") # For easier formatting
 
-# Remove warnings from icons 
-icon_no_warning_fn = function(icon_name) {
-  icon(icon_name, verify_fa=FALSE)
-}
+### Load packages
 
-# Generic data table
-make_table <- function(input_data_table,
-                      rows_to_display = 20
-){
+library(here)
+library(tidyverse)
+library(janitor)
+library(reactable)
+library(reactablefmtr)
+library(tippy)
 
-# Take out underscores in column names for display purposes
-table_colnames  <-  gsub("_", " ", colnames(input_data_table))
+### Set up data
 
-dt <- DT::datatable(input_data_table, style = 'bootstrap',
-                      class = 'table-bordered table-condensed',
-                      rownames = FALSE,
-                      filter="top",
-                      colnames = table_colnames,
-                      options = list(pageLength = rows_to_display,
-                                     scrollX = FALSE,
-                                     scrollY = FALSE,
-                                     dom = 'tip',
-                                     autoWidth = TRUE,
-                                     # style header
-                                     initComplete = htmlwidgets::JS(
-                                       "function(settings, json) {",
-                                       "$(this.api().table().header()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
-                                       "$(this.api().table().row().index()).css({'background-color': '#C5C3DA', 'color': '#3F3685'});",
-                                       "}")))
+## Chart data
+
+# Read in data processed in data_preparation script
+reviews_chart <- readRDS(here("data/self-harm_egm_chart_data.rds"))
+
+# For this test, assume that all reviews have been selected.
+# In the full app, deselecting something using filters sets 'selected' to 0.
+all_selected <- reviews_chart %>%
+  mutate(selected = 1)
+
+# Group and count reviews in each category
+grouped <- all_selected %>%
+  group_by(domain, subdomain, overall_outcome, intervention_exposure_short) %>% # Don't group on pos_x, pos_y or review_type
+  summarise(count = sum(selected)) %>%
+  ungroup()
+
+## Create a reactable
+
+# Pivot data into the right format
+count_pivot <- grouped %>%
+  mutate(overall_outcome = gsub(" |-", "_", overall_outcome)) %>% # Replace spaces and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
+  pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
+  mutate(across(Self_harm.Exposure:Outcome_category_3.Exposure, ~replace_na(., 0))) # Replace NAs with 0
 
 
-  return(dt)
-}
+# Create grouped columns for the outcome areas and exposure/intervention types
 
-# Creating dataframes for trees (for hierarchical checkboxes to work)
+## Trying a manual way to set font sizes. But we can also do this and add shapes in one go with bubble_grid from reatablefmtr (see below).
 
-domains_subs_for_tree <- reviews_chart %>%
-  select(domain, subdomain) %>%
-  distinct(domain, subdomain) %>%
-  arrange(domain, subdomain)
-
-sub_outcomes_for_tree <- data.frame(
-  first_level = rep("Any form of self-injurious thoughts and behaviours", 2),
-  second_level = c("Exclusively non-suicidal self-harm", "Repetitive, compulsive self-injury")
-)
-
-age_for_tree <- data.frame(
-  first_level = rep("All ages", 2),
-  second_level = c("Exclusively 0-18 years", "Up to 25 years")
-)
-
-intervention_exposure_for_tree <- reviews_chart %>%
-  select(intervention_exposure_short, intervention_classification) %>%
-  mutate(intervention_classification = if_else(intervention_exposure_short == "Risk/protective factor", NA, intervention_classification)) %>%
-  distinct(intervention_exposure_short, intervention_classification) %>%
-  arrange(intervention_exposure_short)
-
-sub_population_for_tree <- reviews_chart %>%
-  select(overall_population, sub_population) %>%
-  distinct(overall_population, sub_population) %>%
-  arrange(overall_population)
-
+# To set font size, use 'em', which changes the font size relative to the font size that's been set for the table. 1em = the set font size.
+# Function to normalise font size for all numeric columns
+# set_font_size = function(study_count){
+#   numeric_cols <- count_pivot[, 3:ncol(count_pivot)]
+#   normalised <- (study_count - min(numeric_cols, na.rm = TRUE))/(max(numeric_cols, na.rm = TRUE) - min(numeric_cols, na.rm = TRUE)) * 10
+#   return(list(fontSize = paste0(normalised,"em")))
+# }
+# 
+# set_font_size_for_icon = function(study_count){
+#   numeric_cols <- count_pivot[, 3:ncol(count_pivot)]
+#   normalised <- (study_count - min(numeric_cols, na.rm = TRUE))/(max(numeric_cols, na.rm = TRUE) - min(numeric_cols, na.rm = TRUE)) * 10
+#   return(list(fontSize = normalised))
+# }
+# 
+# reactable(
+#   count_pivot,
+#   groupBy = "domain",
+#   columns = list(
+#     Self_harm.Exposure = colDef(name = "Exposure", aggregate = "sum",
+#                                 style = function(value){
+#                                   set_font_size(value)
+#                                 }),
+#     Self_harm.Intervention = colDef(name = "Intervention", aggregate = "sum",
+#                                     style = function(value){
+#                                       set_font_size(value)
+#                                     }),
+#     Self_harm.Attitudes = colDef(name = "Attitudes", aggregate = "sum",
+#                                  style = function(value){
+#                                    set_font_size(value)
+#                                  }),
+#     Outcome_category_2.Exposure = colDef(name = "Exposure", aggregate = "sum",
+#                                          style = function(value){
+#                                            set_font_size(value)
+#                                          }),
+#     Outcome_category_2.Intervention = colDef(name = "Intervention", aggregate = "sum",
+#                                              style = function(value){
+#                                                set_font_size(value)
+#                                              }),
+#     Outcome_category_3.Exposure = colDef(name = "Exposure", aggregate = "sum",
+#                                          style = function(value){
+#                                            set_font_size(value)
+#                                          }),
+#     Outcome_category_3.Intervention = colDef(name = "Intervention", aggregate = "sum",
+#                                              style = function(value){
+#                                                set_font_size(value)
+#                                              })
+#   ),
+#   columnGroups = list(
+#     colGroup(name = "Self-harm", columns = c("Self_harm.Exposure", "Self_harm.Intervention", "Self_harm.Attitudes")),
+#     colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Exposure", "Outcome_category_2.Intervention")),
+#     colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Exposure", "Outcome_category_3.Intervention"))
+#   )
+# )
 
 # Modify bubble_grid function for our purposes
 # Change some defaults so that it fits with what we're most likely to use
 # Modify in two ways: first, add a traingle as a third shape
 
 bubble_grid_modified <- function(data,
-                                 shape = "circles",
-                                 colors = c("#15607A", "#FFFFFF", "#FA8C00"),
-                                 color_ref = NULL,
-                                 color_by = NULL,
-                                 min_value = 7, # Was 7
-                                 max_value = 70, # Was 50
-                                 opacity = 1,
-                                 bias = 1,
-                                 number_fmt = NULL,
-                                 text_size = NULL,
-                                 text_color = "black",
-                                 text_color_ref = NULL,
-                                 show_text = FALSE, # Default changed
-                                 brighten_text = TRUE,
-                                 brighten_text_color = "white",
-                                 bold_text = FALSE,
-                                 span = TRUE, # Default changed
-                                 box_shadow = FALSE,
-                                 tooltip = TRUE, # Default changed
-                                 animation = "background 1s ease") {
+                        shape = "circles",
+                        colors = c("#15607A", "#FFFFFF", "#FA8C00"),
+                        color_ref = NULL,
+                        color_by = NULL,
+                        min_value = NULL,
+                        max_value = NULL,
+                        opacity = 1,
+                        bias = 1,
+                        number_fmt = NULL,
+                        text_size = NULL,
+                        text_color = "black",
+                        text_color_ref = NULL,
+                        show_text = FALSE, # Default changed
+                        brighten_text = TRUE,
+                        brighten_text_color = "white",
+                        bold_text = FALSE,
+                        span = TRUE, # Default changed
+                        box_shadow = FALSE,
+                        tooltip = TRUE, # Default changed
+                        animation = "background 1s ease") {
   
   '%notin%' <- Negate('%in%')
   
@@ -180,11 +211,11 @@ bubble_grid_modified <- function(data,
     
     if (is.null(number_fmt)) {
       
-      label <- paste0(sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", name)), ": ", value) # Include the sub-column name in the tooltip (the text after the dot in the column name). Note that the . has to be 'escaped' with "\\".
+      label <- paste0(sub(".*\\.", "", name), ": ", value) # Include the sub-column name in the tooltip (the text after the dot in the column name). Note that the . has to be 'escaped' with "\\".
       
     } else {
       
-      label <- paste0(sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", name)), ": ", number_fmt(value))
+      label <- paste0(sub(".*\\.", "", name), ": ", number_fmt(value))
       
     }
     
@@ -197,9 +228,7 @@ bubble_grid_modified <- function(data,
         normalized <- (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE))
         
         ### width of data_bars
-        size <- if (max(value == 0)){ "0px" } # Show nothing on the chart if everything has been filtered out
-          
-          else if ((is.numeric(value) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
+        size <- if (is.numeric(value) & is.null(max_value) & is.null(min_value)) {
           
           paste0(abs(value) / max(dplyr::select_if(data, is.numeric), na.rm = TRUE) * 100, "px")
           
@@ -216,8 +245,7 @@ bubble_grid_modified <- function(data,
           ### min and max provided
         } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value)) {
           
-          paste0(min_value + (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE) * (max_value - min_value))
-                 / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)) * 100, "px")
+          paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
           
         } else if (!is.numeric(value)) {
           
@@ -254,7 +282,7 @@ bubble_grid_modified <- function(data,
             font_color <- assign_color(normalized)
             
             ### width of data_bars
-            size <- if ((is.numeric(data[[color_by]][index]) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
+            size <- if (is.numeric(data[[color_by]][index]) & is.null(max_value) & is.null(min_value)) {
               
               paste0(abs(data[[color_by]][index]) / max(abs(data[[color_by]]), na.rm = TRUE) * 100, "px")
               
@@ -299,14 +327,14 @@ bubble_grid_modified <- function(data,
           font_color <- assign_color(normalized)
           
           ### width of data_bars
-          size <- if ((is.numeric(value) & is.null(max_value) & is.null(min_value)) | value == 0) { # Added - use this condition if the value is 0
+          size <- if (is.numeric(value) & is.null(max_value) & is.null(min_value)) {
             
             paste0(abs(value) / max(abs(data[[name]]), na.rm = TRUE) * 100, "px")
             
             ### min_value provided
           } else if (is.numeric(value) & is.null(max_value) & !is.null(min_value)) {
             
-            paste0((abs(value) - min_value) / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min_value) * 100, "px")
+            paste0((abs(value) - min_value) / (max(abs(data[[name]]), na.rm = TRUE) - min_value) * 100, "px")
             
             ### max_value provided
           } else if (is.numeric(value) & !is.null(max_value) & is.null(min_value)) {
@@ -316,8 +344,7 @@ bubble_grid_modified <- function(data,
             ### min and max provided
           } else if (is.numeric(value) & !is.null(max_value) & !is.null(min_value)) {
             
-            paste0(min_value + (value - min(dplyr::select_if(data, is.numeric), na.rm = TRUE) * (max_value - min_value))
-                   / (max(dplyr::select_if(data, is.numeric), na.rm = TRUE) - min(dplyr::select_if(data, is.numeric), na.rm = TRUE)), "px")
+            paste0((abs(value) - min_value) / (max_value - min_value) * 100, "px")
             
           }
           
@@ -398,24 +425,17 @@ bubble_grid_modified <- function(data,
     if (shape == "triangles"){
       clippath <- "polygon(50% 0, 100% 100%, 0 100%)"
     } else clippath <- NULL
-    
-    # Don't display a shape if size = 0
-    if(size == "0px"){
-      display_var <- "none"
-    } else display_var <- "inline-flex"
-    
+
     
     if (brighten_text == FALSE & show_text == TRUE) {
       
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::tags$button(
-            type = "button",
-            class = "shape-button",
+          htmltools::div(
             style = list(background = cell_color,
                          color = text_color,
-                         display = display_var,
+                         display = "inline-flex",
                          justifyContent = "center",
                          alignItems = "center",
                          textAlign = "center",
@@ -426,9 +446,7 @@ bubble_grid_modified <- function(data,
                          boxShadow = box_shadow,
                          fontSize = text_size,
                          transition = animation,
-                         clipPath = clippath,
-                         borderStyle = none,
-                         padding = "0px")),
+                         clipPath = clippath)),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -437,12 +455,10 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::tags$button(label,
-                               type = "button",
-                               class = "shape-button",
+        htmltools::div(label,
                        style = list(background = cell_color,
                                     color = text_color,
-                                    display = display_var,
+                                    display = "inline-flex",
                                     justifyContent = "center",
                                     alignItems = "center",
                                     textAlign = "center",
@@ -453,9 +469,7 @@ bubble_grid_modified <- function(data,
                                     boxShadow = box_shadow,
                                     fontSize = text_size,
                                     transition = animation,
-                                    clipPath = clippath,
-                                    borderStyle = "none",
-                                    padding = "0px"))
+                                    clipPath = clippath))
       }
       
     } else if (brighten_text == TRUE & !is.null(text_color_ref) & show_text == TRUE) {
@@ -463,12 +477,10 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::tags$button(
-            type = "button",
-            class = "shape-button",
+          htmltools::div(
             style = list(background = cell_color,
                          color = text_color,
-                         display = display_var,
+                         display = "inline-flex",
                          justifyContent = "center",
                          alignItems = "center",
                          textAlign = "center",
@@ -478,9 +490,7 @@ bubble_grid_modified <- function(data,
                          boxShadow = box_shadow,
                          fontSize = text_size,
                          transition = animation,
-                         clipPath = clippath,
-                         borderStyle = "none",
-                         padding = "0px")),
+                         clipPath = clippath)),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -489,12 +499,10 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::tags$button(label,
-                               type = "button",
-                               class = "shape-button",
+        htmltools::div(label,
                        style = list(background = cell_color,
                                     color = text_color,
-                                    display = display_var,
+                                    display = "inline-flex",
                                     justifyContent = "center",
                                     alignItems = "center",
                                     textAlign = "center",
@@ -504,9 +512,7 @@ bubble_grid_modified <- function(data,
                                     boxShadow = box_shadow,
                                     fontSize = text_size,
                                     transition = animation,
-                                    clipPath = clippath,
-                                    borderStyle = "none",
-                                    padding = "0px"))
+                                    clipPath = clippath))
       }
       
     } else if (brighten_text == FALSE & show_text == FALSE) {
@@ -514,11 +520,9 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::tags$button(
-            type = "button",
-            class = "shape-button",
+          htmltools::div(
             style = list(background = cell_color,
-                         display = display_var,
+                         display = "inline-flex",
                          justifyContent = "center",
                          alignItems = "center",
                          textAlign = "center",
@@ -529,9 +533,7 @@ bubble_grid_modified <- function(data,
                          boxShadow = box_shadow,
                          fontSize = text_size,
                          transition = animation,
-                         clipPath = clippath,
-                         borderStyle = "none",
-                         padding = "0px")),
+                         clipPath = clippath)),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -540,11 +542,9 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::tags$button(label,
-                               type = "button",
-                               class = "shape-button",
+        htmltools::div(label,
                        style = list(background = cell_color,
-                                    display = display_var,
+                                    display = "inline-flex",
                                     justifyContent = "center",
                                     alignItems = "center",
                                     textAlign = "center",
@@ -555,9 +555,7 @@ bubble_grid_modified <- function(data,
                                     boxShadow = box_shadow,
                                     fontSize = text_size,
                                     transition = animation,
-                                    clipPath = clippath,
-                                    borderStyle = "none",
-                                    padding = "0px"))
+                                    clipPath = clippath))
       }
       
     } else if (brighten_text == TRUE & show_text == FALSE) {
@@ -565,11 +563,9 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::tags$button(
-            type = "button",
-            class = "shape-button",
+          htmltools::div(
             style = list(background = cell_color,
-                         display = display_var,
+                         display = "inline-flex",
                          justifyContent = "center",
                          alignItems = "center",
                          textAlign = "center",
@@ -580,9 +576,7 @@ bubble_grid_modified <- function(data,
                          boxShadow = box_shadow,
                          fontSize = text_size,
                          transition = animation,
-                         clipPath = clippath,
-                         borderStyle = "none",
-                         padding = "0px")),
+                         clipPath = clippath)),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -591,11 +585,9 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::tags$button(label,
-                               type = "button",
-                               class = "shape-button",
+        htmltools::div(label,
                        style = list(background = cell_color,
-                                    display = display_var,
+                                    display = "inline-flex",
                                     justifyContent = "center",
                                     alignItems = "center",
                                     textAlign = "center",
@@ -606,9 +598,7 @@ bubble_grid_modified <- function(data,
                                     boxShadow = box_shadow,
                                     fontSize = text_size,
                                     transition = animation,
-                                    clipPath = clippath,
-                                    borderStyle = "none",
-                                    padding = "0px"))
+                                    clipPath = clippath))
       }
       
     } else {
@@ -616,12 +606,10 @@ bubble_grid_modified <- function(data,
       if (tooltip == TRUE) {
         
         htmltools::tagAppendChild(
-          htmltools::tags$button(
-            type = "button",
-            class = "shape-button",
+          htmltools::div(
             style = list(background = cell_color,
                          color = font_color,
-                         display = display_var,
+                         display = "inline-flex",
                          justifyContent = "center",
                          alignItems = "center",
                          textAlign = "center",
@@ -632,9 +620,7 @@ bubble_grid_modified <- function(data,
                          fontWeight = bold_text,
                          fontSize = text_size,
                          transition = animation,
-                         clipPath = clippath,
-                         borderStyle = "none",
-                         padding = "0px")),
+                         clipPath = clippath)),
           tippy::tippy(label,
                        animateFill = FALSE,
                        followCursor = TRUE,
@@ -643,12 +629,10 @@ bubble_grid_modified <- function(data,
         
       } else {
         
-        htmltools::tags$button(label,
-                               type = "button",
-                               class = "shape-button",
+        htmltools::div(label,
                        style = list(background = cell_color,
                                     color = font_color,
-                                    display = display_var,
+                                    display = "inline-flex",
                                     justifyContent = "center",
                                     alignItems = "center",
                                     textAlign = "center",
@@ -659,39 +643,68 @@ bubble_grid_modified <- function(data,
                                     fontWeight = bold_text,
                                     fontSize = text_size,
                                     transition = animation,
-                                    clipPath = clippath,
-                                    borderStyle = "none",
-                                    padding = "0px"))
+                                    clipPath = clippath))
         
       }
     }
   }
 }
 
-# CSV download button for table
 
-csvDownloadButton <- function(id, filename = "data.csv", label = "Download as CSV") {
-  tags$button(
-    tagList(icon("download"), label),
-    onclick = sprintf("Reactable.downloadDataCSV('%s', '%s')", id, filename)
-  )
-}
+## Using bubble_grid from reactable_ftmr to display shapes
 
-# Show a navy navigation spinner
-
-withNavySpinner <- function(out){
-  withSpinner(out, color = navy)
-}
-
-# Get click data
-
-get_click_data <- JS("function(rowInfo, column) {
+count_pivot %>%
+  reactable(
+    defaultColDef = colDef(
+    align = 'center'),
+    groupBy = "domain",
+    onClick = JS("function(rowInfo, column) {
         // Don't handle click events in the domain or subdomain columns
-    if (column.id === 'domain' || column.id === 'subdomain') {
+    if (column.id == 'domain' | column.id == 'subdomain') {
       return
     }
-    // Send the click event to Shiny, which will be available in input$click_details
+    // Display an alert dialog with details for the row
+    window.alert('Details for row ' + rowInfo.index + ':\\n' + JSON.stringify(rowInfo.values, null, 2) +
+                 '\\n' + 'Details for column' + JSON.stringify(column.id, null, 2))
+
+    // Send the click event to Shiny, which will be available in input$show_details
+    // Note that the row index starts at 0 in JavaScript, so we add 1
     if (window.Shiny) {
-      Shiny.setInputValue('click_details', { domain: rowInfo.values.domain, subdomain: rowInfo.values.subdomain, outcome_and_type: column.id }, { priority: 'event' })
+      Shiny.setInputValue('show_details', { index: rowInfo.index + 1 }, { priority: 'event' })
     }
-  }")
+  }"),
+    columns = list(
+      Self_harm.Exposure = colDef(name = "", aggregate = "sum",
+                                  vAlign = "top",
+                                  cell = bubble_grid_modified(
+                                    data = .,
+                                    colors = '#1b9e77',
+                                    tooltip = TRUE
+                                  )),
+      Self_harm.Intervention = colDef(name = "", aggregate = "sum",
+                                      vAlign = "bottom",
+                                      cell = bubble_grid_modified(
+                                        data = .,
+                                        colors = '#d95f02',
+                                        tooltip = TRUE,
+                                        shape = "squares"
+                                      )),
+      Self_harm.Attitudes = colDef(name = "Attitudes", aggregate = "sum",
+                                   vAlign = "top",
+                                   cell = bubble_grid_modified(
+                                     data = .,
+                                     colors = '#7570b3',
+                                     tooltip = TRUE,
+                                     shape = "triangles"
+                                   )),
+      Outcome_category_2.Exposure = colDef(name = "", aggregate = "sum"),
+      Outcome_category_2.Intervention = colDef(name = "", aggregate = "sum"),
+      Outcome_category_3.Exposure = colDef(name = "Exposure", aggregate = "sum"),
+      Outcome_category_3.Intervention = colDef(name = "Intervention", aggregate = "sum")
+    ),
+    columnGroups = list(
+      colGroup(name = "Self-harm", columns = c("Self_harm.Exposure", "Self_harm.Intervention", "Self_harm.Attitudes")),
+      colGroup(name = "Outcome category 2", columns = c("Outcome_category_2.Exposure", "Outcome_category_2.Intervention")),
+      colGroup(name = "Outcome category 3", columns = c("Outcome_category_3.Exposure", "Outcome_category_3.Intervention"))
+  )
+)
