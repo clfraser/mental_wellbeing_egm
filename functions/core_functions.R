@@ -5,7 +5,7 @@ linebreaks <- function(n){HTML(strrep(br(), n))}
 
 # Remove warnings from icons 
 icon_no_warning_fn = function(icon_name) {
-  icon(icon_name, verify_fa=FALSE)
+  icon(icon_name, verify_fa=FALSE, role = "navigation")
 }
 
 # Generic data table

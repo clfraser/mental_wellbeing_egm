@@ -12,7 +12,7 @@ source("setup.R")
 
 # UI
 ui <- 
-  secure_app( # For password protection
+  #secure_app( # For password protection
   
   fluidPage(
 tagList(
@@ -22,7 +22,7 @@ tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css)
 navbarPage(
     id = "intabset", # id used for jumping between tabs
     title = div(
-        tags$a(img(src = "phs-logo.png", height = 40),
+        tags$a(img(src = "phs-logo-updated.png", height = 40),
                href = "https://www.publichealthscotland.scot/",
                target = "_blank"), # PHS logo links to PHS website
     style = "position: relative; top: -5px;"),
@@ -90,7 +90,7 @@ tabPanel(title = "Useful links",
 ) # navbar
 ) # taglist
 ) # ui fluidpage
- ) # Secure app, for password protection
+# ) # Secure app, for password protection
 
 # Server
 

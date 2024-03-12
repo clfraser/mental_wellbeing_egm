@@ -8,36 +8,37 @@ observeEvent(input$jump_to_links, {updateTabsetPanel(session, "intabset", select
 output$introduction_about <- renderUI({
   
   tagList(h1("What is an evidence and gap map?"),
-           p("An evidence and gap map is a new approach to presenting evidence for Public Health Scotland. It provides a visual representation of the evidence base on a specific policy area, highlighting where there is evidence and where there is not."),
+           p("An evidence and gap map (EGM) is a new approach to presenting evidence for Public Health Scotland. It provides a visual representation of the evidence base on a specific policy area, highlighting where there is evidence and where there is not."),
            p("EGMs can be used to support decision-making in policy and practice, and to understand where there are gaps in knowledge and where research is needed."),
           br(),
           
           h1("Self-harm in children and young people"),
             p("Self-harm is increasingly common among young people and has the potential to do serious harm. It is a strong predictor for future suicide risk. Consultation with a range of stakeholders identified self-harm in children and young people as a key public health priority."),
-            p("This evidence and gap map brings together review-level evidence on self-harm in children and young people on:"),
+            p("This EGM brings together review-level evidence on self-harm in children and young people on:"),
             tags$li("what is already known about risks and protective factors that are associated with self-harm, and"),
             tags$li("what interventions or policies can prevent it."),
-          p("This EGM focuses on systematic review-level evidence (glossary) as this is considered to be the most robust source of evidence."),
+          br(),
+          p("This EGM focuses on review-level evidence (glossary) as this is considered to be the most robust source of evidence."),
           p("The full methodology for the EGM can be found in the technical report [link]."),
           br(),
           
           fluidRow(
             column(4,tags$div(class = "special_button",
                               actionButton("jump_to_egm", "Evidence and gap map"))),
-            column(8, p("This section contains the evidence and gap map, and a table with information on the included studies."))),
+            column(8, p("This section contains the EGM, and a table with information on the included studies."))),
           br(),
           
           
           fluidRow(
             column(4,tags$div(class = "special_button",
                               actionButton("jump_to_glossary", "Glossary"))),
-            column(8, p("A glossary of terms used in the evidence and gap map."))),
+            column(8, p("A glossary of terms used in the EGM."))),
           br(),
           
           fluidRow(
             column(4,tags$div(class = "special_button",
                               actionButton("jump_to_links", "Useful links"))),
-            column(8, p("Useful links about evidence and gap maps, and things to consider when using evidence."))),
+            column(8, p("Useful links about EGMs, and things to consider when using evidence."))),
           br()
           
           
@@ -45,10 +46,7 @@ output$introduction_about <- renderUI({
 })
 
 output$introduction_use <- renderUI({
-  tagList(h1("How to use the evidence and gap map"),
-          h2("What is an EGM?"),
-          p("An evidence and gap map is a new approach to presenting evidence for Public Health Scotland. It provides a visual representation of the evidence base on a specific policy area, highlighting where there is evidence and where there is not."),
-          p("EGMs can be used to support decision-making in policy and practice, and to understand where there are gaps in knowledge and where research is needed."),
+  tagList(
           h2("How the map is organised"),
           p("The EGM is organised into a matrix. Reviews are thematically categorised by domains and subdomains into rows and allocated to columns based on whether the review explores association of risk/protective factors with self-harm or interventions for self-harm. Find out more about domains and subdomains in Public Health Scotland's ",
           a(href = "https://publichealthscotland.scot/publications/children-and-young-people-mental-health-indicator-resources/", "Chidren and Young People Mental Health Indicator resources"),

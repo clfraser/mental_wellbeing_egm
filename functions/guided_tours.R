@@ -26,12 +26,6 @@ egm_guide <- Cicerone$
     description = "The size of the shapes correspond to the number of reviews. Hover over each shape to see the number of reviews.
     Click the shape to see a table with review details."
   )$
-  # step(
-  #   el = ".shape-button",
-  #   title = "Expand and collapse domains",
-  #   description = "Use this arrow to expand and collapse domains.",
-  #   is_id = FALSE
-  # )$
   step(
     "show_egm_numbers",
     "See EGM as a table",
@@ -51,4 +45,16 @@ egm_guide <- Cicerone$
     "clear_all_filters_top",
     "Clear filters",
     "Clear all selected filters."
+  )$
+  step(
+    el = "[data-value = 'table']",
+    title = "Table of review details",
+    description = "Click on the table tab to see details of the reviews included in the EGM. Any filters applied to the EGM are also applied to the table.",
+    is_id = FALSE
+  )$
+  step(
+    el = "[data-value = 'shape-button']",
+    title = "Table of review details",
+    description = "Click on the table tab to see details of the reviews included in the EGM. Any filters applied to the EGM are also applied to the table.",
+    is_id = FALSE
   )
