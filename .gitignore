@@ -6,6 +6,18 @@
 # 'data' folder #
 data/
 
+# 'admin' folder #
+data/
+
+# 'tests' folder #
+tests/
+
+# rsconnect folder #
+rsconnect/
+
+# Deploy script #
+deploy.R
+
 # Common text files that may contain data #
 *.[cC][sS][vV]
 *.[tT][xX][tT]
