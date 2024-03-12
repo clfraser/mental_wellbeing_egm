@@ -24,7 +24,7 @@ dt <- DT::datatable(input_data_table, style = 'bootstrap',
                       options = list(pageLength = rows_to_display,
                                      scrollX = FALSE,
                                      scrollY = FALSE,
-                                     dom = 'tip',
+                                     dom = 'pftl',
                                      autoWidth = TRUE,
                                      # style header
                                      initComplete = htmlwidgets::JS(
