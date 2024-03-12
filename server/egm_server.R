@@ -1,4 +1,4 @@
-####################### EGM functions #######################
+####################### EGM server #######################
 
 # # initialise the Cicerone guide
 egm_guide$init()
