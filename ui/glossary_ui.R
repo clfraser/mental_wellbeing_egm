@@ -1,11 +1,15 @@
-####################### Page 1 #######################
+####################### Glossary #######################
 
-output$glossary_ui <-  renderUI({
-
+glossaryTab <- tabPanel(
+  lang = "en",
   div(
-	     fluidRow(
-            DT::dataTableOutput("glossary_table")
-
-	      ) #fluidrow
-   ) # div
-}) # renderUI
+    div(class="fa fa-circle-info", 
+        role = "navigation"), "Glossary"), # wrap in div for screenreader / accessibility purposes 
+  value = "glossary", # tab ID
+  titlePanel(h1("Glossary")),
+  useShinyjs(),
+  fluidRow(
+    DT::dataTableOutput("glossary_table")
+    
+  ) #fluidrow
+) # tabPanel

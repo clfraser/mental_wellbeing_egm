@@ -1,6 +1,13 @@
 ########## Useful links page ############
 
-output$links_ui <- renderUI({
+linksTab <- tabPanel(
+  lang = "en",
+  div(
+    div(class="fa fa-link", 
+        role = "navigation"), "Useful links"), # wrap in div for screenreader / accessibility purposes 
+  value = "links", # tab ID
+  titlePanel(h1("Useful links")),
+  useShinyjs(),
 fluidRow(
   a(href = "https://www.campbellcollaboration.org/evidence-gap-maps.html", "Evidence and gap maps - The Campbell Collaboration"),
   br(),
@@ -14,4 +21,4 @@ fluidRow(
   br(),
   a(href = "https://publichealthscotland.scot/media/17228/what-factors-are-associated-with-self-harm-in-childhood_jan23.pdf", "Factors associated with self-harm in childhood - Public Health Scotland")
 ) #fluidRow
-  })
+) # tabPanel

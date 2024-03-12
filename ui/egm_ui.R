@@ -1,5 +1,13 @@
-####################### Page 1 UI #######################
+####################### Main tab UI #######################
 
+mainTab <- tabPanel(
+  lang = "en",
+  div(
+    div(class="fa fa-map", 
+        role = "navigation"), "Evidence and gap map"), # wrap in div for screenreader / accessibility purposes 
+  value = "main_page", # tab ID
+  titlePanel(h1("Evidence and gap map")),
+  useShinyjs(),
   fluidPage(
     use_cicerone(), # Include Cicerone to give a guide of the page
     actionButton("egm_guide_button", "Click here for a guided tour of the page"),
@@ -146,3 +154,4 @@
                              value = "table"))) # For switching tabs on click
     )
   )# Sidebar layout
+) #Tab panel

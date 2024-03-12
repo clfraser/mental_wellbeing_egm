@@ -7,6 +7,11 @@ observeEvent(input$egm_guide_button, {
   egm_guide$start()
 })
 
+## Render trees for shinyTree inputs
+output$domain_subs_tree <- renderTree({
+  dfToTree(domains_subs_for_tree, c("domain", "subdomain"))
+})
+
 #### function for creating egm plot --------------------------------------------
 
 ## Reactive values
@@ -74,6 +79,22 @@ observeEvent(input$outcome_defs, {
                linebreaks(2),
                tableOutput("outcome_defs_table"),
                easyClose = TRUE))
+})
+
+# Domains and subdomains information
+observeEvent(input$domains_defs, {
+  domain_defs_filtered <- glossary_list %>%
+    filter(Topic == "Domains and subdomains") %>%
+    select(-Topic)
+  
+  output$domain_defs_table <- renderTable(domain_defs_filtered)
+  
+  showModal(modalDialog(
+    title = "Domain and subdomain definitions",
+    "Determinants of mental health are a range of factors that influence our mental health and wellbeing. The EGM uses the Public Health Scotland mental health indicator framework to map how the circumstances in which children and young people live shape their mental health outcomes. The determinants are grouped according to domains and subdomains.",
+    linebreaks(2),
+    tableOutput("domain_defs_table"),
+    easyClose = TRUE))
 })
 
 # Population age information

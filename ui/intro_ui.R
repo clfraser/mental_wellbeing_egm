@@ -1,43 +1,32 @@
 ####################### Intro UI #######################
 
-sidebarLayout(
-  sidebarPanel(width = 4,
-               radioGroupButtons("home_select", status = "home",
-                                 choices = home_list, # Defined in setup script
-                                 direction = "vertical", justified = T)),
+####################### Intro Page #######################
+
+
+homepageTab <-   tabPanel(
+  lang = "en",
+  div(
+    div(class="fa fa-home", 
+        role = "navigation"), "Introduction"), # wrap in div for screenreader / accessibility purposes 
+  value = "intro", # tab ID
+  titlePanel(h1("Introduction")),
+  useShinyjs(),
   
-  mainPanel(width = 8,
-            # About
-            conditionalPanel(
-              condition= "input.home_select == 'about'",
-              # These have to be uiOutputs rather than just tagLists because otherwise
-              # the ui loads before the conditional panel hides the info so for some
-              # time at the beginning of the app all of the panels are visible
-              withNavySpinner(uiOutput("introduction_about"))
-            ), # conditionalPanel
-            
-            # Using the dashboard
-            conditionalPanel(
-              condition= "input.home_select == 'use'",
-              withNavySpinner(uiOutput("introduction_use"))
-            ), # condtionalPanel
-            
-            # Accessibility
-            conditionalPanel(
-              condition= "input.home_select == 'accessibility'",
-              withNavySpinner(uiOutput("introduction_accessibility"))
-            ), # conditonalPanel
-            
-            # Last updated
-            conditionalPanel(
-              condition= "input.home_select == 'last_updated'",
-              withNavySpinner(uiOutput("last_updated"))
-            ), # conditonalPanel
-            
-            # Contact
-            conditionalPanel(
-              condition= "input.home_select == 'contact'",
-              withNavySpinner(uiOutput("introduction_contact"))
-            ), # conditionalPanel
-  ) # mainPanel
-) # sidebarLayout
+  sidebarLayout(
+    # Sidebar with a action buttons
+    sidebarPanel(width = 3,
+                 column(12),
+                 column(12),
+                 column(12, actionButton("about", "About", style="width:15vw;margin-bottom:10px;background-color: #9B4393;color: #FFFFFF;")),
+                 column(12, actionButton("use", "How to use the EGM", style="width:15vw;margin-bottom:10px;background-color: #9B4393;color: #FFFFFF;")),
+                 column(12, actionButton("methodology", "Methodology", style="width:15vw;margin-bottom:10px;background-color: #9B4393;color: #FFFFFF;")),
+                 column(12, actionButton("contact", "Contact", style="width:15vw;margin-bottom:10px;background-color: #9B4393;color: #FFFFFF;")),
+                 column(12, actionButton("accessibility", "Accessibility", style="width:15vw;margin-bottom:10px;background-color: #9B4393;color: #FFFFFF;"))
+    ),
+    # Display selected text
+    mainPanel(width = 9,
+              fluidRow(column(10, htmlOutput("text"))
+              )
+    )
+  )
+)

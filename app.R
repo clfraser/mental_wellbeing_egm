@@ -10,6 +10,10 @@
 # Get packages
 source("setup.R")
 
+# Source files with UI code for each tab --------------
+walk(list.files("ui", full.names = TRUE), ~ source(.x))
+
+
 # UI
 ui <- 
   secure_app( # For password protection
@@ -22,9 +26,10 @@ tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css)
 navbarPage(
     id = "intabset", # id used for jumping between tabs
     title = div(
-        tags$a(img(src = "phs-logo.png", height = 40),
+        tags$a(img(src = "phs-logo-updated.png", height = 40),
                href = "https://www.publichealthscotland.scot/",
-               target = "_blank"), # PHS logo links to PHS website
+               target = "_blank",
+               alt = "Link to Public Health Scotland website. Opens in a new tab."), # PHS logo links to PHS website
     style = "position: relative; top: -5px;"),
     windowTitle = "Mental health EGM",# Title for browser tab
     header = tags$head(          includeCSS("www/css/main.css"),  # Main
@@ -38,55 +43,17 @@ navbarPage(
                                  includeCSS("www/css/info_box.css") # infoBox for summary page boxes
       
     ,  # CSS stylesheet
+    collapsible = TRUE, # Make navigation bar collapse on smaller screens
     tags$link(rel = "shortcut icon", href = "favicon_phs.ico") # Icon for browser tab
-), ##############################################.
-# INTRO PAGE ----
-##############################################.
-tabPanel(title = "Introduction",
-    icon = icon_no_warning_fn("circle-info"),
-    value = "intro",
+),
 
-    source(file.path("pages/intro_page.R"), local = TRUE)$value
+# Order of tabs --------------------------------
 
-), # tabpanel
-##############################################.
-# EGM ----
-##############################################.
-tabPanel(title = "Evidence and gap map",
-    # Look at https://fontawesome.com/search?m=free for icons
-    icon = icon_no_warning_fn("map"),
-    value = "main_page",
+homepageTab,
+mainTab,
+glossaryTab,
+linksTab
 
-    h1("Evidence and gap map"),
-    source(file.path("pages/page_1.R"), local = TRUE)$value
-
-    ), # tabpanel
-##############################################.
-# Glossary ----
-##############################################.
-tabPanel(title = "Glossary",
-         # Look at https://fontawesome.com/search?m=free for icons
-         icon = icon_no_warning_fn("circle-info"),
-         value = "glossary",
-         
-         h1("Glossary"),
-         uiOutput("glossary_ui")
-         
-), # tabpanel
-
-##############################################.
-# Useful links ----
-##############################################.
-tabPanel(title = "Useful links",
-         # Look at https://fontawesome.com/search?m=free for icons
-         icon = icon_no_warning_fn("link"),
-         value = "useful_links",
-         
-         h1("Useful links"),
-         uiOutput("links_ui")
-         
-), # tabpanel
-         
 ) # navbar
 ) # taglist
 ) # ui fluidpage
@@ -106,12 +73,19 @@ server <- function(input, output, session) {
     # Get functions
     source(file.path("functions/core_functions.R"), local = TRUE)$value
     source(file.path("functions/intro_page_functions.R"), local = TRUE)$value
-    source(file.path("functions/egm_functions.R"), local = TRUE)$value
+    source(file.path("functions/guided_tours.R"), local = TRUE)$value
 
-    # Get content for individual pages
-    source(file.path("pages/intro_server.R"), local = TRUE)$value # This is the server. The source for intro UI is given above.
-    source(file.path("pages/glossary.R"), local = TRUE)$value
-    source(file.path("pages/useful_links_ui.R"), local = TRUE)$value
+    # Get server content for individual pages
+    source(file.path("server/intro_server.R"), local = TRUE)$value
+    source(file.path("server/egm_server.R"), local = TRUE)$value
+    source(file.path("server/glossary_server.R"), local = TRUE)$value
+  
+  # Keeps the shiny app from timing out quickly 
+  autoInvalidate <- reactiveTimer(10000)
+  observe({
+    autoInvalidate()
+    cat(".")
+  })
 
 }
 
