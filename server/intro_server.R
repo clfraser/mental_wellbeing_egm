@@ -122,7 +122,7 @@ observeEvent(input$accessibility, {
             This site has not yet been evaluated against WCAG 2.1 level AA.
             <br><h3>Reporting any accessibility problems with this website</h3>
             If you wish to contact us about any accessibility issues you encounter on this site, 
-            please email <a href=\"mailto:phs.egm@phs.scot\"> <b>\phs.egm@phs.scot\</b> </a>
+            please email <a href=\"mailto:phs.egm@phs.scot\"> <b>phs.egm@phs.scot</b></a>
             <br><h3>Enforcement procedure</h3>
         The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies 
         (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). 
