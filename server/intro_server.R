@@ -2,10 +2,10 @@
 # The about text is rendered before any button is clicked.
 observeEvent(input$about, {
   output$text <- renderUI({
-    tagList(h1("What is an evidence and gap map?"),
+    tagList(h2("What is an evidence and gap map?"),
             p("An evidence and gap map is a new approach to presenting evidence for Public Health Scotland. It provides a visual representation of the evidence base on a specific policy area, highlighting where there is evidence and where there is not."),
             p("EGMs can be used to support decision-making in policy and practice, and to understand where there are gaps in knowledge and where research is needed."),
-            h1("Self-harm in children and young people"),
+            h2("Self-harm in children and young people"),
             p("Self-harm is increasingly common among young people and has the potential to do serious harm. It is a strong predictor for future suicide risk. Consultation with a range of stakeholders identified self-harm in children and young people as a key public health priority."),
             p("This evidence and gap map brings together review-level evidence on self-harm in children and young people on:"),
             tags$ul(
@@ -20,9 +20,9 @@ ignoreNULL = FALSE) # so that this text loads initially, before a button is clic
   
 observeEvent(input$use, {
   output$text <- renderUI({
-    tagList(h1("How to use the Evidence and Gap Map (EGM)"),
+    tagList(h2("How to use the Evidence and Gap Map (EGM)"),
             
-            h2("What the self-harm EGM can and can’t do"),
+            h3("What the self-harm EGM can and can’t do"),
             p("The self-harm EGM", tags$b("does"), ":"),
             tags$ul(
               tags$li("Provide a visual representation of the evidence landscape"),
@@ -39,14 +39,15 @@ observeEvent(input$use, {
               tags$li("Tell you all of the information you will need to know to make decisions. EGMs work best when considered alongside other data and intelligence."),
             ),
             
-            h2("How the EGM is organised"),
+            h3("How the EGM is organised"),
             p("The EGM is organised into a matrix. Reviews are thematically categorised by domains/subdomains into rows and allocated to columns based on whether the review explores association of risk/protective factors with self-harm or interventions for self-harm.
             More information about the domains and subdomains are in ", tags$a(href = "https://publichealthscotland.scot/publications/children-and-young-people-mental-health-indicator-resources/",
                                                                                 tags$b("Public Health Scotland's children and young people mental health indicator resources"))
               ),
             p("The intersecting cell in the matrix shows either a coloured shape for that combination of domain/subdomain and review type (green square = risk/protective factor reviews and blue circle = intervention reviews) or an empty cell. The size of the shape gives an indication of the quantity of available reviews and hovering over it provides the exact number of reviews. An empty cell indicates that review-level evidence is lacking."),
             p("Clicking on the shapes in the cell retrieves the underlying reference(s) and study details in an evidence table."),
-            h2("How the table is organised"),
+            
+            h3("How the table is organised"),
             p("The table presents key characteristics of each included review, such as:"),
             tags$ul(
               tags$li("author and date"),
@@ -64,7 +65,7 @@ observeEvent(input$use, {
             p("Shaded rows highlight empty reviews."),
             p("The table has a free-text search function and the search results or the full table can be downloaded as CSV file."),
             
-            h2("How the filters work"),
+            h3("How the filters work"),
             p("Using the filters helps to refine the EGM and limit the contents of the matrix to specific types of evidence. The EGM can be filtered by:"),
             tags$ul(
               tags$li("outcome definition"),
@@ -85,13 +86,13 @@ observeEvent(input$use, {
 observeEvent(input$methodology, {
   output$text <- renderUI({
     tagList(
-      h1("Methodology"),
+      h2("Methodology"),
       
-      h2("Technical report"),
+      h3("Technical report"),
       p("The self-harm EGM has been populated using a comprehensive and systematic methodology. The technical report outlines the research questions, documents the search strategy, sets out the inclusion and exclusion criteria, and outlines relevant processes and software used:"),
       p("[Insert Technical report link] – Self-harm EGM technical report"),
       
-      h2("Last updated"),
+      h3("Last updated"),
       p("The search for evidence included in the evidence and gap map was last conducted in March 2023.")
     ) #tagList
   })
@@ -100,7 +101,7 @@ observeEvent(input$methodology, {
  
 observeEvent(input$contact, {
   output$text <- renderUI({
-    tagList(h1("Contact us"),
+    tagList(h2("Contact us"),
             p("We would be grateful for any feedback about the evidence and gap map, and how it is being used."),
             p("If you have any questions or comments, please contact us at ", tags$a(href="mailto:phs.egm@phs.scot", "phs.egm@phs.scot"), "."),
     )# tagList
