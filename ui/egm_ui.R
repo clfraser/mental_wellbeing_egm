@@ -40,6 +40,26 @@ mainTab <- tabPanel(
                    # Filters
                   div(id = "all_filters", # Create div for the Cicerone tour
                       
+                  ### New tree filter tests
+                  # Domains and sub-domains with shinyTree
+                  shinyTree(
+                    "domain_subs_tree",
+                    checkbox = TRUE,
+                    themeIcons = FALSE,
+                    themeDots = FALSE,
+                    
+                  ),
+                  
+                  # Sub-outcome definition with virtual select input
+                  virtualSelectInput(
+                    inputId = "sel2",
+                    label = "Group choices:",
+                    choices = prepare_choices(domains_subs_for_tree, subdomain, subdomain, domain),
+                    multiple = TRUE,
+                    disableOptionGroupCheckbox = FALSE
+                  ),
+                      
+                      
                    # Sub-outcome definition
                    treeInput(
                      inputId = "outcome",
@@ -140,7 +160,7 @@ mainTab <- tabPanel(
                     id = "tabset",
                     tabPanel("EGM",
                              linebreaks(1),
-                             actionButton("show_egm_numbers", "See EGM as a table"),
+                             actionButton("show_egm_numbers", "See EGM as text"),
                              linebreaks(2),
                              withNavySpinner(reactableOutput("egm")), value = "graph"),
                     tabPanel("Table",

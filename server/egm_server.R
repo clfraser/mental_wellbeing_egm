@@ -301,7 +301,6 @@ output$egm_numbers <- renderReactable({
       defaultColDef = colDef(
         align = 'center',
         width = 150),
-      groupBy = "domain",
       defaultExpanded = TRUE,
       bordered = TRUE,
       striped = TRUE,
@@ -309,11 +308,7 @@ output$egm_numbers <- renderReactable({
       #height = 2050,
       columns = list(
         domain = colDef(name = "Domain",
-                        width = 150,
-                        # Render grouped cells without the row count
-                        grouped = JS("function(cellInfo) {
-                          return cellInfo.value
-                          }")),
+                        width = 150),
         subdomain = colDef(name = "Sub-domain",
                            width = 150),
         Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor"),
