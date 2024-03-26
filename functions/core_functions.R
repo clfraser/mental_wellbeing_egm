@@ -43,6 +43,18 @@ domains_subs_for_tree <- reviews_chart %>%
   select(domain, subdomain) %>%
   distinct(domain, subdomain) %>%
   arrange(domain, subdomain)
+# %>%
+#   mutate(parent = domain) %>%
+#   pivot_longer(cols = c("domain", "subdomain"), values_to = "id") %>%
+#   distinct() %>%
+#   mutate(parent = as.character(parent),
+#          parent = if_else(parent == id, "#", parent)) %>%
+#   select(-name) %>%
+#   mutate(text = id,
+#          state.opened = TRUE,
+#          state.selected = TRUE)
+
+domain_subs_list <- toJSON(domains_subs_for_tree)
 
 sub_outcomes_for_tree <- data.frame(
   first_level = rep("Any form of self-injurious thoughts and behaviours", 2),

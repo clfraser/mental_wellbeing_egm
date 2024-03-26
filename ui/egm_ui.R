@@ -41,6 +41,8 @@ mainTab <- tabPanel(
                   div(id = "all_filters", # Create div for the Cicerone tour
                       
                   ### New tree filter tests
+                  # Label for input
+                  tags$b("Select domains and subdomains:"),
                   # Domains and sub-domains with shinyTree
                   shinyTree(
                     "domain_subs_tree",
@@ -51,13 +53,13 @@ mainTab <- tabPanel(
                   ),
                   
                   # Sub-outcome definition with virtual select input
-                  virtualSelectInput(
-                    inputId = "sel2",
-                    label = "Group choices:",
-                    choices = prepare_choices(domains_subs_for_tree, subdomain, subdomain, domain),
-                    multiple = TRUE,
-                    disableOptionGroupCheckbox = FALSE
-                  ),
+                  # virtualSelectInput(
+                  #   inputId = "sel2",
+                  #   label = "Group choices:",
+                  #   choices = prepare_choices(domains_subs_for_tree, subdomain, subdomain, domain),
+                  #   multiple = TRUE,
+                  #   disableOptionGroupCheckbox = FALSE
+                  # ),
                       
                       
                    # Sub-outcome definition

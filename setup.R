@@ -19,6 +19,7 @@ library(janitor)
 library(jsonlite)
 library(stringr)
 library(readxl)
+library(jsonlite)
 
 # Plotting packages ----
 library(plotly)
