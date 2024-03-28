@@ -23,7 +23,6 @@ library(readxl)
 # Plotting packages ----
 library(plotly)
 library(ggh4x)
-library(ggiraph)
 
 # Package for relative file references (needed to deploy app) 
 library(here)
