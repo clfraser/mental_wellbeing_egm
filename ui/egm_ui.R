@@ -48,8 +48,7 @@ mainTab <- tabPanel(
                     "domain_subs_tree",
                     checkbox = TRUE,
                     themeIcons = FALSE,
-                    themeDots = FALSE,
-                    
+                    themeDots = FALSE
                   ),
                   
                   # Sub-outcome definition with virtual select input
