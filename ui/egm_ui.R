@@ -42,24 +42,11 @@ mainTab <- tabPanel(
                       
                   ### New tree filter tests
                   # Label for input
-                  tags$b("Select domains and subdomains:"),
-                  # Domains and sub-domains with shinyTree
-                  shinyTree(
-                    "domain_subs_tree",
-                    checkbox = TRUE,
-                    themeIcons = FALSE,
-                    themeDots = FALSE
-                  ),
-                  
-                  # Sub-outcome definition with virtual select input
-                  # virtualSelectInput(
-                  #   inputId = "sel2",
-                  #   label = "Group choices:",
-                  #   choices = prepare_choices(domains_subs_for_tree, subdomain, subdomain, domain),
-                  #   multiple = TRUE,
-                  #   disableOptionGroupCheckbox = FALSE
-                  # ),
-                      
+                  tags$span(
+                    tags$b("Select domain and sub-domain"), 
+                    actionButton("domains_defs", "", icon = icon("circle-info"))),
+                  # Domains and sub-domains with jsTreeR
+                  jstreeOutput("domains_tree"),
                       
                    # Sub-outcome definition
                    treeInput(

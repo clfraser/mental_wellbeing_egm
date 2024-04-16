@@ -7,12 +7,15 @@ observeEvent(input$egm_guide_button, {
   egm_guide$start()
 })
 
-## Render trees for shinyTree inputs
-output$domain_subs_tree <- renderTree({
-  dfToTree(domains_subs_for_tree, c("domain", "subdomain"))
+## Render trees for jsTreeR inputs
+output$domains_tree <- renderJstree({
+  jstree(
+    domain_subs_nodes,
+    checkboxes = TRUE
+  )
 })
 
-#### function for creating egm plot --------------------------------------------
+#### Create EGM plot  --------------------------------------------
 
 ## Reactive values
 
@@ -27,10 +30,11 @@ chart_data <- reactiveVal()
 chart_data(full_dataframe)
 
 # Reset filters when button clicked
-# Reset from the shinyjs package doesn't reset the tree (nested) checkboxes, so add these separately
+# Reset from the shinyjs package doesn't reset the tree (hierarchical) checkboxes, so add these separately
 
 observeEvent(input$clear_all_filters_top, {
   shinyjs::reset("filter_panel")
+  jstreeUpdate(session, "domains_tree", clear_tree(domains_df, "domain", "subdomain"))
   updateTreeInput(inputId = "outcome",
                   selected = character(0))
   updateTreeInput(inputId = "domains",
@@ -118,7 +122,7 @@ observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of review
 observeEvent(input$filter_update_top, {
   chart_data(reviews_chart %>%
                mutate(outcomes_filter = if(is.null(input$outcome) | "Any form of self-injurious thoughts and behaviours" %in% input$outcome) TRUE else if_else(outcome_definition %in% input$outcome, TRUE, FALSE),
-                      domains_filter = if(is.null(input$domains)) TRUE else if_else(subdomain %in% input$domains, TRUE, FALSE),
+                      domains_filter = if(is.null(input$domains_tree_selected)) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
                       age_filter = if(is.null(input$pop_age) | "All ages" %in% input$pop_age) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
                       sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
                       study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
@@ -258,6 +262,12 @@ type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", 
 observeEvent(input$click_details, {
   updateTreeInput(inputId = "outcome",
                   selected = "Any form of self-injurious thoughts and behaviours") # When there is more than one outcome, this will need to change
+  jstreeUpdate(session, "domains_tree",
+               domains_df %>%
+                 mutate(selected = case_when(input$click_details$subdomain == "" & input$click_details$domain == domain ~ TRUE,
+                                             input$click_details$subdomain == subdomain ~ TRUE),
+                                             .default = FALSE) %>%
+                 create_nodes_from_df("domain", "subdomain"))
   updateTreeInput(inputId = "domains",
                   selected = if_else(input$click_details$subdomain == "", input$click_details$domain, input$click_details$subdomain))
   updateTreeInput(inputId = "intervention_exposure",

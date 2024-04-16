@@ -40,7 +40,8 @@ navbarPage(
                                  includeCSS("www/css/popovers.css"), # popovers
                                  includeCSS("www/css/boxes.css"), # boxes
                                  includeCSS("www/css/value_box.css"), # valueBox for headline figures
-                                 includeCSS("www/css/info_box.css") # infoBox for summary page boxes
+                                 includeCSS("www/css/info_box.css"), # infoBox for summary page boxes
+                                 includeCSS("www/css/js_tree_r.css") # for heirarchical checkboxes
       
     ,  # CSS stylesheet
     collapsible = TRUE, # Make navigation bar collapse on smaller screens
@@ -73,6 +74,7 @@ server <- function(input, output, session) {
     # Get functions
     source(file.path("functions/core_functions.R"), local = TRUE)$value
     source(file.path("functions/intro_page_functions.R"), local = TRUE)$value
+    source(file.path("functions/egm_functions.R"), local = TRUE)$value
     source(file.path("functions/guided_tours.R"), local = TRUE)$value
 
     # Get server content for individual pages

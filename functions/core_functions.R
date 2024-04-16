@@ -37,38 +37,8 @@ dt <- DT::datatable(input_data_table, style = 'bootstrap',
   return(dt)
 }
 
-# Creating dataframes for trees (for hierarchical checkboxes to work)
-
-domains_subs_for_tree <- reviews_chart %>%
-  select(domain, subdomain) %>%
-  distinct(domain, subdomain) %>%
-  arrange(domain, subdomain)
-
-sub_outcomes_for_tree <- data.frame(
-  first_level = rep("Any form of self-injurious thoughts and behaviours", 2),
-  second_level = c("Exclusively non-suicidal self-harm", "Repetitive, compulsive self-injury")
-)
-
-age_for_tree <- data.frame(
-  first_level = rep("All ages", 2),
-  second_level = c("Exclusively 0-18 years", "Up to 25 years")
-)
-
-intervention_exposure_for_tree <- reviews_chart %>%
-  select(intervention_exposure_short, intervention_classification) %>%
-  mutate(intervention_classification = if_else(intervention_exposure_short == "Risk/protective factor", NA, intervention_classification)) %>%
-  distinct(intervention_exposure_short, intervention_classification) %>%
-  arrange(intervention_exposure_short)
-
-sub_population_for_tree <- reviews_chart %>%
-  select(overall_population, sub_population) %>%
-  distinct(overall_population, sub_population) %>%
-  arrange(overall_population)
-
-
 # Modify bubble_grid function for our purposes
 # Change some defaults so that it fits with what we're most likely to use
-# Modify in two ways: first, add a traingle as a third shape
 
 bubble_grid_modified <- function(data,
                                  shape = "circles",
