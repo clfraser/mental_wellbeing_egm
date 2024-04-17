@@ -35,41 +35,6 @@ create_nodes_from_df <- function(df_for_nodes, parent_level, child_level){
   return(nodes)
 }
 
-create_nodes_from_df_on_click <- function(df_for_nodes, parent_level, child_level){
-  
-  df_for_nodes_child <- df_for_nodes
-  
-  df_for_nodes_parent <- df_for_nodes %>%
-    arrange(-selected) %>%
-    group_by({{parent_level}}) %>%
-    slice(1) %>%
-    ungroup() # Can't have duplicate rownames, so just get each unique parent
-  
-  # Create separate DFs with different rownames for child or parent
-  rownames(df_for_nodes_child) <- df_for_nodes_child[[child_level]]
-  rownames(df_for_nodes_parent) <- df_for_nodes_parent[[parent_level]]
-  
-  dat <- df_for_nodes %>%
-    split(df_for_nodes[[parent_level]])
-  
-  nodes <- lapply(names(dat), function(parent){
-    list(
-      text = parent,
-      state =
-        list(opened = TRUE, selected = df_for_nodes_parent[parent, "selected"]),
-      children = lapply(dat[[parent]][[child_level]][dat[[parent]][[child_level]] != "Exclude"], function(child){
-        list(
-          text = child,
-          state =
-            list(selected = df_for_nodes_child[child, "selected"])
-        )
-      })
-    )
-  })
-  
-  return(nodes)
-}
-
 # Clear heirarchical checkboxes
 
 clear_tree <- function(df, parent_level, child_level){
