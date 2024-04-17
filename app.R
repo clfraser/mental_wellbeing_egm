@@ -16,7 +16,7 @@ walk(list.files("ui", full.names = TRUE), ~ source(.x))
 
 # UI
 ui <- 
-  secure_app( # For password protection
+#  secure_app( # For password protection
   
   fluidPage(
 tagList(
@@ -26,10 +26,9 @@ tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css)
 navbarPage(
     id = "intabset", # id used for jumping between tabs
     title = div(
-        tags$a(img(src = "phs-logo-updated.png", height = 40),
+        tags$a(img(src = "phs-logo-updated.png", height = 40, alt = "Link to Public Health Scotland website. Opens in a new tab.")),
                href = "https://www.publichealthscotland.scot/",
                target = "_blank",
-               alt = "Link to Public Health Scotland website. Opens in a new tab."), # PHS logo links to PHS website
     style = "position: relative; top: -5px;"),
     windowTitle = "Mental health EGM",# Title for browser tab
     header = tags$head(          includeCSS("www/css/main.css"),  # Main
@@ -58,7 +57,7 @@ linksTab
 ) # navbar
 ) # taglist
 ) # ui fluidpage
- ) # Secure app, for password protection
+# ) # Secure app, for password protection
 
 # Server
 

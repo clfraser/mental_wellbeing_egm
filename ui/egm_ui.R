@@ -41,69 +41,37 @@ mainTab <- tabPanel(
                   div(id = "all_filters", # Create div for the Cicerone tour
                       
                   ### New tree filter tests
+                      
+                   # Sub-outcome definition
+                  tags$span(
+                    tags$b("Select outcome definition"), 
+                    actionButton("outcome_defs", "", icon = icon("circle-info"))),
+                  jstreeOutput("outcome_tree"),
+                  
                   # Label for input
                   tags$span(
                     tags$b("Select domain and sub-domain"), 
                     actionButton("domains_defs", "", icon = icon("circle-info"))),
                   # Domains and sub-domains with jsTreeR
                   jstreeOutput("domains_tree"),
-                      
-                   # Sub-outcome definition
-                   treeInput(
-                     inputId = "outcome",
-                     label = tags$span(
-                       "Select outcome definition", 
-                       actionButton("outcome_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(sub_outcomes_for_tree),
-                     selected = NULL,
-                     returnValue = "text",
-                     closeDepth = 2
-                   ),
-                   
-                   # Domains and sub-domains
-                   treeInput(
-                     inputId = "domains",
-                     label = tags$span(
-                       "Select domain and sub-domain", 
-                       actionButton("domains_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(domains_subs_for_tree),
-                     selected = NULL,
-                     returnValue = "text",
-                     closeDepth = 1
-                   ),
                    
                    # Intervention or exposure and intervention classification
-                   treeInput(
-                     inputId = "intervention_exposure",
-                     label = tags$span("Select reviews looking at interventions or risk/protective factors, and the intervention classification:",
-                                       actionButton("int_exposure_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(intervention_exposure_for_tree),
-                     selected = NULL,
-                     returnValue = "text",
-                     closeDepth = 1
-                   ),
+                  tags$span(
+                    tags$b("Select reviews looking at interventions or risk/protective factors, and the intervention classification"), 
+                    actionButton("int_exposure_defs", "", icon = icon("circle-info"))),
+                  jstreeOutput("intervention_risk_tree"),
                    
                    # Population age
-                   treeInput(
-                     inputId = "pop_age",
-                     label = tags$span("Select population age:",
-                                       actionButton("pop_age_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(age_for_tree),
-                     selected = NULL,
-                     returnValue = "text",
-                     closeDepth = 1
-                   ),
+                  tags$span(
+                    tags$b("Select population age"), 
+                    actionButton("pop_age_defs", "", icon = icon("circle-info"))),
+                  jstreeOutput("age_tree"),
                    
                    # Population characteristics
-                   treeInput(
-                     inputId = "pop_characteristics",
-                     label = tags$span("Select population characteristics:",
-                                       actionButton("pop_characteristics_defs", "", icon = icon("circle-info"))),
-                     choices = create_tree(sub_population_for_tree),
-                     selected = NULL,
-                     returnValue = "text",
-                     closeDepth = 1
-                   ),
+                  tags$span(
+                    tags$b("Select population characteristics"), 
+                    actionButton("pop_characteristics_defs", "", icon = icon("circle-info"))),
+                  jstreeOutput("sub_pop_tree"),
                    
                    # Study setting
                    checkboxGroupInput(
@@ -148,6 +116,7 @@ mainTab <- tabPanel(
                     id = "tabset",
                     tabPanel("EGM",
                              linebreaks(1),
+                             #tableOutput("chart_data"),
                              actionButton("show_egm_numbers", "See EGM as text"),
                              linebreaks(2),
                              withNavySpinner(reactableOutput("egm")), value = "graph"),

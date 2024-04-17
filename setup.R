@@ -11,7 +11,7 @@ library(tippy)
 library(shinyjs)
 library(shinyBS)
 library(cicerone)
-library(shinyTree)
+library(jsTreeR)
 
 # Data wrangling packages ----
 library(tidyverse)

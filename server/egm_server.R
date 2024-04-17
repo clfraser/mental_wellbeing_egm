@@ -8,9 +8,37 @@ observeEvent(input$egm_guide_button, {
 })
 
 ## Render trees for jsTreeR inputs
+output$outcome_tree <- renderJstree({
+  jstree(
+    outcome_nodes,
+    checkboxes = TRUE
+  )
+})
+
 output$domains_tree <- renderJstree({
   jstree(
     domain_subs_nodes,
+    checkboxes = TRUE
+  )
+})
+
+output$age_tree <- renderJstree({
+  jstree(
+    age_nodes,
+    checkboxes = TRUE
+  )
+})
+
+output$intervention_risk_tree <- renderJstree({
+  jstree(
+    intervention_risk_nodes,
+    checkboxes = TRUE
+  )
+})
+
+output$sub_pop_tree <- renderJstree({
+  jstree(
+    sub_pop_nodes,
     checkboxes = TRUE
   )
 })
@@ -34,37 +62,16 @@ chart_data(full_dataframe)
 
 observeEvent(input$clear_all_filters_top, {
   shinyjs::reset("filter_panel")
+  jstreeUpdate(session, "outcome_tree", clear_tree(outcome_df, "first_level", "second_level"))
   jstreeUpdate(session, "domains_tree", clear_tree(domains_df, "domain", "subdomain"))
-  updateTreeInput(inputId = "outcome",
-                  selected = character(0))
-  updateTreeInput(inputId = "domains",
-                  selected = character(0))
-  updateTreeInput(inputId = "pop_age",
-                  selected = character(0))
-  updateTreeInput(inputId = "pop_characteristics",
-                  selected = character(0))
-  updateTreeInput(inputId = "intervention_exposure",
-                  selected = character(0))
+  jstreeUpdate(session, "age_tree", clear_tree(age_df, "first_level", "second_level"))
+  jstreeUpdate(session, "intervention_risk_tree", clear_tree(intervention_risk_df, "intervention_exposure_short", "intervention_classification"))
+  jstreeUpdate(session, "sub_pop_tree", clear_tree(sub_pop_df, "overall_population", "sub_population"))
   
   chart_data(full_dataframe)
 })
 
 ## Show modals with definitions for filter options
-
-# Write a function to create appropriate modals
-defs_topic_modal <- function(topic){
-  defs_filtered <- glossary_list %>%
-    filter(Topic == topic) %>%
-    select(-Topic)
-  
-  output$defs_table <- renderTable(defs_filtered)
-  
-  showModal(modalDialog(
-    title = paste(topic, "definitions"),
-    tableOutput("defs_table"),
-    easyClose = TRUE
-  ))
-}
 
 # Create observe events for clicking each info button
 # Some information is different from the list of definitions in the glossary
@@ -121,12 +128,12 @@ observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of review
 
 observeEvent(input$filter_update_top, {
   chart_data(reviews_chart %>%
-               mutate(outcomes_filter = if(is.null(input$outcome) | "Any form of self-injurious thoughts and behaviours" %in% input$outcome) TRUE else if_else(outcome_definition %in% input$outcome, TRUE, FALSE),
-                      domains_filter = if(is.null(input$domains_tree_selected)) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
-                      age_filter = if(is.null(input$pop_age) | "All ages" %in% input$pop_age) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
-                      sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
+               mutate(outcomes_filter = if(is.null(unlist(input$outcome_tree_selected)) | "Any form of self-injurious thoughts and behaviours" %in% unlist(input$outcome_tree_selected)) TRUE else if_else(outcome_definition %in% input$outcome, TRUE, FALSE),
+                      domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
+                      age_filter = if(is.null(unlist(input$age_tree_selected)) | "All ages" %in% unlist(input$age_tree_selected)) TRUE else if_else(age %in% unlist(input$age_tree_selected), TRUE, FALSE),
+                      sub_pop_filter = if(is.null(unlist(input$sub_pop_tree_selected))) TRUE else if_else(sub_population %in% unlist(input$sub_pop_tree_selected) | ("General population" %in% unlist(input$sub_pop_tree_selected) & is.na(sub_population)), TRUE, FALSE),
                       study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
-                      int_exposure_filter = if(is.null(input$intervention_exposure)) TRUE else if_else(("Risk/protective factor" %in% input$intervention_exposure & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% input$intervention_exposure & intervention_exposure_short == "Intervention"), TRUE, FALSE),
+                      int_exposure_filter = if(is.null(unlist(input$intervention_risk_tree_selected))) TRUE else if_else(("Risk/protective factor" %in% unlist(input$intervention_risk_tree_selected) & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% unlist(input$intervention_risk_tree_selected) & intervention_exposure_short == "Intervention"), TRUE, FALSE),
                       synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
                       qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
                       pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
@@ -134,6 +141,9 @@ observeEvent(input$filter_update_top, {
                                            qual_appraisal_filter +
                                            pre_reg_filter  + dummy == 9, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
   })
+
+# Print out chart data for debugging
+#output$chart_data <- renderTable(chart_data())
 
 # Get data into the right format for the EGM
 count_pivot <- reactive({
@@ -205,7 +215,7 @@ reactable(
                                       tooltip = TRUE,
                                       shape = "squares"
                                     )),
-    Self_harm.Risk_protective_factor = colDef(name = "Risk/preventative factor",
+    Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor",
                            cell = bubble_grid_modified(
                              data = egm_agg_disag(),
                              colors = '#3F3685',
@@ -260,18 +270,24 @@ type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", 
 # When the map is clicked, select the relevant filters and then filter the dataframe
 
 observeEvent(input$click_details, {
-  updateTreeInput(inputId = "outcome",
-                  selected = "Any form of self-injurious thoughts and behaviours") # When there is more than one outcome, this will need to change
-  jstreeUpdate(session, "domains_tree",
+  jstreeUpdate(session,
+               "outcome_tree",
+               outcome_df %>%
+                 mutate(selected = TRUE) %>% # When there is more than one outcome, this will need to change
+                 create_nodes_from_df("first_level", "second_level")
+  )
+  jstreeUpdate(session,
+               "domains_tree",
                domains_df %>%
                  mutate(selected = case_when(input$click_details$subdomain == "" & input$click_details$domain == domain ~ TRUE,
-                                             input$click_details$subdomain == subdomain ~ TRUE),
-                                             .default = FALSE) %>%
+                                             input$click_details$subdomain == subdomain ~ TRUE,
+                                             .default = FALSE)) %>%
                  create_nodes_from_df("domain", "subdomain"))
-  updateTreeInput(inputId = "domains",
-                  selected = if_else(input$click_details$subdomain == "", input$click_details$domain, input$click_details$subdomain))
-  updateTreeInput(inputId = "intervention_exposure",
-                  selected = type_click())
+  jstreeUpdate(session,
+               "intervention_risk_tree",
+               intervention_risk_df %>%
+                 mutate(selected = if_else(intervention_exposure_short == type_click(), TRUE, FALSE)) %>%
+                 create_nodes_from_df("intervention_exposure_short", "intervention_classification"))
   chart_data(reviews_chart %>%
                mutate(outcomes_filter = TRUE, # Would need to be more sophisticated if other outcomes
                       domains_filter = 
@@ -280,8 +296,8 @@ observeEvent(input$click_details, {
                        else
                                 if_else(subdomain %in% input$click_details$subdomain, TRUE, FALSE),
                       int_exposure_filter = if_else((type_click() == "Risk/protective factor" & intervention_exposure_short == "Risk/protective factor") | (type_click() == "Intervention" & intervention_exposure_short == "Intervention"), TRUE, FALSE),
-                      age_filter = if(is.null(input$pop_age) | "All ages" %in% input$pop_age) TRUE else if_else(age %in% input$pop_age, TRUE, FALSE),
-                      sub_pop_filter = if(is.null(input$pop_characteristics)) TRUE else if_else(sub_population %in% input$pop_characteristics | ("General population" %in% input$pop_characteristics & is.na(sub_population)), TRUE, FALSE),
+                      age_filter = if(is.null(unlist(input$age_tree_selected)) | "All ages" %in% unlist(input$age_tree_selected)) TRUE else if_else(age %in% unlist(input$age_tree_selected), TRUE, FALSE),
+                      sub_pop_filter = if(is.null(unlist(input$sub_pop_tree_selected))) TRUE else if_else(sub_population %in% unlist(input$sub_pop_tree_selected) | ("General population" %in% unlist(input$sub_pop_tree_selected) & is.na(sub_population)), TRUE, FALSE),
                       study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
                       synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
                       qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
