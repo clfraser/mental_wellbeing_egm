@@ -16,7 +16,7 @@ walk(list.files("ui", full.names = TRUE), ~ source(.x))
 
 # UI
 ui <- 
-#  secure_app( # For password protection
+secure_app( # For password protection
   
   fluidPage(
 tagList(
@@ -57,7 +57,7 @@ linksTab
 ) # navbar
 ) # taglist
 ) # ui fluidpage
-# ) # Secure app, for password protection
+) # Secure app, for password protection
 
 # Server
 

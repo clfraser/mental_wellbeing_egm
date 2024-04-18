@@ -44,39 +44,41 @@ mainTab <- tabPanel(
                       
                    # Sub-outcome definition
                   tags$span(
-                    tags$b("Select outcome definition"), 
+                    tags$label("Select outcome definition"), 
                     actionButton("outcome_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about outcome definitions"))),
                   jstreeOutput("outcome_tree"),
                   
                   # Label for input
                   tags$span(
-                    tags$b("Select domain and sub-domain"), 
+                    tags$label("Select domain and sub-domain"), 
                     actionButton("domains_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about domains and subdomains"))),
                   # Domains and sub-domains with jsTreeR
                   jstreeOutput("domains_tree"),
                    
                    # Intervention or exposure and intervention classification
                   tags$span(
-                    tags$b("Select reviews looking at interventions or risk/protective factors, and the intervention classification"), 
+                    tags$label("Select reviews looking at interventions or risk/protective factors, and the intervention classification"), 
                     actionButton("int_exposure_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about interventions and risk/protective factors"))),
                   jstreeOutput("intervention_risk_tree"),
                    
                    # Population age
                   tags$span(
-                    tags$b("Select population age"), 
+                    tags$label("Select population age"), 
                     actionButton("pop_age_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about population age"))),
                   jstreeOutput("age_tree"),
                    
                    # Population characteristics
                   tags$span(
-                    tags$b("Select population characteristics"), 
+                    tags$label("Select population characteristics"), 
                     actionButton("pop_characteristics_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about population characteristics"))),
                   jstreeOutput("sub_pop_tree"),
+                  
+                  linebreaks(1),
                    
                    # Study setting
                    checkboxGroupInput(
                      inputId = "study_setting_input",
-                     label = tags$span("Select study setting:",
+                     label = tags$span("Select study setting",
                                        actionButton("study_setting_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about study setting"))),
                      choices = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres"),
                      selected = NULL
@@ -85,7 +87,7 @@ mainTab <- tabPanel(
                    # Type of synthesis
                    checkboxGroupInput(
                      inputId = "synth_type_input",
-                     label = tags$span("Select type of synthesis:",
+                     label = tags$span("Select type of synthesis",
                                        actionButton("synth_type_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about types of synthesis"))),
                      choices = c("Systematic review with meta-analysis", "Systematic review with narrative synthesis", "Other review with narrative synthesis", "Scoping evidence mapping"),
                      selected = NULL
@@ -116,15 +118,23 @@ mainTab <- tabPanel(
                     id = "tabset",
                     tabPanel("EGM",
                              linebreaks(1),
-                             actionButton("show_egm_numbers", "See EGM as text", `aria-label` = "The visual evidence and gap map (EGM) is not accessible via screenreader. Please click this button to access and download a text version of the EGM. You can use the filters to update this."),
+                             actionButton("show_egm_numbers", "Show EGM as text", `aria-label` = "Show EGM as text button. The visual evidence and gap map (EGM) is not accessible via screenreader. Please click this button to access and download a text version of the EGM. You can use the filters to update this."),
                              linebreaks(2),
-                             withNavySpinner(reactableOutput("egm")), value = "graph"),
+                             tags$div(withNavySpinner(reactableOutput("egm")), value = "graph", 'aria-label' = "The visual EGM is not accessible by screen reader. Please use the Show EGM as text button above to access an accessible version."),
+                             # This is meant to focus on the show EGM as text modal, but it's not working
+                             tags$script(HTML(
+                               "Shiny.addCustomMessageHandler('focusModal', function(message) {
+      // Set focus to the modal content
+      $('#show_egm_numbers_modal').focus();
+    });"
+                             ))),
                     tabPanel("Table",
                              linebreaks(1),
-                             textOutput("record_count"),
+                             textOutput("record_count") %>% 
+                               tagAppendAttributes(class = 'box-info'),
                              linebreaks(1),
-                             p("Note: shaded rows indicate empty reviews"),
-                             linebreaks(1),
+                             box("Note: shaded rows indicate empty reviews"),
+                             linebreaks(3),
                              csvDownloadButton("reviews_table", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
                              withNavySpinner(reactableOutput("reviews_table")),
                              value = "table"))) # For switching tabs on click

@@ -9,10 +9,9 @@
   min-height: 100px;
   background: #fff;
   width: 100%;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   margin-bottom: 15px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .info-box small {
@@ -81,10 +80,10 @@ a > .info-box {
   color: #333;
 }
 
-.info-box-icon.bg-green { background-color:var(--phs-green); color: white;  }
-.info-box-icon.bg-purple { background-color:var(--phs-purple); color: white; }
-.info-box-icon.bg-blue { background-color:var(--phs-blue); color: white; }
-.info-box-icon.bg-fuchsia { background-color:var(--phs-magenta); color:white; }
-.info-box-icon.bg-olive { background-color:var(--phs-graphite);color: white;  }
-.info-box-icon.bg-teal { background-color:var(--phs-teal);  color: white; }
-.info-box-icon.bg-red { background-color:var(--phs-rust);  color: white; }
+.info-box.bg-green { background-color:var(--phs-green); color: white;  }
+.info-box.bg-purple { background-color:var(--phs-purple); color: white; }
+.info-box.bg-blue { background-color:var(--phs-blue); color: white; }
+.info-box.bg-fuchsia { background-color:var(--phs-magenta); color:white; }
+.info-box.bg-olive { background-color:var(--phs-graphite);color: white;  }
+.info-box.bg-teal { background-color:var(--phs-teal);  color: white; }
+.info-box.bg-red { background-color:var(--phs-rust);  color: white; }

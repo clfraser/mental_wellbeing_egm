@@ -41,11 +41,18 @@
 .box {
   background-color: var(--phs-liberty-10);
   border-radius: 5px 5px 5px 5px;
-  box-shadow: 0 8px 8px var(--phs-blue-30)
+  padding: 10px 20px;
+  margin: 0px 10px 0px 10px;
+  display: inline-block;
 }
 
-/* boxes for summary page*/
+/* box for total reviews count*/
 .box-info {
-   background-color: var(--phs-blue-10);
-   box-shadow: 0 8px 8px var(--phs-blue-30)
+  background-color: var(--phs-teal-30);
+  border-radius: 5px 5px 5px 5px;
+  padding: 10px 20px;
+  margin: 0px 10px 10px 0px;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 18px;
 }

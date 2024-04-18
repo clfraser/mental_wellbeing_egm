@@ -29,7 +29,7 @@ egm_guide <- Cicerone$
   step(
     "show_egm_numbers",
     "See EGM as a table",
-    "See a table of the number of reviews included in the EGM. This takes account of any filters applied. You can download the table as a CSV."
+    "See a table of the number of reviews included in the EGM. This takes account of any filters applied. You can download the table as a CSV. The visual EGM (below) is not screenreader accessible, so please use this button for an accessible version of the table."
   )$
   step(
     "all_filters",

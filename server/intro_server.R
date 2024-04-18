@@ -21,6 +21,7 @@ ignoreNULL = FALSE) # so that this text loads initially, before a button is clic
 observeEvent(input$use, {
   output$text <- renderUI({
     tagList(h2("How to use the Evidence and Gap Map (EGM)"),
+            tags$video(id="overview_video", type = "video/mp4", src = "www/test_video.mp4", width = "1080px", height = "480px", controls = "controls"),
             
             h3("What the self-harm EGM can and can’t do"),
             p("The self-harm EGM", tags$b("does"), ":"),

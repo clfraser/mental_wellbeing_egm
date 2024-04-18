@@ -350,8 +350,11 @@ output$egm_numbers <- renderReactable({
 
 observeEvent(input$show_egm_numbers, {
   showModal(modalDialog(
+    id = "show_egm_numbers_modal",
     title = "Evidence and gap map counts",
     csvDownloadButton("egm_numbers", filename = "egm_counts.csv"), # To download table as a CSV (defined in core functions script)
+    linebreaks(1),
+    p("This table can be filtered by using the filters on the main page. Change the filters and click back on 'Show EGM as text' to get an updated table."),
     linebreaks(1),
     reactableOutput("egm_numbers"),
     easyClose = TRUE,

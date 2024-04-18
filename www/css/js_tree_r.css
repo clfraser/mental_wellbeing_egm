@@ -11,4 +11,6 @@
     height : auto !important;
     /*offset icon width*/
     padding-right : 24px;
+    /*set text colour*/
+    color: #010068 !important;
 }
