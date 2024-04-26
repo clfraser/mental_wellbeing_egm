@@ -7,6 +7,13 @@ observeEvent(input$egm_guide_button, {
   egm_guide$start()
 })
 
+# Switch tab on video link button click
+
+observeEvent(input$video_link_button, {
+  output$text <- renderUI(intro_use_ui)
+  updateTabsetPanel(session, "intabset", selected = "intro")
+})
+
 ## Render trees for jsTreeR inputs
 output$outcome_tree <- renderJstree({
   jstree(
@@ -94,17 +101,53 @@ observeEvent(input$outcome_defs, {
 
 # Domains and subdomains information
 observeEvent(input$domains_defs, {
-  domain_defs_filtered <- glossary_list %>%
-    filter(Topic == "Domains and subdomains") %>%
+  domain_defs_overall <- glossary_list %>%
+    filter(Topic == "Domains and subdomains - overall") %>%
     select(-Topic)
   
-  output$domain_defs_table <- renderTable(domain_defs_filtered)
+  domain_defs_individual <- glossary_list %>%
+    filter(Topic == "Domains and subdomains - individual") %>%
+    select(-Topic)
+  
+  domain_defs_family <- glossary_list %>%
+    filter(Topic == "Domains and subdomains - family and friends") %>%
+    select(-Topic)
+  
+  domain_defs_learning <- glossary_list %>%
+    filter(Topic == "Domains and subdomains - learning environment") %>%
+    select(-Topic)
+  
+  domain_defs_community <- glossary_list %>%
+    filter(Topic == "Domains and subdomains - community") %>%
+    select(-Topic)
+  
+  domain_defs_structural <- glossary_list %>%
+    filter(Topic == "Domains and subdomains - structural") %>%
+    select(-Topic)
+  
+  output$domain_defs_overall_table <- renderTable(domain_defs_overall)
+  output$domain_defs_individual_table <- renderTable(domain_defs_individual)
+  output$domain_defs_family_table <- renderTable(domain_defs_family)
+  output$domain_defs_learning_table <- renderTable(domain_defs_learning)
+  output$domain_defs_community_table <- renderTable(domain_defs_community)
+  output$domain_defs_structural_table <- renderTable(domain_defs_structural)
   
   showModal(modalDialog(
     title = "Domain and subdomain definitions",
     "Determinants of mental health are a range of factors that influence our mental health and wellbeing. The EGM uses the Public Health Scotland mental health indicator framework to map how the circumstances in which children and young people live shape their mental health outcomes. The determinants are grouped according to domains and subdomains.",
     linebreaks(2),
-    tableOutput("domain_defs_table"),
+    tags$b("Overall definitions"),
+    tableOutput("domain_defs_overall_table"),
+    tags$b("Individual subdomain definitions"),
+    tableOutput("domain_defs_individual_table"),
+    tags$b("Family and friends subdomain definitions"),
+    tableOutput("domain_defs_family_table"),
+    tags$b("Learning environment subdomain definitions"),
+    tableOutput("domain_defs_learning_table"),
+    tags$b("Community subdomain definitions"),
+    tableOutput("domain_defs_community_table"),
+    tags$b("Structural subdomain definitions"),
+    tableOutput("domain_defs_structural_table"),
     easyClose = TRUE))
 })
 

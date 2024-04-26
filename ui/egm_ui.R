@@ -11,6 +11,8 @@ mainTab <- tabPanel(
   fluidPage(
     use_cicerone(), # Include Cicerone to give a guide of the page
     actionButton("egm_guide_button", "Click here for a guided tour of the page"),
+    linebreaks(2),
+    actionButton("video_link_button", "Click here to see walkthrough videos"),
     # Set checkbox colour
     tags$head(tags$style("input[type=checkbox] { accent-color: DodgerBlue; }")),
     ## Page titles
