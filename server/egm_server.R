@@ -202,10 +202,9 @@ count_pivot <- reactive({
            intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
     pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
     mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
-    select(-Self_harm.NA) %>%
     arrange(domain) %>%
     mutate(padding = "") %>%
-    relocate(padding)
+    select(padding, domain, subdomain, Self_harm.Risk_protective_factor, Self_harm.Intervention)
 })
 
 # Create aggregated EGM table
@@ -219,10 +218,9 @@ egm_aggregated_count <- reactive({
            intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
     pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
     mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
-    select(-Self_harm.NA) %>%
     arrange(domain) %>%
     mutate(subdomain = "") %>%
-    relocate(subdomain, .after = domain)
+    select(domain, subdomain, Self_harm.Risk_protective_factor, Self_harm.Intervention)
 })
 
 # Create table with both aggregated and disaggregated data
@@ -255,14 +253,14 @@ reactable(
   columns = list(
     domain = colDef(name = "Domain"),
     subdomain = colDef(name = "Sub-domain"),
-    Self_harm.Intervention = colDef(name = "Intervention",
+    Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor",
                                     cell = bubble_grid_modified(
                                       data = egm_agg_disag(),
                                       colors = '#83BB26',
                                       tooltip = TRUE,
                                       shape = "squares"
                                     )),
-    Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor",
+    Self_harm.Intervention = colDef(name = "Intervention",
                            cell = bubble_grid_modified(
                              data = egm_agg_disag(),
                              colors = '#3F3685',
@@ -288,7 +286,7 @@ reactable(
                                 width = 150),
                 subdomain = colDef(name = "Sub-domain",
                                    width = 150),
-                Self_harm.Intervention = colDef(name = "",
+                Self_harm.Risk_protective_factor = colDef(name = "",
                                                 vAlign = "bottom",
                                                 cell = bubble_grid_modified(
                                                   data = egm_agg_disag(),
@@ -296,7 +294,7 @@ reactable(
                                                   tooltip = TRUE,
                                                   shape = "squares"
                                                 )),
-                Self_harm.Risk_protective_factor = colDef(name = "",
+                Self_harm.Intervention = colDef(name = "",
                                                           vAlign = "top",
                                                           cell = bubble_grid_modified(
                                                             data = egm_agg_disag(),
