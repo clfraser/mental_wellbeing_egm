@@ -4,13 +4,10 @@
 egm_guide$init()
 
 observeEvent(input$egm_guide_button, {
-  # # Switch to the EGM panel to show walkthrough
-  # updateTabsetPanel(session, "tabset_egm", selected = "EGM")
-  # # Only start the walkthrough once on the EGM panel
-  # observe_guide <- observeEvent(input$tabset_egm == "EGM", {
-    egm_guide$start()
-  #   observe_guide$destroy()
-  # })
+  # Switch to the EGM panel to show walkthrough
+  updateTabsetPanel(session, "tabset_egm", selected = "EGM")
+  # Use 'delay' to only start the walkthrough once on the EGM panel has been selected
+  delay(5, egm_guide$start())
 })
 
 # Switch tab on video link button click
