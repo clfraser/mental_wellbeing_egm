@@ -26,6 +26,7 @@ fluidRow(
   p("The self-harm EGM has been populated using a comprehensive and systematic methodology. The technical report outlines the research questions, documents the search strategy, sets out the inclusion and exclusion criteria, and outlines relevant processes and software used:"),
   p("[Insert Technical report link] – Self-harm EGM technical report"),
   
+  h2("Children and Young People Mental Health Indicator Set"),
   p("The EGM used the domains and subdomains identified in the Public Health Scotland Children and Young People Mental Health Indicator Set as a framework to categorise the evidence.
     An overview of the mental health indicator set and documents that summarise the rationale for the domains and constructs can be found here:",
   br(),
