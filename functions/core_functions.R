@@ -40,7 +40,6 @@ dt <- DT::datatable(input_data_table, style = 'bootstrap',
 # Set UI for 'how to use EGM' on intro page
 # Name this so it can be used when switching tabs
 intro_use_ui <- tagList(h2("How to use the Evidence and Gap Map (EGM)"),
-                        h3("Guided tour"),
                         p("You can click on the 'Click here for a guided tour of the page' button on the Evidence and gap map tab to get a quick guided tour."),
                         p("If you'd like more details, read the information below or watch our walkthrough and example videos."),
                         h3("Walkthrough video"),
