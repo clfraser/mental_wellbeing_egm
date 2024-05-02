@@ -27,7 +27,12 @@ observeEvent(input$use, {
 observeEvent(input$methodology, {
   output$text <- renderUI({
     tagList(
-      h2("Methodology"),
+      h3("Methodology"),
+      p("The research questions we sought to answer were:"),
+      tags$ul(
+        tags$li("What risks and protective factors are associated with self-harm in children?"),
+        tags$li("What policies and interventions might be effective in the primary prevention of self-harm in children?")
+      ),
       
       h3("Technical report"),
       p("The self-harm EGM has been populated using a comprehensive and systematic methodology. The technical report outlines the research questions, documents the search strategy, sets out the inclusion and exclusion criteria, and outlines relevant processes and software used:"),

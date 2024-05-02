@@ -117,7 +117,7 @@ mainTab <- tabPanel(
       ## Main panel for displaying outputs ----
       mainPanel(
         tabsetPanel(type = "tabs",
-                    id = "tabset",
+                    id = "tabset_egm",
                     tabPanel("EGM",
                              linebreaks(1),
                              actionButton("show_egm_numbers", "Show EGM as text", `aria-label` = "Show EGM as text button. The visual evidence and gap map (EGM) is not accessible via screenreader. Please click this button to access and download a text version of the EGM. You can use the filters to update this."),
@@ -130,16 +130,18 @@ mainTab <- tabPanel(
       $('#show_egm_numbers_modal').focus();
     });"
                              ))),
-                    tabPanel("Table",
+                    tabPanel("Included reviews",
                              linebreaks(1),
                              textOutput("record_count") %>% 
                                tagAppendAttributes(class = 'box-info'),
                              linebreaks(1),
-                             box("Note: shaded rows indicate empty reviews"),
+                             box("Note: shaded rows indicate empty reviews",
+                                 actionButton("empty_defs", "", icon = icon("circle-info", `aria-label` = "Click for a definition of empty reviews"))
+                                 ),
                              linebreaks(3),
                              csvDownloadButton("reviews_table", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
                              withNavySpinner(reactableOutput("reviews_table")),
-                             value = "table"))) # For switching tabs on click
+                             value = "included_reviews"))) # For switching tabs on click
     )
   )# Sidebar layout
 ) #Tab panel

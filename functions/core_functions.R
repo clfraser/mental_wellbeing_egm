@@ -40,6 +40,9 @@ dt <- DT::datatable(input_data_table, style = 'bootstrap',
 # Set UI for 'how to use EGM' on intro page
 # Name this so it can be used when switching tabs
 intro_use_ui <- tagList(h2("How to use the Evidence and Gap Map (EGM)"),
+                        h3("Guided tour"),
+                        p("You can click on the 'Click here for a guided tour of the page' button on the Evidence and gap map tab to get a quick guided tour."),
+                        p("If you'd like more details, read the information below or watch our walkthrough and example videos."),
                         h3("Walkthrough video"),
                         p("The video below shows a walkthrough of the EGM"),
                         HTML('<iframe width="560" height="315" src="https://youtu.be/_fhDVVfELsM?si=bp-D29qIFVj0_Kp0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'),
@@ -95,11 +98,11 @@ intro_use_ui <- tagList(h2("How to use the Evidence and Gap Map (EGM)"),
                         tags$ul(
                           tags$li("outcome definition"),
                           tags$li("domains and subdomains"),
-                          tags$li("popualation age"),
+                          tags$li("population age"),
                           tags$li("population characteristics"),
                           tags$li("type of synthesis"),
                           tags$li("specific types of interventions"),
-                          tags$li("Inclusion of author quality appraisal of primary studies"),
+                          tags$li("inclusion of author quality appraisal of primary studies"),
                           tags$li("existence of a pre-registered protocol")
                         ),
                         p("More than one filter can be selected at a time. Applying these filters will impact both the EGM and table. The EGM and table can be reset by clearing all the filters.")

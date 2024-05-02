@@ -24,7 +24,7 @@ tagList(
 # Specify most recent fontawesome library - change version as needed
 tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css);"),
 navbarPage(
-    id = "intabset", # id used for jumping between tabs
+    id = "tabset_navbar", # id used for jumping between tabs
     title = div(
         tags$a(img(src = "phs-logo-updated.png", height = 40, alt = "Link to Public Health Scotland website. Opens in a new tab.")),
                href = "https://www.publichealthscotland.scot/",

@@ -10,8 +10,8 @@ linksTab <- tabPanel(
   useShinyjs(),
 fluidRow(
   tagList(
-    
-    p("The Campbell Collaboration has produced EGMs in several policy areas; the following links provide an overview of EGMs and an example of an EGM:",
+    h2("Other evidence and gap maps"),
+    p("The Campbell Collaboration has produced EGMs in several policy areas. The following links provide an overview of EGMs and an example of an EGM:",
       br(),
   tags$a(href = "https://www.campbellcollaboration.org/evidence-gap-maps.html",
     target = "_blank",
@@ -22,6 +22,7 @@ fluidRow(
     tags$b("Centre for Homelessness Impact – example of an EGM that summarises what is known about interventions to overcome homelessness")),
     ),
   
+  h2("Technical report"),
   p("The self-harm EGM has been populated using a comprehensive and systematic methodology. The technical report outlines the research questions, documents the search strategy, sets out the inclusion and exclusion criteria, and outlines relevant processes and software used:"),
   p("[Insert Technical report link] – Self-harm EGM technical report"),
   
@@ -37,6 +38,7 @@ fluidRow(
          tags$b("Public Health Scotland - Children and Young People's Mental Health Indicator resources (indicator set and construct rationales)")),
   ),
   
+  h2("Evidence briefing"),
   p("EGMs can be accompanied by narrative evidence outputs for stakeholders, such as evidence briefings or scoping reports. Here is a link to a review of review-level evidence of factors associated with self-harm without suicidal intent in childhood (using a narrower outcome definition of self-harm):",
   br(),
     tags$a(href = "https://publichealthscotland.scot/media/17228/what-factors-are-associated-with-self-harm-in-childhood_jan23.pdf",
@@ -44,6 +46,7 @@ fluidRow(
          tags$b("What factors are associated with self-harm in childhood? - Public Health Scotland evidence briefing")),
   ),
   
+  h2("Interpreting and appraising health research"),
   p("Not all EGM have interpretation or critically appraised evidence. The following tool helps you to review and interpret a published health research paper:",
     br(),
   tags$a(href = "https://www.understandinghealthresearch.org/",

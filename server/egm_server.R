@@ -4,14 +4,20 @@
 egm_guide$init()
 
 observeEvent(input$egm_guide_button, {
-  egm_guide$start()
+  # Switch to the EGM panel to show walkthrough
+  updateTabsetPanel(session, "tabset_egm", selected = "EGM")
+  # Only start the walkthrough once on the EGM panel
+  observe_guide <- observeEvent(input$tabset_egm == "EGM", {
+    egm_guide$start()
+    observe_guide$destroy()
+  })
 })
 
 # Switch tab on video link button click
 
 observeEvent(input$video_link_button, {
   output$text <- renderUI(intro_use_ui)
-  updateTabsetPanel(session, "intabset", selected = "intro")
+  updateTabsetPanel(session, "tabset_navbar", selected = "intro")
 })
 
 ## Render trees for jsTreeR inputs
@@ -166,12 +172,13 @@ observeEvent(input$synth_type_defs, {defs_topic_modal("Type of synthesis")})
 observeEvent(input$quality_appraisal_defs, {defs_topic_modal("Quality appraisal")})
 observeEvent(input$pre_reg_defs, {defs_topic_modal("Pre-registration")})
 observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of reviewed literature)")})
+observeEvent(input$empty_defs, {defs_topic_modal("Empty review")}) # Empty reviews, on 'Included reviews' tab
 
 # Filtered dataframe
 
 observeEvent(input$filter_update_top, {
   chart_data(reviews_chart %>%
-               mutate(outcomes_filter = if(is.null(unlist(input$outcome_tree_selected)) | "Any form of self-injurious thoughts and behaviours" %in% unlist(input$outcome_tree_selected)) TRUE else if_else(outcome_definition %in% input$outcome, TRUE, FALSE),
+               mutate(outcomes_filter = if(is.null(unlist(input$outcome_tree_selected)) | "Any form of self-injurious thoughts and behaviours" %in% unlist(input$outcome_tree_selected)) TRUE else if_else(outcome_definition %in% unlist(input$outcome_tree_selected), TRUE, FALSE),
                       domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
                       age_filter = if(is.null(unlist(input$age_tree_selected)) | "All ages" %in% unlist(input$age_tree_selected)) TRUE else if_else(age %in% unlist(input$age_tree_selected), TRUE, FALSE),
                       sub_pop_filter = if(is.null(unlist(input$sub_pop_tree_selected))) TRUE else if_else(sub_population %in% unlist(input$sub_pop_tree_selected) | ("General population" %in% unlist(input$sub_pop_tree_selected) & is.na(sub_population)), TRUE, FALSE),
@@ -472,5 +479,5 @@ output$record_count <- renderText({
 
 observeEvent(input$click_details, {
   # use tabsetPanel 'id' argument to change tabs
-  updateTabsetPanel(session, "tabset", selected = "table")
+  updateTabsetPanel(session, "tabset_egm", selected = "included_reviews")
 })
