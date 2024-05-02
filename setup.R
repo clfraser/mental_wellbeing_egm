@@ -40,7 +40,6 @@ library(htmltools)
 ## Dataframe for plots
 reviews_chart <- readRDS(here("data/self-harm_egm_chart_data.rds"))
 
-
 # Dataframe for table
 reviews_table <- readRDS(here("data/self-harm_egm_table_data.rds"))
 
