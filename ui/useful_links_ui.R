@@ -5,7 +5,7 @@ linksTab <- tabPanel(
   div(
     div(class="fa fa-link", 
         role = "navigation"), "Useful links"), # wrap in div for screenreader / accessibility purposes 
-  value = "links", # tab ID
+  value = "useful_links", # tab ID
   titlePanel(h1("Useful links")),
   useShinyjs(),
 fluidRow(

@@ -37,6 +37,9 @@ dt <- DT::datatable(input_data_table, style = 'bootstrap',
   return(dt)
 }
 
+
+
+
 ################### Create definition modals #########################
 
 # Modal when topic is filtered on
@@ -84,6 +87,7 @@ intro_use_ui <- tagList(h2("How to use the Evidence and Gap Map (EGM)"),
                         h3("How the EGM is organised"),
                         p("The EGM is organised into a matrix. Reviews are thematically categorised by domains/subdomains into rows and allocated to columns based on whether the review explores association of risk/protective factors with self-harm or interventions for self-harm.
             More information about the domains and subdomains are in ", tags$a(href = "https://publichealthscotland.scot/publications/children-and-young-people-mental-health-indicator-resources/",
+                                                                               target = "_blank",
                                                                                tags$b("Public Health Scotland's children and young people mental health indicator resources"))
                         ),
                         p("The intersecting cell in the matrix shows either a coloured shape for that combination of domain/subdomain and review type (green square = risk/protective factor reviews and blue circle = intervention reviews) or an empty cell. The size of the shape gives an indication of the quantity of available reviews and hovering over it provides the exact number of reviews. An empty cell indicates that review-level evidence is lacking."),
