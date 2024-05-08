@@ -28,7 +28,7 @@ observeEvent(input$about, {
             tags$ul(
               tags$li("Synthesise the evidence"),
               tags$li("Assess the quality of the included reviews, although the filters allow users to search based on quality criteria (i.e. availability of a pre-registered protocol, review author critical appraisal of primary studies).
-                      Links to resources on interpreting and appraising health research can be found on the", tags$a(tags$b("Useful Links"), onclick="customHref('useful_links')", target = "_blank", href = "#"), " tab."),
+                      Links to resources on interpreting and appraising health research can be found on the", tags$a(tags$b("Useful Links"), onclick="customHref('useful_links')", href = "#"), " tab."),
               tags$li("Tell you all of the information you will need to know to make decisions. EGMs work best when considered alongside other data and intelligence."),
             ),
     ) # tagList
