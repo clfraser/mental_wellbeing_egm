@@ -12,12 +12,33 @@ observeEvent(input$about, {
             tags$li("what is already known about risks and protective factors that are associated with self-harm, and"),
             tags$li("what interventions or policies can prevent it.")
             ),
-            p("This EGM focuses on systematic review-level evidence (glossary) as this is considered to be the most robust source of evidence.")
+            p("This EGM focuses on review-level evidence as this is considered to be the most robust source of evidence.",
+              actionButton("review_level_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about outcome definitions"))),
+            h2("What the self-harm EGM can and can’t do"),
+            p("The self-harm EGM", tags$b("does"), ":"),
+            tags$ul(
+              tags$li("Provide a visual representation of the evidence landscape"),
+              tags$li("Tell you where there is and isn’t evidence; however an empty cell can mean that there was no evidence that met inclusion criteria, i.e. an empty cell in an EGM including only review-level evidence may mean that evidence is available at a lower tier (e.g. primary studies)"),
+              tags$li("Have an intuitive and interactive format"),
+              tags$li("Enable filtering of the evidence through systematic categorisation of reviews"),
+              tags$li("Allow regular updates to the included evidence"),
+              tags$li("Provide a foundation for more focused synthesis of the included evidence.")
+            ),
+            p("The self-harm EGM", tags$b("does not"), ":"),
+            tags$ul(
+              tags$li("Synthesise the evidence"),
+              tags$li("Assess the quality of the included reviews but the filters allow users to search based on quality criteria (i.e. availability of a pre-registered protocol, review author critical appraisal of primary studies)"),
+              tags$li("Tell you all of the information you will need to know to make decisions. EGMs work best when considered alongside other data and intelligence."),
+            ),
     ) # tagList
   }) # renderUI
   },
 ignoreNULL = FALSE) # so that this text loads initially, before a button is clicked
-  
+
+# Show a modal with definition of review-level evidence when information button clicked on 'About' page
+observeEvent(input$review_level_defs, {defs_term_modal("Review-level evidence")})
+
+# Since this is switched to when users click the walkthrough button on the EGM tab, intro_use_ui is defined in core functions  
 observeEvent(input$use, {
   output$text <- renderUI({
     intro_use_ui
@@ -49,18 +70,18 @@ observeEvent(input$contact, {
   output$text <- renderUI({
     tagList(h2("Contact us"),
             p("We would be grateful for any feedback about the evidence and gap map, and how it is being used."),
-            p("If you have any questions or comments, please contact us at ", tags$a(href="mailto:phs.egm@phs.scot", "phs.egm@phs.scot"), "."),
+            p("If you have any questions or comments, please contact us at ", tags$a(href="mailto:phs.egm@phs.scot", "phs.egm@phs.scot")),
     )# tagList
   })
   
   
 })
+
 observeEvent(input$accessibility, {
   output$text <- renderText({
     paste("<h2>Accessibility</h2>
       This website is run by
-      <a href=\"https://www.publichealthscotland.scot/\" target=\"_blank\"><b>Public Health Scotland</b></a>
-      , Scotland's national organisation for public health. 
+      <a href=\"https://www.publichealthscotland.scot/\" target=\"_blank\"><b>Public Health Scotland</b></a>, Scotland's national organisation for public health. 
       Public Health Scotland is committed to making its website accessible, 
       in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.
       <br><br><a href=\"https://mcmw.abilitynet.org.uk/\" target=\"_blank\"><b>AbilityNet (external website)</b></a>

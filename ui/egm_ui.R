@@ -139,6 +139,8 @@ mainTab <- tabPanel(
                                  actionButton("empty_defs", "", icon = icon("circle-info", `aria-label` = "Click for a definition of empty reviews"))
                                  ),
                              linebreaks(3),
+                             p("To see more columns, use the scroll bar at the bottom of the table, or click inside the table and use the left and right arrow keys on your keyboard."),
+                             linebreaks(1),
                              csvDownloadButton("reviews_table", filename = "egm_reviews.csv"), # To download table as a CSV (defined in core functions script)
                              withNavySpinner(reactableOutput("reviews_table")),
                              value = "included_reviews"))) # For switching tabs on click

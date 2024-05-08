@@ -169,7 +169,8 @@ observeEvent(input$synth_type_defs, {defs_topic_modal("Type of synthesis")})
 observeEvent(input$quality_appraisal_defs, {defs_topic_modal("Quality appraisal")})
 observeEvent(input$pre_reg_defs, {defs_topic_modal("Pre-registration")})
 observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of reviewed literature)")})
-observeEvent(input$empty_defs, {defs_topic_modal("Empty review")}) # Empty reviews, on 'Included reviews' tab
+# Filter on term, rather than topic
+observeEvent(input$empty_defs, {defs_term_modal("Empty review")}) # Empty reviews, on 'Included reviews' tab
 
 # Filtered dataframe
 
@@ -417,7 +418,7 @@ output$reviews_table <- renderReactable({
       searchable = TRUE,
       resizable = TRUE,
       filterable = TRUE,
-      height = 1000,
+      defaultPageSize = 2,
       defaultColDef = colDef(
         minWidth = 200),
       rowStyle = function(index) {
