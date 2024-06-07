@@ -136,7 +136,8 @@ mainTab <- tabPanel(
                                tagAppendAttributes(class = 'box-info'),
                              linebreaks(1),
                              box("Note: shaded rows indicate empty reviews",
-                                 actionButton("empty_defs", "", icon = icon("circle-info", `aria-label` = "Click for a definition of empty reviews"))
+                                 actionButton("empty_defs", "", icon = icon("circle-info", `aria-label` = "Click for a definition of empty reviews")),
+                                 width = 12
                                  ),
                              linebreaks(3),
                              p("To see more columns, use the scroll bar at the bottom of the table, or click inside the table and use the left and right arrow keys on your keyboard."),
