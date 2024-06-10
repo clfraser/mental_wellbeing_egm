@@ -23,6 +23,11 @@ tagList(
   tags$html(lang = "en"), # Set the language of the page - important for accessibility
 # Specify most recent fontawesome library - change version as needed
 tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css);"),
+# Add note that dashboard is in development
+div(
+    div("Dashboard is in development. Do not use as final version."),
+    style = "color: white; background-color: red; width: 100%; text-align: center; font-weight: bold;",
+),
 navbarPage(
     id = "tabset_navbar", # id used for jumping between tabs
     title = div(
@@ -30,7 +35,7 @@ navbarPage(
                href = "https://www.publichealthscotland.scot/",
                target = "_blank",
     style = "position: relative; top: -5px;"),
-    windowTitle = "Mental health EGM",# Title for browser tab
+    windowTitle = "Self-harm in children and young people EGM",# Title for browser tab
     header = tags$head(          includeCSS("www/css/main.css"),  # Main
                                  includeCSS("www/css/tables.css"),  # tables
                                  includeCSS("www/css/navbar_and_panels.css"), # navbar and notes panel
@@ -47,7 +52,8 @@ navbarPage(
       tags$script(src="js/index.js")
     ), # Include script that allows you to jump between tabs using a link
     collapsible = TRUE, # Make navigation bar collapse on smaller screens
-    tags$link(rel = "shortcut icon", href = "favicon_phs.ico") # Icon for browser tab
+    tags$link(rel = "shortcut icon", href = "favicon_phs.ico"), # Icon for browser tab
+    
 ),
 
 # Order of tabs --------------------------------
@@ -55,7 +61,7 @@ navbarPage(
 homepageTab,
 mainTab,
 glossaryTab,
-linksTab
+linksTab,
 
 ) # navbar
 ) # taglist
