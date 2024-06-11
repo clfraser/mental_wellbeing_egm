@@ -25,7 +25,7 @@ tagList(
 tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css);"),
 # Add note that dashboard is in development
 div(
-    div("Dashboard is in development. Do not use as final version."),
+    div("Dashboard is in development. Not final version."),
     style = "color: white; background-color: red; width: 100%; text-align: center; font-weight: bold;",
 ),
 navbarPage(
