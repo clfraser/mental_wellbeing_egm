@@ -316,12 +316,16 @@ type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", 
 # When the map is clicked, select the relevant filters and then filter the dataframe
 
 observeEvent(input$click_details, {
+  # Only update if nothing is currently selected in the filter
+  if(is.null(unlist(input$outcome_tree_selected))){
   jstreeUpdate(session,
                "outcome_tree",
                outcome_df %>%
                  mutate(selected = TRUE) %>% # When there is more than one outcome, this will need to change
                  create_nodes_from_df("first_level", "second_level")
   )
+  }
+  # Update regardless of what's in the current filter
   jstreeUpdate(session,
                "domains_tree",
                domains_df %>%
@@ -329,27 +333,30 @@ observeEvent(input$click_details, {
                                              input$click_details$subdomain == subdomain ~ TRUE,
                                              .default = FALSE)) %>%
                  create_nodes_from_df("domain", "subdomain"))
+  # Only update if nothing is currently selected in the filter
+  if(is.null(unlist(input$intervention_risk_tree_selected))){
   jstreeUpdate(session,
                "intervention_risk_tree",
                intervention_risk_df %>%
                  mutate(selected = if_else(intervention_exposure_short == type_click(), TRUE, FALSE)) %>%
                  create_nodes_from_df("intervention_exposure_short", "intervention_classification"))
-  chart_data(reviews_chart %>%
-               mutate(outcomes_filter = TRUE, # Would need to be more sophisticated if other outcomes
-                      domains_filter = 
-                        if (input$click_details$subdomain == "")
-                                if_else(domain %in% input$click_details$domain, TRUE, FALSE)
-                       else
-                                if_else(subdomain %in% input$click_details$subdomain, TRUE, FALSE),
-                      int_exposure_filter = if_else((type_click() == "Risk/protective factor" & intervention_exposure_short == "Risk/protective factor") | (type_click() == "Intervention" & intervention_exposure_short == "Intervention"), TRUE, FALSE),
+  }
+  # Use delay to give filters time to update before dataframe is updated
+  delay(20,
+        chart_data(reviews_chart %>%
+               mutate(outcomes_filter = if(is.null(unlist(input$outcome_tree_selected)) | "Any form of self-injurious thoughts and behaviours" %in% unlist(input$outcome_tree_selected)) TRUE else if_else(outcome_definition %in% unlist(input$outcome_tree_selected), TRUE, FALSE),
+                      domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
                       age_filter = if(is.null(unlist(input$age_tree_selected)) | "All ages" %in% unlist(input$age_tree_selected)) TRUE else if_else(age %in% unlist(input$age_tree_selected), TRUE, FALSE),
                       sub_pop_filter = if(is.null(unlist(input$sub_pop_tree_selected))) TRUE else if_else(sub_population %in% unlist(input$sub_pop_tree_selected) | ("General population" %in% unlist(input$sub_pop_tree_selected) & is.na(sub_population)), TRUE, FALSE),
                       study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
+                      int_exposure_filter = if(is.null(unlist(input$intervention_risk_tree_selected))) TRUE else if_else(("Risk/protective factor" %in% unlist(input$intervention_risk_tree_selected) & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% unlist(input$intervention_risk_tree_selected) & intervention_exposure_short == "Intervention"), TRUE, FALSE),
                       synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
                       qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
                       pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
-                      selected = if_else(outcomes_filter + domains_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter + qual_appraisal_filter + pre_reg_filter +
-                                          dummy == 9, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+                      selected = if_else(outcomes_filter + domains_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter +
+                                           qual_appraisal_filter +
+                                           pre_reg_filter  + dummy == 9, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+  )
 })
 
 table_data <- reactive({
