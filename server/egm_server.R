@@ -342,7 +342,7 @@ observeEvent(input$click_details, {
                  create_nodes_from_df("intervention_exposure_short", "intervention_classification"))
   }
   # Use delay to give filters time to update before dataframe is updated
-  delay(20,
+  delay(100,
         chart_data(reviews_chart %>%
                mutate(outcomes_filter = if(is.null(unlist(input$outcome_tree_selected)) | "Any form of self-injurious thoughts and behaviours" %in% unlist(input$outcome_tree_selected)) TRUE else if_else(outcome_definition %in% unlist(input$outcome_tree_selected), TRUE, FALSE),
                       domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
