@@ -23,8 +23,11 @@ fluidRow(
     ),
   
   h2("Technical report"),
-  p("The self-harm EGM has been populated using a comprehensive and systematic methodology. The technical report outlines the research questions, documents the search strategy, sets out the inclusion and exclusion criteria, and outlines relevant processes and software used:"),
-  p("[Insert Technical report link] – Self-harm EGM technical report"),
+  p("The self-harm EGM has been populated using a comprehensive and systematic methodology. The technical report outlines the research questions, documents the search strategy, sets out the inclusion and exclusion criteria, and outlines relevant processes and software used:",
+  br(),
+    tags$a(href = "https://www.publichealthscotland.scot/publications/evidence-and-gap-map-technical-report-self-harm-in-children-and-young-people/evidence-and-gap-map-technical-report-self-harm-in-children-and-young-people/",
+         target = "_blank",
+         tags$b("Evidence and gap map technical report - Self-harm in children and young people"))),
   
   h2("Children and Young People Mental Health Indicator Set"),
   p("The EGM used the domains and subdomains identified in the Public Health Scotland Children and Young People Mental Health Indicator Set as a framework to categorise the evidence.
