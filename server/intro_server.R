@@ -58,7 +58,9 @@ observeEvent(input$methodology, {
       
       h3("Technical report"),
       p("The self-harm EGM has been populated using a comprehensive and systematic methodology. The technical report outlines the research questions, documents the search strategy, sets out the inclusion and exclusion criteria, and outlines relevant processes and software used:"),
-      p("[Insert Technical report link] – Self-harm EGM technical report"),
+      a(href = "https://www.publichealthscotland.scot/publications/evidence-and-gap-map-technical-report-self-harm-in-children-and-young-people/evidence-and-gap-map-technical-report-self-harm-in-children-and-young-people/",
+             target = "_blank",
+             tags$b("Evidence and gap map technical report - Self-harm in children and young people")),
       
       h3("Last updated"),
       p("The search for evidence included in the evidence and gap map was last conducted in March 2023.")
