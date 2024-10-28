@@ -11,15 +11,22 @@ linksTab <- tabPanel(
 fluidRow(
   tagList(
     h2("Other evidence and gap maps"),
-    p("The Campbell Collaboration has produced EGMs in several policy areas. The following links provide an overview of EGMs and an example of an EGM:",
+    p("The Campbell Collaboration has produced EGMs in several policy areas. Some examples can be found at:",
       br(),
-  tags$a(href = "https://www.campbellcollaboration.org/evidence-gap-maps.html",
+  tags$a(href = "https://www.campbellcollaboration.org/?s=evidence+and+gap+map",
     target = "_blank",
-    tags$b("Evidence and gap maps - The Campbell Collaboration - overview of EGMs")),
+    tags$b("The Campbell Collaboration - Evidence and gap maps")),
+      br(),
+      br(),
+      "Some other examples of EGMs are:",
   br(),
   tags$a(href = "https://centreforhomelessnessimpact.github.io/egm/",
     target = "_blank",
-    tags$b("Centre for Homelessness Impact – example of an EGM that summarises what is known about interventions to overcome homelessness")),
+    tags$b("Centre for Homelessness Impact – EGM that summarises what is known about interventions to overcome homelessness")),
+  br(),
+  tags$a(href = "https://www.gla.ac.uk/research/az/sipher/products/employmentandhealthegm/",
+         target = "_blank",
+         tags$b("SIPHER (Systems Science in Public Health and Economics Research) Consortium - EGM on employment and health"))
     ),
   
   h2("Technical report"),
