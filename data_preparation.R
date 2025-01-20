@@ -24,11 +24,130 @@ library(snakecase) # to reformat strings
 library(here)
 
 ## Set working directory - only need to do this if you can't get into the R project
-#setwd("/PHI_conf/PHSci/Catriona/EGM/Mental_health_EGM/")
+#setwd("/PHI_conf/PHSci/Catriona/EGM/wemwebs_egm/")
 
-## Load quantitative data and add review type column
-df_quant <- read_xlsx(here("data/230320 SH Phase 2 full data extract.xlsx"))  %>%
-  mutate(review_type = "Quantitative")
+## Read in data
+
+# Read in original data
+df_orig <- read_csv("data/MWB data extraction_original_250323_cleaned.csv")
+
+# Read in updated data
+df_updated <- read_csv("data/MWB data extraction_updated 280323_cleaned.csv")
+
+# Update column names so that files can bind together
+# have to use fixed = TRUE if string contains brackets
+df_orig_renamed <- df_orig %>%
+  rename_with(~ gsub(" Exposure/intervention", "", .x)) %>%
+  rename_with(~ gsub("Poverty and material deprivation  (CYP)", "Poverty and material deprivation (CYP)", .x, fixed = TRUE)) %>%
+  rename_with(~ gsub("Adults", "Adult", .x)) %>%
+  rename_with(~ gsub("Learning and environment", "Learning environment", .x)) %>%
+  rename_with(~ gsub("Engagement with local activities", "Engagement in local activities", .x)) %>%
+  rename_with(~ gsub("Family and Friends", "Family and friends", .x)) %>%
+  rename_with(~ gsub("Poverty and material deprivation (Exposure/intervention)", "Poverty and material deprivation (Adult)", .x, fixed = TRUE))
+
+df_updated_renamed <- df_updated %>%
+  rename_with(~ gsub(" Exposure(s)", "", .x, fixed = TRUE)) %>%
+  rename_with(~ gsub("\\s+$", "", .x)) %>% # Remove whitespace from the end of column names
+  rename_with(~ gsub("Discrimination", "Stigma, discrimination and harassment", .x)) %>%
+  rename_with(~ gsub("Poverty and material deprivation (exposure/intervention)", "Poverty and material deprivation (Adult)", .x, fixed = TRUE))
+
+# Bind files together
+df_together <- rbind(df_orig_renamed, df_updated_renamed)
+
+# Write out together file, for QA
+write_csv(df_together, "data/df_together.csv")
+
+## Process data
+
+# Clean column names
+clean_col_names <- df_together %>%
+  clean_names()
+
+# Correct Lewis 2017, which should be marked as in individual domain
+clean_col_names <- clean_col_names %>%
+  mutate(individual = if_else(study_id == "Lewis 2017", "Individual", individual))
+
+# Get list of which subdomains relate to each domain
+individual_subs <- colnames(clean_col_names)[9:22]
+family_friends_subs <- colnames(clean_col_names)[24:26]
+learning_environment_subs <- colnames(clean_col_names)[28:30]
+community_subs <- colnames(clean_col_names)[32:40]
+structural_subs <- colnames(clean_col_names)[42:56]
+
+# Format data
+pivot_subdomains <- clean_col_names %>%
+  pivot_longer(cols = ends_with(c("_cyp", "_adult")),
+               names_to = "subdomain",
+               values_to = "subdomain_topic") %>%
+  # Remove all rows where subdomain topic is NA or #
+  filter(!is.na(subdomain_topic) & subdomain_topic != "#") %>%
+  # Pivot domains into one column
+  pivot_longer(cols = individual:structural,
+               names_to = "domain",
+               values_to = "domain_desc") %>%
+  # Remove all rows without a domain description
+  filter(!is.na(domain_desc)) %>%
+  # Only keep subdomains that match domains
+  filter((domain == "individual" & subdomain %in% individual_subs) |
+           (domain == "family_and_friends" & subdomain %in% family_friends_subs) |
+           (domain == "learning_environment" & subdomain %in% learning_environment_subs) |
+           (domain == "community" & subdomain %in% community_subs) |
+           (domain == "structural" & subdomain %in% structural_subs)) %>%
+  # Expand rows with multiple subdomain topics
+  separate_longer_delim(subdomain_topic, delim = "; ") %>%
+  # Change various columns to sentence case
+  mutate(subdomain_topic = str_to_sentence(subdomain_topic),
+         domain = str_to_sentence(domain),
+         subdomain = str_to_sentence(subdomain),
+         subdomain = gsub("_", " ", subdomain),
+         domain = gsub("_", " ", domain)) %>%
+  # Expand rows that look at both CYP and adults
+  separate_longer_delim(population, "; ") %>%
+  # Remove domain_desc column
+  select(-domain_desc)
+
+# Query with Emma:
+# Kelley 2021 doesn't have a subdomain for individual
+# Foley 2017 and Marselle 2013 both have NA for types of studies
+# Bond 2012 - marked as adult, but under social inclusion CYP
+# Other: intervention studies
+  
+# Separate out adult and CYP
+# COME BACK TO - DROP SUBDOMAINS WITH CYP FROM ADULTS AND VICE VERSA?
+adult_mwb_separated <- pivot_subdomains %>%
+  filter(population == "Adults") %>%
+  # Remove 'adult' from end of subdomains
+  mutate(subdomain = gsub(" adult$", "", subdomain)) %>%
+  # Add in subdomains that don't appear in data
+  mutate(dummy = 0) %>%
+  add_row(domain = "Structural", subdomain = "Stigma, discrimination and harassment", dummy = 1) %>%
+  # Turn into factors so that sorting works as expected
+  mutate(domain = factor(domain, levels = c("Individual", "Community", "Structural")),
+         subdomain = factor(subdomain, levels = c("Learning and development", "Healthy living", "Family support", "Social media", "General health", "Spirituality", "Participation", "Social support", "Trust", "Safety", "Equality", "Social inclusion", "Poverty and material deprivation", "Stigma, discrimination and harassment", "Financial security debt", "Physical environment", "Working life", "Violence")))
+
+cyp_mwb_separated <- pivot_subdomains %>%
+  filter(population == "CYP") %>%
+  # Remove 'cyp' from end of subdomains
+  mutate(subdomain = gsub(" cyp$", "", subdomain))
+
+# Write out adult as a CSV for QA purposes
+write_csv(adult_mwb_separated, "data/adult_mwb_separated.csv")
+
+## Create format for table
+adult_mwb_table <- adult_mwb_separated %>%
+  # Create a column with both subdomain and subdomain topic
+  # CHANGE THIS: HAVE SEPARATE SUB AND TOPIC COLUMNS
+  mutate(sub_and_topic = paste0(subdomain, ": ", subdomain_topic)) %>%
+  # The domain and subdomain and topic need to be grouped together again
+  group_by(across(c(study_id, title, aim, types_of_studies, dummy))) %>%
+  summarise(domain = paste(unique(domain), collapse = "; "),
+            sub_and_topic = paste(unique(sub_and_topic), collapse="; ")) %>%
+  filter(dummy == 0) %>%
+  ungroup() %>%
+  select(study_id, title, aim, types_of_studies, domain, sub_and_topic)
+  
+
+##################################################################
 
 ## Load qualitative data, and review type column
 df_qual <- read_csv(here("data/230405 SH data_extract_qual.csv")) %>%
