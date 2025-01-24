@@ -28,16 +28,32 @@ library(here)
 
 ## Read in data
 
-# Read in original data
-df_orig <- read_csv("data/MWB data extraction_original_250323_cleaned.csv")
+# Read in extract 1
+extract_1 <- read_csv("data/WEMWBS_search 1.csv")
 
-# Read in updated data
-df_updated <- read_csv("data/MWB data extraction_updated 280323_cleaned.csv")
+# Read in extract 2
+extract_2 <- read_csv("data/WEMWBS_search 2.csv")
 
-# Update column names so that files can bind together
-# have to use fixed = TRUE if string contains brackets
-df_orig_renamed <- df_orig %>%
+# Fix column names for extract 1
+extract_1_renamed <- extract_1 %>%
+  select(-Title, # There are two duplicate columns that contain the title. Remove one and then rename the other below.
+         -":...10", # Remove extraneous blank columns
+         -":...26",
+         -":...31",
+         -":...36",
+         -":...47") %>% 
+  rename(Title = "...5",
+         Aim = "...6",
+         Individual = "...9",
+         "Family and friends" = "...25",
+         "Learning environment" = "...30",
+         Community = "...35",
+         Structural = "...46",
+         study_type = "Types of studies") %>%
+  # Update column names to be consistent with extract 2 so that files can bind together
+  # have to use fixed = TRUE if string contains brackets
   rename_with(~ gsub(" Exposure/intervention", "", .x)) %>%
+  rename_with(~ gsub("Health behaviours (CYP)", "Health behaviour (CYP)", .x, fixed = TRUE)) %>%
   rename_with(~ gsub("Poverty and material deprivation  (CYP)", "Poverty and material deprivation (CYP)", .x, fixed = TRUE)) %>%
   rename_with(~ gsub("Adults", "Adult", .x)) %>%
   rename_with(~ gsub("Learning and environment", "Learning environment", .x)) %>%
@@ -45,14 +61,27 @@ df_orig_renamed <- df_orig %>%
   rename_with(~ gsub("Family and Friends", "Family and friends", .x)) %>%
   rename_with(~ gsub("Poverty and material deprivation (Exposure/intervention)", "Poverty and material deprivation (Adult)", .x, fixed = TRUE))
 
-df_updated_renamed <- df_updated %>%
+
+# Fix column names for extract 2
+extract_2_renamed <- extract_2 %>%
+  select(-Title...3, # To check with Emma that this is the right duplicate title column to remove
+         -":...10",
+         -":...26",
+         -":...31",
+         -":...36",
+         -":...47") %>%
+  rename(Title = "Title...5",
+        Aim = "...6",
+        study_type = "Type of study") %>%
+  # Update column names to be consistent with extract 1 so that files can bind together
+  # have to use fixed = TRUE if string contains brackets
   rename_with(~ gsub(" Exposure(s)", "", .x, fixed = TRUE)) %>%
   rename_with(~ gsub("\\s+$", "", .x)) %>% # Remove whitespace from the end of column names
   rename_with(~ gsub("Discrimination", "Stigma, discrimination and harassment", .x)) %>%
   rename_with(~ gsub("Poverty and material deprivation (exposure/intervention)", "Poverty and material deprivation (Adult)", .x, fixed = TRUE))
 
 # Bind files together
-df_together <- rbind(df_orig_renamed, df_updated_renamed)
+df_together <- rbind(extract_1_renamed, extract_2_renamed)
 
 # Write out together file, for QA
 write_csv(df_together, "data/df_together.csv")
@@ -63,16 +92,42 @@ write_csv(df_together, "data/df_together.csv")
 clean_col_names <- df_together %>%
   clean_names()
 
-# Correct Lewis 2017, which should be marked as in individual domain
+# Data cleaning
+
+# A couple of studies are missing and author and date. Add these in, from previous extract given by Emma.
 clean_col_names <- clean_col_names %>%
-  mutate(individual = if_else(study_id == "Lewis 2017", "Individual", individual))
+  mutate(study_id = case_when(covidence_number == 1383 ~ "O'Brien 2020",
+                              covidence_number == 1395 ~ "Fazia 2020",
+                              TRUE ~ study_id))
+
+# There are some duplicate studies between the first and second extract. Find these.
+clean_col_names %>%
+  group_by(study_id) %>% 
+  mutate(dupe = n()>1) %>%
+  ungroup() %>%
+  filter(dupe == TRUE) %>%
+  arrange(study_id, covidence_number) %>%
+  View()
+# Not all are true duplicates, because some have different titles
+
+# If there are duplicates, keep one with latest covidence number
+no_dups <- clean_col_names %>%
+  filter(!covidence_number %in% c(393, 188, 98, 197, 37))
+
+
+# Correct Lewis 2017, which should be marked as in individual domain
+# And change Kelley 2021, so that it ISN'T marked as in individual domain
+clean_col_names <- clean_col_names %>%
+  mutate(individual = case_when(study_id == "Lewis 2017" ~ "Individual",
+                                study_id == "Kelley 2021" ~ NA,
+                                TRUE ~ individual))
 
 # Get list of which subdomains relate to each domain
 individual_subs <- colnames(clean_col_names)[9:22]
 family_friends_subs <- colnames(clean_col_names)[24:26]
 learning_environment_subs <- colnames(clean_col_names)[28:30]
 community_subs <- colnames(clean_col_names)[32:40]
-structural_subs <- colnames(clean_col_names)[42:56]
+structural_subs <- colnames(clean_col_names)[42:55]
 
 # Format data
 pivot_subdomains <- clean_col_names %>%
@@ -101,8 +156,6 @@ pivot_subdomains <- clean_col_names %>%
          subdomain = str_to_sentence(subdomain),
          subdomain = gsub("_", " ", subdomain),
          domain = gsub("_", " ", domain)) %>%
-  # Expand rows that look at both CYP and adults
-  separate_longer_delim(population, "; ") %>%
   # Remove domain_desc column
   select(-domain_desc)
 
@@ -120,15 +173,26 @@ adult_mwb_separated <- pivot_subdomains %>%
   mutate(subdomain = gsub(" adult$", "", subdomain)) %>%
   # Add in subdomains that don't appear in data
   mutate(dummy = 0) %>%
-  add_row(domain = "Structural", subdomain = "Stigma, discrimination and harassment", dummy = 1) %>%
-  # Turn into factors so that sorting works as expected
-  mutate(domain = factor(domain, levels = c("Individual", "Community", "Structural")),
-         subdomain = factor(subdomain, levels = c("Learning and development", "Healthy living", "Family support", "Social media", "General health", "Spirituality", "Participation", "Social support", "Trust", "Safety", "Equality", "Social inclusion", "Poverty and material deprivation", "Stigma, discrimination and harassment", "Financial security debt", "Physical environment", "Working life", "Violence")))
+  add_row(domain = "Structural", subdomain = "Stigma, discrimination and harassment", dummy = 1)
 
 cyp_mwb_separated <- pivot_subdomains %>%
   filter(population == "CYP") %>%
   # Remove 'cyp' from end of subdomains
-  mutate(subdomain = gsub(" cyp$", "", subdomain))
+  mutate(subdomain = gsub(" cyp$", "", subdomain)) %>%
+  # Add in subdomains that don't appear in data
+  mutate(dummy = 0) %>%
+  add_row(domain = "Individual", subdomain = "Body image", dummy = 1) %>%
+  add_row(domain = "Individual", subdomain = "Perinatal environment", dummy = 1) %>%
+  add_row(domain = "Family and friends", subdomain = "Parental health", dummy = 1) %>%
+  add_row(domain = "Learning environment", subdomain = "Engagement with learning", dummy = 1) %>%
+  add_row(domain = "Learning environment", subdomain = "Pressures and expectations", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Respect of young people", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Engagement in local activities", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Safety", dummy = 1) %>%
+  add_row(domain = "Community", subdomain = "Belonging", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Social inclusion", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Stigma and discrimination", dummy = 1) %>%
+  add_row(domain = "Structural", subdomain = "Societal optimism", dummy = 1)
 
 # Write out adult as a CSV for QA purposes
 write_csv(adult_mwb_separated, "data/adult_mwb_separated.csv")
@@ -145,147 +209,3 @@ adult_mwb_table <- adult_mwb_separated %>%
   filter(dummy == 0) %>%
   ungroup() %>%
   select(study_id, title, aim, types_of_studies, domain, sub_and_topic)
-  
-
-##################################################################
-
-## Load qualitative data, and review type column
-df_qual <- read_csv(here("data/230405 SH data_extract_qual.csv")) %>%
-  mutate(review_type = "Qualitative")
-
-## Bind quant and qual data together
-df_source <- rbind(df_quant, df_qual)
-
-## put names into a more R-friendly format
-df_source <- df_source %>% 
-  clean_names()
-
-# Pivot to create a subdomain column from the current separate subdomain columns
-# Drop rows where subdomain is NA and change domain to sentence case
-# Create a column to code for exposure, intervention or Exposure and intervention
-df_pivot <- df_source %>%
-  pivot_longer(cols = individual:structural,
-               names_to = "domain",
-               values_to = "subdomain") %>%
-  drop_na(subdomain) %>%
-  mutate(domain = to_sentence_case(domain),
-         intervention_exposure_short = case_when(str_detect(intervention_or_exposure, "exposures") & str_detect(intervention_or_exposure, "Intervention") ~ "Risk/protective factor; Intervention",
-                                                 str_detect(intervention_or_exposure, "exposures") ~ "Risk/protective factor",
-                                                 str_detect(intervention_or_exposure, "Intervention") ~ "Intervention",
-                                                 intervention_or_exposure == "Attitudes" ~ "Attitudes"),
-         # Remove 'Other:' from type of review description
-         type_of_review = str_replace(type_of_review, "Other: ", ""),
-         outcome_definition = str_replace(outcome_definition, "SITB", "self-injurous thoughts and behaviours"),
-         sub_population_mental_health_characteristics = sub("\\s\\((.*)\\)\\?", "", sub_population_mental_health_characteristics)) # Take out text in brackets in one of the sub-population descriptions
-
-
-# Create columns for each outcome definition,subdomain, study setting and intervention classification, since some studies have several
-# Also shorten any subdomains that contain 'other' descriptions to just be 'other'
-# The qualitative data has a subdomain of "Parental health (including mental health)", but the bit in brackets isn't there for the quantitative data. So, remove the brackets for consistency.
-# Also create column for population type filter
-# COME BACK TO TO SEE IF OTHER DEFINITIONS CAN BE KEPT IN TABLE
-df_separated <- df_pivot %>%
-  separate_longer_delim(outcome_definition, delim = "; ") %>%
-  separate_longer_delim(subdomain, delim = "; ") %>%
-  separate_longer_delim(intervention_exposure_short, delim = "; ") %>%
-  separate_longer_delim(intervention_classification, delim = "; ") %>%
-  separate_longer_delim(sub_population_mental_health_characteristics, delim = "; ") %>%
-  separate_longer_delim(other_sub_population_characteristics, delim = "; ") %>%
-  separate_longer_delim(study_setting, delim = "; ") %>%
-  separate_longer_delim(design_of_reviewed_studies, delim = "; ") %>%
-  separate_longer_delim(comparator_details, delim = "; ") %>%
-  mutate(subdomain = case_when(str_detect(subdomain,"Other:") ~ paste0("Other (", domain, ")"),
-                               subdomain == "Parental health (including mental health)" ~ "Parental health",
-                               TRUE ~ subdomain),
-         intervention_classification = if_else(str_detect(intervention_classification, "Other:"), "Other", intervention_classification),
-         design_of_reviewed_studies = if_else(str_detect(design_of_reviewed_studies, "Other:"), "Other", design_of_reviewed_studies)) %>%
-  mutate(overall_population = case_when(general_population == "Yes" ~ "General population",
-                                        !is.na(sub_population_mental_health_characteristics) ~ "Sub-population mental health characteristics",
-                                        !is.na(other_sub_population_characteristics) ~ "Other sub-population characteristics"),
-         sub_population = case_when(!is.na(sub_population_mental_health_characteristics) ~ sub_population_mental_health_characteristics,
-                                    !is.na(other_sub_population_characteristics) ~ other_sub_population_characteristics,
-                                    TRUE ~ NA),
-         sub_population = gsub("Other: ", "", sub_population)) # If the sub-population starts with 'Other', remove this
-
-# Add in some dummy outcomes for display purposes
-df_separated <- df_separated %>%
-  mutate(overall_outcome = "Self-harm")
-
-# Comment these out - don't need dummy categories for publication
-# %>%
-#   add_row(overall_outcome = "Outcome category 2", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
-#   add_row(overall_outcome = "Outcome category 2", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
-#   add_row(overall_outcome = "Outcome category 2", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Risk/protective factor", review_type = "Quantitative") %>%
-#   add_row(overall_outcome = "Outcome category 3", domain = "Individual", subdomain = "Mental health", intervention_exposure_short = "Intervention", review_type = "Qualitative") %>%
-#   add_row(overall_outcome = "Outcome category 3", domain = "Family and friends", subdomain = "Family relations", intervention_exposure_short = "Intervention", review_type = "Quantitative") %>%
-#   add_row(overall_outcome = "Outcome category 3", domain = "Structural", subdomain = "Exposure to harm", intervention_exposure_short = "Risk/protective factor", review_type = "Quantitative")
-
-# Add in other subdomains that aren't in the data, to account for data gaps
-# Include a flag that these are dummy records, so they're not included in the map
-df_separated <- df_separated %>%
-  mutate(dummy = 0) %>%
-  add_row(domain = "Individual", subdomain = "Health behaviours", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Individual", subdomain = "Physical health", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Individual", subdomain = "Mental health", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Individual", subdomain = "Social media use", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Individual", subdomain = "Body image", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Individual", subdomain = "Perinatal environment", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Individual", subdomain = "Early development", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Individual", subdomain = "Intrinsic characteristics", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Family and friends", subdomain = "Family relations", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Family and friends", subdomain = "Parental health", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Family and friends", subdomain = "Peer and friend relationships", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Learning environment", subdomain = "Engagement with learning", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Learning environment", subdomain = "Educational environment", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Learning environment", subdomain = "Pressure and expectations", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Community", subdomain = "Respect of young people", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Community", subdomain = "Engagement in local activities", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Community", subdomain = "Social support", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Community", subdomain = "Safety", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Community", subdomain = "Belonging", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Equality", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Poverty and material deprivation", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Social inclusion", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Stigma and discrimination", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Physical environment", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Societal optimism", overall_outcome = "Self-harm", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Exposure to harm", overall_outcome = "Self-harm", dummy = 1) %>%
-  mutate(overall_outcome = factor(overall_outcome, levels = c("Self-harm", "Outcome category 2", "Outcome category 3")),
-         domain = factor(domain, levels = c("Individual", "Family and friends", "Learning environment", "Community", "Structural")),
-         subdomain = factor(subdomain, levels = c("Health behaviours", "Physical health", "Mental health", "Social media use", "Body image", "Perinatal environment", "Early development", "Intrinsic characteristics", "Family relations", "Parental health", "Peer and friend relationships", "Engagement with learning", "Educational environment", "Pressure and expectations", "Respect of young people", "Engagement in local activities", "Social support", "Safety", "Belonging", "Equality", "Poverty and material deprivation", "Social inclusion", "Stigma and discrimination", "Physical environment", "Societal optimism", "Exposure to harm", "Other (Individual)", "Other (Family and friends)", "Other (Learning environment)", "Other (Community)", "Other (Structural)")))
-
-# Filter out qualitative reviews, because these will be displayed separately
-df_separated <- df_separated %>%
-  filter(review_type == "Quantitative" | is.na(review_type))
-  
-# Gather data to show in table
-# Filter out dummy rows
-df_table <- df_separated %>%
-  group_by(across(c(-outcome_definition, -domain, -subdomain, -intervention_exposure_short, -intervention_classification, -sub_population, -other_sub_population_characteristics, -sub_population_mental_health_characteristics, -study_setting, -design_of_reviewed_studies, -comparator_details))) %>%
-  summarise(outcome_definition = paste(unique(outcome_definition), collapse = "; "),
-            subdomain= paste(unique(subdomain), collapse="; "),
-            intervention_or_exposure = paste(unique(intervention_exposure_short), collapse = "; "),
-            intervention_classification = paste(unique(intervention_classification), collapse = "; "),
-            sub_population = paste(unique(sub_population), collapse = "; "),
-            other_sub_population_characteristics = paste(unique(other_sub_population_characteristics), collapse = "; "),
-            sub_population_mental_health_characteristics = paste(unique(sub_population_mental_health_characteristics), collapse = "; "),
-            study_setting = paste(unique(study_setting), collapse = "; "),
-            design_of_reviewed_studies = paste(unique(design_of_reviewed_studies), collapse = "; "),
-            comparator_details = paste(unique(comparator_details), collapse = "; ")) %>%
-  filter(dummy == 0) %>%
-  ungroup()
-
-# Read in data with hyperlinks to papers
-# Select relevant columns and remove hash in covidence number column
-df_links <- read_csv(here("data/SH data for hyperlinks.csv")) %>%
-  select(covidence_number = "Covidence #", DOI) %>%
-  mutate(covidence_number = str_replace(covidence_number, "#", ""))
-
-# Merge with df table dataframe
-df_table_with_links <- merge(df_table, df_links, by = "covidence_number", all = TRUE)
-
-# Save file for use in Shiny app
-saveRDS(df_separated, "data/self-harm_egm_chart_data.rds")
-
-# Save data that has been gathered back together into a separate file for the dashboard table
-saveRDS(df_table_with_links, "data/self-harm_egm_table_data.rds")
