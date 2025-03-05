@@ -1,5 +1,5 @@
 ### ------------------------------------------------------------------------ ###
-###                      EGM self-harm - Shiny preparation                   ###
+###                      EGM WEMWEBS - Shiny preparation                     ###
 ### ------------------------------------------------------------------------ ###
 
 
@@ -21,6 +21,7 @@ library(tidyverse)
 library(janitor) # for tidying up variable names 
 library(readxl) # to read in Excel packages
 library(snakecase) # to reformat strings
+library(arrow) # Read and write Parquet files
 library(here)
 
 ## Set working directory - only need to do this if you can't get into the R project
@@ -101,13 +102,13 @@ clean_col_names <- clean_col_names %>%
                               TRUE ~ study_id))
 
 # There are some duplicate studies between the first and second extract. Find these.
-clean_col_names %>%
-  group_by(study_id) %>% 
-  mutate(dupe = n()>1) %>%
-  ungroup() %>%
-  filter(dupe == TRUE) %>%
-  arrange(study_id, covidence_number) %>%
-  View()
+# clean_col_names %>%
+#   group_by(study_id) %>% 
+#   mutate(dupe = n()>1) %>%
+#   ungroup() %>%
+#   filter(dupe == TRUE) %>%
+#   arrange(study_id, covidence_number) %>%
+#   View()
 # Not all are true duplicates, because some have different titles
 
 # If there are duplicates, keep one with latest covidence number
@@ -116,11 +117,13 @@ no_dups <- clean_col_names %>%
 
 
 # Correct Lewis 2017, which should be marked as in individual domain
-# And change Kelley 2021, so that it ISN'T marked as in individual domain
+# Change Kelley 2021, so that it ISN'T marked as in individual domain
+# Change population of Paoletti 2018, which was incorrectly marked as Adult
 clean_col_names <- clean_col_names %>%
   mutate(individual = case_when(study_id == "Lewis 2017" ~ "Individual",
                                 study_id == "Kelley 2021" ~ NA,
-                                TRUE ~ individual))
+                                TRUE ~ individual),
+         population = if_else(study_id == "Paoletti 2018", "CYP", population))
 
 # Get list of which subdomains relate to each domain
 individual_subs <- colnames(clean_col_names)[9:22]
@@ -131,6 +134,9 @@ structural_subs <- colnames(clean_col_names)[42:55]
 
 # Format data
 pivot_subdomains <- clean_col_names %>%
+  # Change study type column so that it matches with the self-harm data. Change both title of column and coding of study types.
+  rename(intervention_exposure_short = study_type) %>%
+  mutate(intervention_exposure_short = if_else(intervention_exposure_short == "Intervention study", "Intervention", "Risk/protective factor")) %>%
   pivot_longer(cols = ends_with(c("_cyp", "_adult")),
                names_to = "subdomain",
                values_to = "subdomain_topic") %>%
@@ -158,22 +164,18 @@ pivot_subdomains <- clean_col_names %>%
          domain = gsub("_", " ", domain)) %>%
   # Remove domain_desc column
   select(-domain_desc)
-
-# Query with Emma:
-# Kelley 2021 doesn't have a subdomain for individual
-# Foley 2017 and Marselle 2013 both have NA for types of studies
-# Bond 2012 - marked as adult, but under social inclusion CYP
-# Other: intervention studies
   
 # Separate out adult and CYP
-# COME BACK TO - DROP SUBDOMAINS WITH CYP FROM ADULTS AND VICE VERSA?
 adult_mwb_separated <- pivot_subdomains %>%
   filter(population == "Adults") %>%
   # Remove 'adult' from end of subdomains
   mutate(subdomain = gsub(" adult$", "", subdomain)) %>%
   # Add in subdomains that don't appear in data
   mutate(dummy = 0) %>%
-  add_row(domain = "Structural", subdomain = "Stigma, discrimination and harassment", dummy = 1)
+  add_row(domain = "Structural", subdomain = "Stigma, discrimination and harassment", dummy = 1) %>%
+  # Turn domains and subdomains into factors so that sorting works as expected
+  mutate(domain = factor(domain, levels = c("Individual", "Community", "Structural")),
+         subdomain = factor(subdomain, levels = c("Learning and development", "Healthy living", "Family support", "Social media", "General health", "Spirituality", "Participation", "Social support", "Trust", "Safety", "Equality", "Social inclusion", "Poverty and material deprivation", "Stigma, discrimination and harassment", "Financial security debt", "Physical environment", "Working life", "Violence", "Other")))
 
 cyp_mwb_separated <- pivot_subdomains %>%
   filter(population == "CYP") %>%
@@ -192,20 +194,44 @@ cyp_mwb_separated <- pivot_subdomains %>%
   add_row(domain = "Community", subdomain = "Belonging", dummy = 1) %>%
   add_row(domain = "Structural", subdomain = "Social inclusion", dummy = 1) %>%
   add_row(domain = "Structural", subdomain = "Stigma and discrimination", dummy = 1) %>%
-  add_row(domain = "Structural", subdomain = "Societal optimism", dummy = 1)
+  add_row(domain = "Structural", subdomain = "Societal optimism", dummy = 1) %>%
+  # Turn domains and subdomains into factors so that sorting works as expected
+  mutate(domain = factor(domain, levels = c("Individual", "Family and friends", "Learning environment", "Community", "Structural")),
+         subdomain = factor(subdomain, levels = c("Health behaviour", "General health status", "Social media", "Body image", "Perinatal environment", "Learning and development", "Family relations", "Parental health", "Peer and friend relationships", "Engagement with learning", "Educational environment", "Pressures and expectations", "Respect of young people", "Engagement in local activities", "Social support", "Safety", "Belonging", "Equality", "Poverty and material deprivation", "Social inclusion", "Stigma and discrimination", "Physical environment", "Societal optimism", "Exposure to harm", "Other")))
+
+# To do:
+# Consider a less manual way of adding in missing subdomains, e.g. create a complete dataframe with all indicators and merge this in
+# Get links/DOIs for papers
 
 # Write out adult as a CSV for QA purposes
 write_csv(adult_mwb_separated, "data/adult_mwb_separated.csv")
 
 ## Create format for table
+
+# First for adult
 adult_mwb_table <- adult_mwb_separated %>%
-  # Create a column with both subdomain and subdomain topic
-  # CHANGE THIS: HAVE SEPARATE SUB AND TOPIC COLUMNS
-  mutate(sub_and_topic = paste0(subdomain, ": ", subdomain_topic)) %>%
   # The domain and subdomain and topic need to be grouped together again
-  group_by(across(c(study_id, title, aim, types_of_studies, dummy))) %>%
+  group_by(across(c(study_id, title, aim, intervention_exposure_short, dummy))) %>%
   summarise(domain = paste(unique(domain), collapse = "; "),
-            sub_and_topic = paste(unique(sub_and_topic), collapse="; ")) %>%
+            subdomain = paste(unique(subdomain), collapse = "; "),
+            subdomain_topic = paste(unique(subdomain_topic), collapse = "; ")) %>%
   filter(dummy == 0) %>%
   ungroup() %>%
-  select(study_id, title, aim, types_of_studies, domain, sub_and_topic)
+  select(study_id, title, aim, intervention_exposure_short, domain, subdomain, subdomain_topic)
+
+# Then for CYP
+cyp_mwb_table <- cyp_mwb_separated %>%
+  # The domain and subdomain and topic need to be grouped together again
+  group_by(across(c(study_id, title, aim, intervention_exposure_short, dummy))) %>%
+  summarise(domain = paste(unique(domain), collapse = "; "),
+            subdomain = paste(unique(subdomain), collapse = "; "),
+            subdomain_topic = paste(unique(subdomain_topic), collapse = "; ")) %>%
+  filter(dummy == 0) %>%
+  ungroup() %>%
+  select(study_id, title, aim, intervention_exposure_short, domain, subdomain, subdomain_topic)
+
+## Save data to be read into EGM
+write_parquet(adult_mwb_separated, "data/wemwebs_adult_chart_data.parquet")
+write_parquet(cyp_mwb_separated, "data/wemwebs_cyp_chart_data.parquet")
+write_parquet(adult_mwb_table, "data/wemwebs_adult_table_data.parquet")
+write_parquet(cyp_mwb_table, "data/wemwebs_cyp_table_data.parquet")
