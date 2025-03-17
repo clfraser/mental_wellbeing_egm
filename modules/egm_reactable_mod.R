@@ -86,7 +86,26 @@ egm_reactable_ui <- function(id, dataset){
         # Show chart_data to debug
         #tableOutput(ns("chart_data_test")),
         
-        reactableOutput(ns("egm_chart")))
+        tabsetPanel(type = "tabs",
+                    id = ns("tabset_egm"),
+                    tabPanel("EGM",
+                             linebreaks(1),
+                             actionButton(ns("show_egm_numbers"), "Show EGM as text", `aria-label` = "Show EGM as text button. The visual evidence and gap map (EGM) is not accessible via screenreader. Please click this button to access and download a text version of the EGM. You can use the filters to update this."),
+                             linebreaks(2),
+                             tags$div(withNavySpinner(reactableOutput(ns("egm_chart"))), value = "graph",'aria-label' = "The visual EGM is not accessible by screen reader. Please use the Show EGM as text button above to access an accessible version.")),
+                    tabPanel("Included studies",
+                             linebreaks(1),
+                             textOutput(ns("record_count")) %>% 
+                               tagAppendAttributes(class = 'box-info'),
+                             linebreaks(1),
+                             p("To see more columns, use the scroll bar at the bottom of the table, or click inside the table and use the left and right arrow keys on your keyboard."),
+                             linebreaks(1),
+                             csvDownloadButton(ns("studies_table"), filename = "egm_studies.csv"), # To download table as a CSV (defined in core functions script)
+                             #withNavySpinner(tableOutput(ns("studies_table_not_reactable"))),
+                             withNavySpinner(reactableOutput(ns("studies_table"))),
+                             value = ns("included_studies")) # For switching tabs on click
+    ) # tabsetPanel
+      ) # mainPanel
           
       ) # sidebarLayout
   ) #tagList
@@ -159,18 +178,19 @@ egm_reactable_server <- function(id, dataset) {
         )
       })
       
-      # Reset filters when Clear Filters button clicked
+      # Reset filters when Clear Filters button clicked OR when the dataset is changed (via the dataset_input outside the module)
       # Reset from the shinyjs package doesn't reset the tree (hierarchical) checkboxes, so add these separately
-      # Assign full_dataframe to chart_data when Clear Filters button is clicked
+      # Assign full_dataframe to chart_data
       
-      observeEvent(input$clear_all_filters_top, {
+      observeEvent({input$clear_all_filters_top
+                    dataset()}, {
         shinyjs::reset("filter_panel")
         jstreeUpdate(session, ns("domains_tree"), clear_tree(domains_df(), "domain", "subdomain"))
 
         # Set chart_data to full_dataframe (remove any filtering on the chart data)
         chart_data(full_dataframe())
       })
-      # 
+
       # Filtered dataframe
       
       observeEvent(input$filter_update_top, {
@@ -227,6 +247,50 @@ egm_reactable_server <- function(id, dataset) {
         count_pivot() %>%
           select(-padding) %>%
           rbind(egm_aggregated_count())
+      })
+      
+      ###############################################################################
+      ## Table with numbers for the EGM, rather than shapes (for accessibility) ----
+      ###############################################################################
+      
+      output$egm_numbers <- renderReactable({
+        count_pivot() %>%
+          select(-padding) %>% # Remove padding column that's used for nested EGM tables
+          reactable(
+            defaultColDef = colDef(
+              align = 'center',
+              width = 150),
+            defaultExpanded = TRUE,
+            bordered = TRUE,
+            striped = TRUE,
+            fullWidth = FALSE,
+            columns = list(
+              domain = colDef(name = "Domain",
+                              width = 150),
+              subdomain = colDef(name = "Sub-domain",
+                                 width = 150),
+              wemwebs_association_study = colDef(name = "Association study"),
+              wemwebs_intervention_study = colDef(name = "Intervention study")
+            ),
+            columnGroups = list(
+              colGroup(name = "Mental wellbeing", columns = c("wemwebs_association_study", "wemwebs_intervention_study"))
+            )
+          )
+      })
+      
+      # Show numeric table on click
+      
+      observeEvent(input$show_egm_numbers, {
+        showModal(modalDialog(
+          id = "show_egm_numbers_modal",
+          title = "Evidence and gap map counts",
+          p("This table can be filtered by using the filters on the main page. Change the filters and click back on 'Show EGM as text' to get an updated table."),
+          linebreaks(1),
+          csvDownloadButton(ns("egm_numbers"), filename = "egm_counts.csv"), # To download table as a CSV (defined in core functions script)
+          linebreaks(2),
+          reactableOutput(ns("egm_numbers")),
+          easyClose = TRUE,
+          size = "l"))
       })
 
       #######################################################
@@ -307,6 +371,84 @@ egm_reactable_server <- function(id, dataset) {
         )
       }) # renderReactable
       
+      #######################################################
+      ## Table of included studies ----
+      #######################################################
+      
+      # Set the appropriate table dataset, depending on the user input
+      
+      selected_table_dataset <- reactive({
+        switch({dataset()},
+               "Adults" = wemwebs_adult_table_data,
+               "Children and young people" = wemwebs_cyp_table_data)
+      })
+      
+      # Create dataframe to show in table
+      
+      table_data <- reactive({
+        
+        only_selected <-
+          chart_data() %>%
+          filter(selected == 1)
+        
+        selected_table_dataset() %>%
+          filter(id_number %in% only_selected$id_number) %>%
+          dplyr::select(-id_number) %>%
+          arrange(study_id)
+      })
+      
+      output$studies_table_not_reactable <- renderTable(table_data())
+      
+      output$studies_table <- renderReactable({
+        
+        table_no_dups <- unique(table_data())
+        
+        table_no_dups %>%
+          reactable(
+            searchable = TRUE,
+            resizable = TRUE,
+            filterable = TRUE,
+            showPageSizeOptions = TRUE,
+            defaultColDef = colDef(
+              minWidth = 200),
+            columns = list(
+              study_id = colDef(name = "Author and date",
+                                sticky = "left",
+                                html = TRUE, cell = function(value, index) {
+                                  sprintf('<a href="%s" target="_blank">%s</a>', table_no_dups$DOI[index], value)
+                                }),
+              title = colDef(name = "Title",
+                             sticky = "left",
+                             # Add a right border style to visually distinguish the sticky column
+                             style = list(borderRight = "1px solid #eee"),
+                             headerStyle = list(borderRight = "1px solid #eee")),
+              aim = colDef(name = "Aim of study",
+                                    minWidth = 300),
+              intervention_exposure_short = colDef(name = "Intervention or risk/protective factor"),
+              domain = colDef(name = "Domain"),
+              subdomain = colDef(name = "Subdomain"),
+              subdomain_topic = colDef(name = "Subdomain description"),
+              DOI = colDef(name = "DOI",
+                           cell = function(value) {
+                             htmltools::tags$a(href = value, target = "_blank", value)
+                           })
+            )
+          )
+      })
+      
+      # Output the number of unique records
+      
+      output$record_count <- renderText({
+        paste("Number of unique reviews:", nrow(table_data()))
+      })
+      
+      # Switch tabset panel on click
+      
+      observeEvent(input$click_details, {
+        # use tabsetPanel 'id' argument to change tabs
+        updateTabsetPanel(session, "tabset_egm", selected = "included_studies")
+      })
+      
       }) # observe
     
     }
@@ -315,7 +457,21 @@ egm_reactable_server <- function(id, dataset) {
 
 # Run the app to test
 
-ui <- fluidPage(
+ui <- fluidPage(tagList(
+  header = tags$head(          includeCSS("../www/css/main.css"),  # Main
+                               includeCSS("../www/css/tables.css"),  # tables
+                               includeCSS("../www/css/navbar_and_panels.css"), # navbar and notes panel
+                               includeCSS("../www/css/buttons.css"), # buttons
+                               includeCSS("../www/css/select.css"), # selectors and radio buttons
+                               includeCSS("../www/css/popovers.css"), # popovers
+                               includeCSS("../www/css/boxes.css"), # boxes
+                               includeCSS("../www/css/value_box.css"), # valueBox for headline figures
+                               includeCSS("../www/css/info_box.css"), # infoBox for summary page boxes
+                               includeCSS("../www/css/js_tree_r.css") # for heirarchical checkboxes
+                               
+                               )  # CSS stylesheet
+), #tagList
+  
   selectInput("dataset_input", "Select population of interest:",
               choices = c("Adults", "Children and young people")),
   
