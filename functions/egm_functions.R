@@ -1,16 +1,3 @@
-####################### Get click data for when chart is clicked on #######################
-
-get_click_data <- JS("function(rowInfo, column) {
-        // Don't handle click events in the domain or subdomain columns
-    if (column.id === 'domain' || column.id === 'subdomain') {
-      return
-    }
-    // Send the click event to Shiny, which will be available in input$click_details
-    if (window.Shiny) {
-      Shiny.setInputValue('click_details', { domain: rowInfo.values.domain, subdomain: rowInfo.values.subdomain, outcome_and_type: column.id }, { priority: 'event' })
-    }
-  }")
-
 ####################### jsTreeR for hierarchical checkboxes #######################
 
 ## Functions for creating structures to be used with jsTreeR
@@ -55,58 +42,6 @@ clear_tree <- function(df, parent_level, child_level){
     mutate(selected = FALSE) %>%
     create_nodes_from_df(parent_level, child_level)
 }
-
-# Putting data in the right format for jsTreeR
-
-# Create initial dataframes for trees
-
-sub_outcomes_for_tree <- data.frame(
-  first_level = rep("Any form of self-injurious thoughts and behaviours", 2),
-  second_level = c("Exclusively non-suicidal self-harm", "Repetitive, compulsive self-injury")
-)
-
-domains_subs_for_tree <- reviews_chart %>%
-  select(domain, subdomain) %>%
-  distinct(domain, subdomain) %>%
-  arrange(domain, subdomain)
-
-age_for_tree <- data.frame(
-  first_level = rep("All ages", 2),
-  second_level = c("Exclusively 0-18 years", "Up to 25 years")
-)
-
-intervention_exposure_for_tree <- reviews_chart %>%
-  select(intervention_exposure_short, intervention_classification) %>%
-  mutate(intervention_classification = if_else(intervention_exposure_short == "Risk/protective factor", "Exclude", intervention_classification)) %>% # Risk/protective factor should have no children
-  distinct(intervention_exposure_short, intervention_classification) %>%
-  arrange(intervention_exposure_short) %>%
-  filter(!is.na(intervention_exposure_short))
-
-sub_population_for_tree <- reviews_chart %>%
-  select(overall_population, sub_population) %>%
-  mutate(sub_population = if_else(overall_population == "General population", "Exclude", sub_population)) %>% # General population should have no children
-  distinct(overall_population, sub_population) %>%
-  arrange(overall_population) %>%
-  filter(!is.na(overall_population))
-
-# Turn these into dataframes for creating nodes for the tree
-# Note that for the create_df_for_nodes function, the column names shouldn't be in quotes,
-# but for the create_nodes_from_df function, they should
-
-outcome_df <- create_df_for_nodes(sub_outcomes_for_tree, second_level)
-domains_df <- create_df_for_nodes(domains_subs_for_tree, subdomain)
-age_df <- create_df_for_nodes(age_for_tree, second_level)
-intervention_risk_df <- create_df_for_nodes(intervention_exposure_for_tree, intervention_classification)
-sub_pop_df <- create_df_for_nodes(sub_population_for_tree, sub_population)
-
-# Turn the dataframes into nodes
-
-outcome_nodes <- create_nodes_from_df(outcome_df, "first_level", "second_level")
-domain_subs_nodes <- create_nodes_from_df(domains_df, "domain", "subdomain")
-age_nodes <- create_nodes_from_df(age_df, "first_level", "second_level")
-intervention_risk_nodes <- create_nodes_from_df(intervention_risk_df, "intervention_exposure_short", "intervention_classification")
-sub_pop_nodes <- create_nodes_from_df(sub_pop_df, "overall_population", "sub_population")
-
 
 # Modify bubble_grid function for our purposes
 # Change some defaults so that it fits with what we're most likely to use
