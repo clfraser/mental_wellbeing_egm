@@ -30,6 +30,18 @@ egm_reactable_ui <- function(id, dataset){
   
   tagList(
     
+    #######################################################
+    ## Guided tour ----
+    #######################################################
+    
+    useShinyjs(),
+    fluidPage(
+      use_cicerone(), # Include Cicerone to give a guide of the page
+      actionButton(ns("egm_guide_button"), "Click here for a guided tour of the page"),
+      linebreaks(2),
+      # Set checkbox colour
+      tags$head(tags$style("input[type=checkbox] { accent-color: DodgerBlue; }")),
+    
     sidebarLayout(
       
       #######################################################
@@ -108,6 +120,7 @@ egm_reactable_ui <- function(id, dataset){
       ) # mainPanel
           
       ) # sidebarLayout
+    ) # fluidPage
   ) #tagList
 }
 
@@ -296,6 +309,22 @@ egm_reactable_server <- function(id, dataset) {
       #######################################################
       ## Creating EGM plot ----
       #######################################################
+      
+      # Create JavaScript function to store details when the user clicks the EGM
+      # First, create click_details_name, which is a namespaced input
+      click_details_name <- ns("click_details")
+      
+      # Then, use paste0 to include the click_details_name variable in the JavaScript function
+      get_click_data <- JS(paste0("function(rowInfo, column) {
+        // Don't handle click events in the domain or subdomain columns
+    if (column.id === 'domain' || column.id === 'subdomain') {
+      return
+    }
+    // Send the click event to Shiny, which will be available in input$click_details
+    if (window.Shiny) {
+      Shiny.setInputValue('", click_details_name,"', { domain: rowInfo.values.domain, subdomain: rowInfo.values.subdomain, outcome_and_type: column.id }, { priority: 'event' })
+    }
+  }"))
 
       output$egm_chart <- renderReactable({
 
@@ -342,7 +371,7 @@ egm_reactable_server <- function(id, dataset) {
                       fullWidth = FALSE,
                       sortable = FALSE,
                       class = "hidden-column-headers", # Use custom CSS in tables.css script. See: https://github.com/glin/reactable/issues/102
-                      onClick = get_click_data, # Function defined in core functions
+                      onClick = get_click_data, # Function defined above
                       columns = list(
                         padding = colDef(name = "",
                                          width = 44),
@@ -371,6 +400,43 @@ egm_reactable_server <- function(id, dataset) {
         )
       }) # renderReactable
       
+      #######################################################
+      ## Responding to user click on EGM ----
+      #######################################################
+      
+      # Get click details from map
+      
+      outcome_click <- reactive({sub("_", "-", sub("\\..*", "", input$click_details$outcome_and_type))})
+      type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", sub(".*\\.", "", input$click_details$outcome_and_type))})
+
+      # When the map is clicked, select the relevant filters and then filter the dataframe
+
+      observeEvent(input$click_details, {
+        # Update domains tree regardless of what's in the current filter
+        jstreeUpdate(session,
+                     ns("domains_tree"),
+                     domains_df() %>%
+                       mutate(selected = case_when(input$click_details$subdomain == "" & input$click_details$domain == domain ~ TRUE,
+                                                   input$click_details$subdomain == subdomain ~ TRUE,
+                                                   .default = FALSE)) %>%
+                       create_nodes_from_df("domain", "subdomain"))
+        # Only update intervention/risk input if nothing is currently selected in the filter
+        if(is.null(input$intervention_risk_input)){
+          updateCheckboxGroupInput(
+            inputId = "intervention_risk_input",
+            selected = type_click()
+          )
+        }
+        # Use delay to give filters time to update before dataframe is updated
+        delay(400,
+              chart_data(selected_dataset() %>%
+                           mutate(domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
+                                  intervention_risk_filter = if(is.null(input$intervention_risk_input)) TRUE else if_else(intervention_exposure_short %in% input$intervention_risk_input, TRUE, FALSE),
+                                  selected = if_else(domains_filter + intervention_risk_filter
+                                                     + dummy == 2, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+        )
+       })
+
       #######################################################
       ## Table of included studies ----
       #######################################################
@@ -446,7 +512,7 @@ egm_reactable_server <- function(id, dataset) {
       
       observeEvent(input$click_details, {
         # use tabsetPanel 'id' argument to change tabs
-        updateTabsetPanel(session, "tabset_egm", selected = "included_studies")
+        updateTabsetPanel(session, "tabset_egm", selected = ns("included_studies"))
       })
       
       }) # observe
@@ -458,6 +524,9 @@ egm_reactable_server <- function(id, dataset) {
 # Run the app to test
 
 ui <- fluidPage(tagList(
+  lang = "en",
+  titlePanel(h1("Mental wellbeing evidence and gap map")),
+  
   header = tags$head(          includeCSS("../www/css/main.css"),  # Main
                                includeCSS("../www/css/tables.css"),  # tables
                                includeCSS("../www/css/navbar_and_panels.css"), # navbar and notes panel
