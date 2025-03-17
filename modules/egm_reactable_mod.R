@@ -269,11 +269,11 @@ egm_reactable_server <- function(id, dataset) {
                               width = 150),
               subdomain = colDef(name = "Sub-domain",
                                  width = 150),
-              wemwebs_association_study = colDef(name = "Association study"),
-              wemwebs_intervention_study = colDef(name = "Intervention study")
+              WEMWEBS.Risk_protective_factor = colDef(name = "Association study"),
+              WEMWEBS.Intervention = colDef(name = "Intervention study")
             ),
             columnGroups = list(
-              colGroup(name = "Mental wellbeing", columns = c("wemwebs_association_study", "wemwebs_intervention_study"))
+              colGroup(name = "Mental wellbeing", columns = c("WEMWEBS.Risk_protective_factor", "WEMWEBS.Intervention"))
             )
           )
       })
