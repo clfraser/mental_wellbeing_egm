@@ -30,9 +30,6 @@ library(ggh4x)
 # Package for relative file references (needed to deploy app) 
 library(here)
 
-# PHS styling packages ----
-#library(phsstyles)
-
 # HTML tools
 library(htmltools)
 
@@ -51,4 +48,4 @@ wemwebs_cyp_chart_data <- read_parquet(here("data/wemwebs_cyp_chart_data.parquet
 wemwebs_cyp_table_data <- read_parquet(here("data/wemwebs_cyp_table_data.parquet"))
 
 # Dataframe for glossary list
-#glossary_list <- read_xlsx(here("data/Definitions.xlsx"), sheet = "List")
+glossary_list <- read_xlsx(here("data/MWB glossary.xlsx"))
