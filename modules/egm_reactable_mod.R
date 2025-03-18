@@ -240,7 +240,120 @@ egm_reactable_server <- function(id, dataset) {
       
       
       output$chart_data_test <- renderTable({chart_data()})
-
+      
+      #######################################################
+      ## Filter definition buttons ----
+      #######################################################
+      
+      # Domains and subdomains information
+      observeEvent(input$domains_defs, {
+        if(dataset() == "Children and young people"){
+        
+        domain_defs_overall <- glossary_list %>%
+          filter(Topic == "Domains and subdomains - overall") %>%
+          select(-Topic, -Population)
+        
+        domain_defs_individual <- glossary_list %>%
+          filter(Topic == "Domains and subdomains - individual", Population == "CYP") %>%
+          select(-Topic, -Population)
+        
+        domain_defs_family <- glossary_list %>%
+          filter(Topic == "Domains and subdomains - family and friends", Population == "CYP") %>%
+          select(-Topic, -Population)
+        
+        domain_defs_learning <- glossary_list %>%
+          filter(Topic == "Domains and subdomains - learning environment", Population == "CYP") %>%
+          select(-Topic, -Population)
+        
+        domain_defs_community <- glossary_list %>%
+          filter(Topic == "Domains and subdomains - community", Population == "CYP") %>%
+          select(-Topic, -Population)
+        
+        domain_defs_structural <- glossary_list %>%
+          filter(Topic == "Domains and subdomains - structural", Population == "CYP") %>%
+          select(-Topic, -Population)
+        
+        output$domain_defs_overall_table <- renderTable(domain_defs_overall)
+        output$domain_defs_individual_table <- renderTable(domain_defs_individual)
+        output$domain_defs_family_table <- renderTable(domain_defs_family)
+        output$domain_defs_learning_table <- renderTable(domain_defs_learning)
+        output$domain_defs_community_table <- renderTable(domain_defs_community)
+        output$domain_defs_structural_table <- renderTable(domain_defs_structural)
+        
+        showModal(modalDialog(
+          title = "Domain and subdomain definitions: Children and young people",
+          "Determinants of mental health are a range of factors that influence our mental health and wellbeing. The EGM uses the Public Health Scotland mental health indicator framework to map how the circumstances in which children and young people live shape their mental health outcomes. The determinants are grouped according to domains and subdomains.",
+          linebreaks(2),
+          tags$b("Overall definitions"),
+          tableOutput(ns("domain_defs_overall_table")),
+          tags$b("Individual subdomain definitions"),
+          tableOutput(ns("domain_defs_individual_table")),
+          tags$b("Family and friends subdomain definitions"),
+          tableOutput(ns("domain_defs_family_table")),
+          tags$b("Learning environment subdomain definitions"),
+          tableOutput(ns("domain_defs_learning_table")),
+          tags$b("Community subdomain definitions"),
+          tableOutput(ns("domain_defs_community_table")),
+          tags$b("Structural subdomain definitions"),
+          tableOutput(ns("domain_defs_structural_table")),
+          easyClose = TRUE))
+        
+        } else{
+          
+          domain_defs_overall <- glossary_list %>%
+            filter(Topic == "Domains and subdomains - overall") %>%
+            select(-Topic, -Population)
+          
+          domain_defs_individual <- glossary_list %>%
+            filter(Topic == "Domains and subdomains - individual", Population == "Adults") %>%
+            select(-Topic, -Population)
+          
+          domain_defs_community <- glossary_list %>%
+            filter(Topic == "Domains and subdomains - community", Population == "Adults") %>%
+            select(-Topic, -Population)
+          
+          domain_defs_structural <- glossary_list %>%
+            filter(Topic == "Domains and subdomains - structural", Population == "Adults") %>%
+            select(-Topic, -Population)
+          
+          output$domain_defs_overall_table <- renderTable(domain_defs_overall)
+          output$domain_defs_individual_table <- renderTable(domain_defs_individual)
+          output$domain_defs_community_table <- renderTable(domain_defs_community)
+          output$domain_defs_structural_table <- renderTable(domain_defs_structural)
+          
+          showModal(modalDialog(
+            title = "Domain and subdomain definitions: Adults",
+            "Determinants of mental health are a range of factors that influence our mental health and wellbeing. The EGM uses the Public Health Scotland mental health indicator framework to map how the circumstances in which people live shape their mental health outcomes. The determinants are grouped according to domains and subdomains.",
+            linebreaks(2),
+            tags$b("Overall definitions"),
+            tableOutput(ns("domain_defs_overall_table")),
+            tags$b("Individual subdomain definitions"),
+            tableOutput(ns("domain_defs_individual_table")),
+            tags$b("Community subdomain definitions"),
+            tableOutput(ns("domain_defs_community_table")),
+            tags$b("Structural subdomain definitions"),
+            tableOutput(ns("domain_defs_structural_table")),
+            easyClose = TRUE))
+          
+        }
+      })
+      
+      # Interventions and risk factors information
+      
+      observeEvent(input$int_exposure_defs, {
+        defs_filtered <- glossary_list %>%
+          filter(Topic == "Interventions and risk/protective factors") %>%
+          select(-Topic, - Population)
+        
+        output$defs_table <- renderTable(defs_filtered)
+        
+        showModal(modalDialog(
+          title = paste("Interventions and risk/protective factors definitions"),
+          tableOutput(ns("defs_table")),
+          easyClose = TRUE
+        ))
+      })
+      
       #######################################################
       ## Formatting data for EGM ----
       #######################################################
