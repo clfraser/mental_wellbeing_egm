@@ -4,24 +4,6 @@
 #####################################.
 
 #######################################################
-## READ IN DATA ----
-#######################################################
-
-## WEMWEBS
-
-# Dataframe for adult plot
-wemwebs_adult_chart_data <- read_parquet(here("data/wemwebs_adult_chart_data.parquet"))
-
-# Dataframe for adult table
-wemwebs_adult_table_data <- read_parquet(here("data/wemwebs_adult_table_data.parquet"))
-
-# Dataframe for CYP plot
-wemwebs_cyp_chart_data <- read_parquet(here("data/wemwebs_cyp_chart_data.parquet"))
-
-# Dataframe for CYP table
-wemwebs_cyp_table_data <- read_parquet(here("data/wemwebs_cyp_table_data.parquet"))
-
-#######################################################
 ## MODULE UI ----
 #######################################################
 
@@ -34,7 +16,6 @@ egm_reactable_ui <- function(id, dataset){
     ## Guided tour ----
     #######################################################
     
-    useShinyjs(),
     fluidPage(
       use_cicerone(), # Include Cicerone to give a guide of the page
       actionButton(ns("egm_guide_button"), "Click here for a guided tour of the page"),
@@ -95,9 +76,6 @@ egm_reactable_ui <- function(id, dataset){
       #######################################################
       
       mainPanel(
-        # Show chart_data to debug
-        #tableOutput(ns("chart_data_test")),
-        
         tabsetPanel(type = "tabs",
                     id = ns("tabset_egm"),
                     tabPanel("EGM",
@@ -136,6 +114,52 @@ egm_reactable_server <- function(id, dataset) {
       
       # Define ns here since the jsTreeUpdate function for filters below refers to a namespaced output
       ns <- session$ns
+      
+      #######################################################
+      ## Guided tour ----
+      #######################################################
+      
+      # Set up steps for guide
+      
+      egm_guide <- Cicerone$
+        new()$
+        step(
+          el = ns("egm_chart"),
+          position = "top",
+          title = "Evidence and gap map",
+          description = "The size of the shapes correspond to the number of studies. Hover over each shape to see the number of studies.
+    Click the shape to see a table with study details."
+        )$
+        step(
+          ns("show_egm_numbers"),
+          "See EGM as a table",
+          "See a table of the number of studies included in the EGM. This takes account of any filters applied. You can download the table as a CSV. The visual EGM (below) is not screenreader accessible, so please use this button for an accessible version of the table."
+        )$
+        step(
+          ns("all_filters"),
+          "Filters",
+          "Change the filters to find studies relevant to you."
+        )$
+        step(
+          ns("filter_update_top"),
+          "Update filters",
+          "Click the update filters button to update the EGM and the table of studies."
+        )$
+        step(
+          ns("clear_all_filters_top"),
+          "Clear filters",
+          "Clear all selected filters."
+        )
+      
+      # # initialise the Cicerone guide
+      egm_guide$init()
+      
+      observeEvent(input$egm_guide_button, {
+        # Switch to the EGM panel to show walkthrough
+        updateTabsetPanel(session, "tabset_egm", selected = ns("EGM"))
+        # Use 'delay' to only start the walkthrough once on the EGM panel has been selected
+        delay(5, egm_guide$start())
+      })
       
       #######################################################
       ## Setting up dataset ----
@@ -520,35 +544,3 @@ egm_reactable_server <- function(id, dataset) {
     }
   )
 }
-
-# Run the app to test
-
-ui <- fluidPage(tagList(
-  lang = "en",
-  titlePanel(h1("Mental wellbeing evidence and gap map")),
-  
-  header = tags$head(          includeCSS("../www/css/main.css"),  # Main
-                               includeCSS("../www/css/tables.css"),  # tables
-                               includeCSS("../www/css/navbar_and_panels.css"), # navbar and notes panel
-                               includeCSS("../www/css/buttons.css"), # buttons
-                               includeCSS("../www/css/select.css"), # selectors and radio buttons
-                               includeCSS("../www/css/popovers.css"), # popovers
-                               includeCSS("../www/css/boxes.css"), # boxes
-                               includeCSS("../www/css/value_box.css"), # valueBox for headline figures
-                               includeCSS("../www/css/info_box.css"), # infoBox for summary page boxes
-                               includeCSS("../www/css/js_tree_r.css") # for heirarchical checkboxes
-                               
-                               )  # CSS stylesheet
-), #tagList
-  
-  selectInput("dataset_input", "Select population of interest:",
-              choices = c("Adults", "Children and young people")),
-  
-  egm_reactable_ui("egm_reactable", dataset = reactive({input$dataset_input}))
-)
-
-server <- function(input, output, session) {
-  egm_reactable_server("egm_reactable", dataset = reactive({input$dataset_input}))
-}
-
-shinyApp(ui, server)

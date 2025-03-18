@@ -10,9 +10,14 @@
 # Get packages
 source("setup.R")
 
-# Source files with UI code for each tab --------------
-walk(list.files("ui", full.names = TRUE), ~ source(.x))
+# Get EGM module --------------
+source("modules/egm_reactable_mod.R")
 
+# Get core functions
+source("functions/core_functions.R")
+
+# Get egm functions
+source("functions/egm_functions.R")
 
 # UI
 ui <- 
@@ -28,14 +33,7 @@ tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css)
 #     div("Dashboard is in development. Not final version."),
 #     style = "color: white; background-color: red; width: 100%; text-align: center; font-weight: bold;",
 # ),
-navbarPage(
-    id = "tabset_navbar", # id used for jumping between tabs
-    title = div(
-        tags$a(img(src = "phs-logo-updated.png", height = 40, alt = "Link to Public Health Scotland website. Opens in a new tab.")),
-               href = "https://www.publichealthscotland.scot/",
-               target = "_blank",
-    style = "position: relative; top: -5px;"),
-    windowTitle = "Self-harm in children and young people EGM",# Title for browser tab
+
     header = tags$head(          includeCSS("www/css/main.css"),  # Main
                                  includeCSS("www/css/tables.css"),  # tables
                                  includeCSS("www/css/navbar_and_panels.css"), # navbar and notes panel
@@ -48,22 +46,20 @@ navbarPage(
                                  includeCSS("www/css/js_tree_r.css") # for heirarchical checkboxes
       
     ,  # CSS stylesheet
-    tags$head(
-      tags$script(src="js/index.js")
-    ), # Include script that allows you to jump between tabs using a link
-    collapsible = TRUE, # Make navigation bar collapse on smaller screens
     tags$link(rel = "shortcut icon", href = "favicon_phs.ico"), # Icon for browser tab
     
 ),
 
-# Order of tabs --------------------------------
+  titlePanel(h1("Mental wellbeing evidence and gap map"),
+             windowTitle = "Mental wellbeing evidence and gap map" # Title for browser tab
+             ),
+  
 
-homepageTab,
-mainTab,
-glossaryTab,
-linksTab,
+  selectInput("dataset_input", "Select population of interest:",
+            choices = c("Adults", "Children and young people")),
 
-) # navbar
+  egm_reactable_ui("egm_reactable", dataset = reactive({input$dataset_input}))
+
 ) # taglist
 ) # ui fluidpage
 #) # Secure app, for password protection
@@ -74,21 +70,13 @@ server <- function(input, output, session) {
 
   
   credentials <- readRDS(here("admin/credentials.rds"))
-  
+
   res_auth <- secure_server(
     check_credentials = check_credentials(credentials)
   )
   
-    # Get functions
-    source(file.path("functions/core_functions.R"), local = TRUE)$value
-    source(file.path("functions/intro_page_functions.R"), local = TRUE)$value
-    source(file.path("functions/egm_functions.R"), local = TRUE)$value
-    source(file.path("functions/guided_tours.R"), local = TRUE)$value
-
-    # Get server content for individual pages
-    source(file.path("server/intro_server.R"), local = TRUE)$value
-    source(file.path("server/egm_server.R"), local = TRUE)$value
-    source(file.path("server/glossary_server.R"), local = TRUE)$value
+  # EGM reactable module server
+  egm_reactable_server("egm_reactable", dataset = reactive({input$dataset_input}))
   
   # Keeps the shiny app from timing out quickly 
   autoInvalidate <- reactiveTimer(10000)

@@ -141,6 +141,10 @@ csvDownloadButton <- function(id, filename = "data.csv", label = "Download as CS
 
 # Show a navy navigation spinner
 
+# Set navy colour
+
+navy <- "#010068"
+
 withNavySpinner <- function(out){
   withSpinner(out, color = navy)
 }

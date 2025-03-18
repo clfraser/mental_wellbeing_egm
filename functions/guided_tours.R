@@ -23,37 +23,26 @@ egm_guide <- Cicerone$
     el = "egm",
     position = "top",
     title = "Evidence and gap map",
-    description = "The size of the shapes correspond to the number of reviews. Hover over each shape to see the number of reviews.
-    Click the shape to see a table with review details."
+    description = "The size of the shapes correspond to the number of studies. Hover over each shape to see the number of studies.
+    Click the shape to see a table with study details."
   )$
   step(
     "show_egm_numbers",
     "See EGM as a table",
-    "See a table of the number of reviews included in the EGM. This takes account of any filters applied. You can download the table as a CSV. The visual EGM (below) is not screenreader accessible, so please use this button for an accessible version of the table."
+    "See a table of the number of studies included in the EGM. This takes account of any filters applied. You can download the table as a CSV. The visual EGM (below) is not screenreader accessible, so please use this button for an accessible version of the table."
   )$
   step(
     "all_filters",
     "Filters",
-    "Change the filters to find reviews relevant to you."
+    "Change the filters to find studies relevant to you."
   )$
   step(
     "filter_update_top",
     "Update filters",
-    "Click the update filters button to update the EGM and the table of reviews."
+    "Click the update filters button to update the EGM and the table of studies."
   )$
   step(
     "clear_all_filters_top",
     "Clear filters",
     "Clear all selected filters."
-  )$
-  step(
-    el = "[data-value = 'table']",
-    title = "Table of review details",
-    description = "Click on the table tab to see details of the reviews included in the EGM. Any filters applied to the EGM are also applied to the table.",
-    is_id = FALSE
-  )$
-  step(
-    el = "video_link_button",
-    title = "Looking for more detail?",
-    description = "Click to see a walkthrough video and an example of how to use the EGM."
   )

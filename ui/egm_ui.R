@@ -42,13 +42,7 @@ mainTab <- tabPanel(
                    # Filters
                   div(id = "all_filters", # Create div for the Cicerone tour
                       
-                  ### New tree filter tests
-                      
-                   # Sub-outcome definition
-                  tags$span(
-                    tags$label("Select outcome definition"), 
-                    actionButton("outcome_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about outcome definitions"))),
-                  jstreeOutput("outcome_tree"),
+                  ### Tree filter
                   
                   # Label for input
                   tags$span(
@@ -57,61 +51,16 @@ mainTab <- tabPanel(
                   # Domains and sub-domains with jsTreeR
                   jstreeOutput("domains_tree"),
                    
-                   # Intervention or exposure and intervention classification
-                  tags$span(
-                    tags$label("Select reviews looking at interventions or risk/protective factors, and the intervention classification"), 
-                    actionButton("int_exposure_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about interventions and risk/protective factors"))),
-                  jstreeOutput("intervention_risk_tree"),
-                   
-                   # Population age
-                  tags$span(
-                    tags$label("Select population age"), 
-                    actionButton("pop_age_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about population age"))),
-                  jstreeOutput("age_tree"),
-                   
-                   # Population characteristics
-                  tags$span(
-                    tags$label("Select population characteristics"), 
-                    actionButton("pop_characteristics_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about population characteristics"))),
-                  jstreeOutput("sub_pop_tree"),
+                  # Standard filter
                   
-                  linebreaks(1),
-                   
-                   # Study setting
-                   checkboxGroupInput(
-                     inputId = "study_setting_input",
-                     label = tags$span("Select study setting",
-                                       actionButton("study_setting_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about study setting"))),
-                     choices = c("Clinical setting", "Community setting", "Educational establishment", "Online", "Not specific", "Other: Youth detention centres"),
-                     selected = NULL
-                   ),
-                   
-                   # Type of synthesis
-                   checkboxGroupInput(
-                     inputId = "synth_type_input",
-                     label = tags$span("Select type of synthesis",
-                                       actionButton("synth_type_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about types of synthesis"))),
-                     choices = c("Systematic review with meta-analysis", "Systematic review with narrative synthesis", "Other review with narrative synthesis", "Scoping evidence mapping"),
-                     selected = NULL
-                   ),
-                   
-                   # Quality appraisal
-                   radioButtons(
-                     "qual_appraisal_input",
-                     label = tags$span("Only show reviews that assess the quality of reviewed studies?",
-                                       actionButton("quality_appraisal_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about quality appraisal"))),
-                     choices = c("Yes","No"),
-                     selected = "No"
-                   ),
-                   
-                   # Pre-registered protocol
-                   radioButtons(
-                     "pre_reg_input",
-                     label = tags$span("Only show reviews that have a pre-registered protocol?",
-                                       actionButton("pre_reg_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about pre-registered protocols"))),
-                     choices = c("Yes","No"),
-                     selected = "No"
-                   )
+                   # Association or intervention
+                  checkboxGroupInput(
+                    inputId = "study_type_input",
+                    label = tags$span("Select association or intervention study",
+                                      actionButton("int_exposure_defs", "", icon = icon("circle-info", `aria-label` = "Click for more information about association and intervention studies"))),
+                    choices = c("Intervention study", "Association study"),
+                    selected = NULL
+                  ),
                   ) #div
       ), # sidebar panel
       ## Main panel for displaying outputs ----

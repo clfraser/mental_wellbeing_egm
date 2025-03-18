@@ -29,11 +29,13 @@ library(here)
 
 ## Read in data
 
+# Have saved extracts below in UTF-8 format via Excel so that special characters are displayed properly
+
 # Read in extract 1
-extract_1 <- read_csv("data/WEMWBS_search 1.csv")
+extract_1 <- read_csv("data/WEMWBS_search 1 UTF-8.csv")
 
 # Read in extract 2
-extract_2 <- read_csv("data/WEMWBS_search 2.csv")
+extract_2 <- read_csv("data/WEMWBS_search 2 UTF-8.csv")
 
 # Fix column names for extract 1
 extract_1_renamed <- extract_1 %>%
@@ -89,11 +91,9 @@ df_together <- rbind(extract_1_renamed, extract_2_renamed)
 
 ## Process data
 
-# Clean column names and create an id_number column
+# Clean column names
 clean_col_names <- df_together %>%
-  clean_names()  %>%
-  # Some covidence numbers are duplicated across different studies, so create an id_number column instead, which has a unique number for each study
-  mutate(id_number = row_number())
+  clean_names() 
 
 # Data cleaning
 
@@ -102,6 +102,43 @@ clean_col_names <- clean_col_names %>%
   mutate(study_id = case_when(covidence_number == 1383 ~ "O'Brien 2020",
                               covidence_number == 1395 ~ "Fazia 2020",
                               TRUE ~ study_id))
+
+
+# Correct Lewis 2017, which should be marked as in individual domain
+# Change Kelley 2021, so that it ISN'T marked as in individual domain
+# Change population of Paoletti 2018, which was incorrectly marked as Adult
+# Mark Hughes 2016 and Lyons 2018 as being in the Structural domain
+# Change the punctuation in the subdomain topic description for Bellis 2013, since using a semi-colon caused problems for formatting later
+# Add details for Cheng 2014, which was omitted in data extract given
+# Create an ID number column
+clean_col_names <- clean_col_names %>%
+  mutate(individual = case_when(study_id == "Lewis 2017" ~ "Individual",
+                                study_id == "Kelley 2021" ~ NA,
+                                TRUE ~ individual),
+         population = if_else(study_id == "Paoletti 2018", "CYP", population),
+         structural = if_else(study_id %in% c("Hughes 2016", "Lyons 2018"), "Structural", structural),
+         exposure_to_harm_cyp = if_else(study_id == "Bellis 2013", "Childhood experiences (unhappiness, violence)", exposure_to_harm_cyp)) %>%
+  add_row(covidence_number = 604,
+          study_id = "Cheng 2014",
+          reviewer_name = "Emma",
+          title = "The Associations Between Parental Socio-Economic Conditions, Childhood Intelligence, Adult Personality Traits, Social Status and Mental Well-Being",
+          aim = "To examine the associations between parental social status indicators (measured at birth), childhood intelligence (measured at age 11), personality traits, educational achievement and occupational prestige in relation to mental well-being (all measured at age 50).",
+          population = "Adults",
+          study_type = "Association study",
+          individual = "Individual",
+          other_adult = "personality traits; childhood intelligence",
+          structural = "Structural",
+          equality_adult = "education; occupation; parental social status") %>%
+  # Some covidence numbers are duplicated across different studies, so create an id_number column instead, which has a unique number for each study
+  mutate(id_number = row_number())
+
+
+# Get list of which subdomains relate to each domain
+individual_subs <- colnames(clean_col_names)[9:22]
+family_friends_subs <- colnames(clean_col_names)[24:26]
+learning_environment_subs <- colnames(clean_col_names)[28:30]
+community_subs <- colnames(clean_col_names)[32:40]
+structural_subs <- colnames(clean_col_names)[42:55]
 
 # There are some duplicate studies between the first and second extract. Find these.
 # clean_col_names %>%
@@ -117,29 +154,8 @@ clean_col_names <- clean_col_names %>%
 no_dups <- clean_col_names %>%
   filter(!covidence_number %in% c(393, 188, 98, 197, 37))
 
-
-# Correct Lewis 2017, which should be marked as in individual domain
-# Change Kelley 2021, so that it ISN'T marked as in individual domain
-# Change population of Paoletti 2018, which was incorrectly marked as Adult
-# Mark Hughes 2016 as being in the Structural domain
-# Change the punctuation in the subdomain topic description for Bellis 2013, since using a semi-colon caused problems for formatting later
-clean_col_names <- clean_col_names %>%
-  mutate(individual = case_when(study_id == "Lewis 2017" ~ "Individual",
-                                study_id == "Kelley 2021" ~ NA,
-                                TRUE ~ individual),
-         population = if_else(study_id == "Paoletti 2018", "CYP", population),
-         structural = if_else(study_id == "Hughes 2016", "Structural", structural),
-         exposure_to_harm_cyp = if_else(study_id == "Bellis 2013", "Childhood experiences (unhappiness, violence)", exposure_to_harm_cyp))
-
-# Get list of which subdomains relate to each domain
-individual_subs <- colnames(clean_col_names)[9:22]
-family_friends_subs <- colnames(clean_col_names)[24:26]
-learning_environment_subs <- colnames(clean_col_names)[28:30]
-community_subs <- colnames(clean_col_names)[32:40]
-structural_subs <- colnames(clean_col_names)[42:55]
-
 # Format data
-pivot_subdomains <- clean_col_names %>%
+pivot_subdomains <- no_dups %>%
   # Change study type column so that it matches with the self-harm data. Change both title of column and coding of study types.
   rename(intervention_exposure_short = study_type) %>%
   mutate(intervention_exposure_short = if_else(intervention_exposure_short == "Intervention study", "Intervention", "Risk/protective factor")) %>%
@@ -162,11 +178,12 @@ pivot_subdomains <- clean_col_names %>%
            (domain == "structural" & subdomain %in% structural_subs)) %>%
   # Expand rows with multiple subdomain topics
   separate_longer_delim(subdomain_topic, delim = "; ") %>%
-  # Change various columns to sentence case
+  # Change various columns to sentence case. Add in a comma for one of the subdomains.
   mutate(subdomain_topic = str_to_sentence(subdomain_topic),
          domain = str_to_sentence(domain),
          subdomain = str_to_sentence(subdomain),
          subdomain = gsub("_", " ", subdomain),
+         subdomain = if_else(subdomain == "Stigma discrimination and harassment adult", "Stigma, discrimination and harassment adult", subdomain),
          domain = gsub("_", " ", domain)) %>%
   # Remove domain_desc column
   select(-domain_desc)
@@ -178,35 +195,45 @@ links <- read_csv("data/wemwebs_links_to_papers.csv")
 
 # Some DOIs don't have the first bit of the URL, so add these in if necessary
 links_cleaned <- links %>%
-  mutate(DOI = if_else(startsWith(DOI, "10."), paste0("http://dx.doi.org/", DOI), DOI),
-         # Fix an author's name that hasn't been formatted properly
-         Study = if_else(DOI == "http://dx.doi.org/10.1093/eurpub/ckz192", "Jónsdóttir 2020", Study))
+  mutate(DOI = if_else(startsWith(DOI, "10."), paste0("http://dx.doi.org/", DOI), DOI))
 
-
-# Since some covidence numbers are repeated, use a combination of covidence number and study ID
+# Since some covidence numbers are repeated, use a combination of covidence number and study ID to match to existing data
 pivot_subdomains_with_links <- links_cleaned %>%
   select(covidence_number = "Covidence number", study_id = Study, links_title = Title, DOI) %>%
   merge(pivot_subdomains, by = c("covidence_number", "study_id"), all = TRUE)
+
+# Further data cleaning after links added
+pivot_subdomains_with_links_cleaned <- pivot_subdomains_with_links %>%
+  # Remove Brandling 2011 from data completely, since a link to this paper can't be found
+  filter(study_id != "Brandling 2011") %>%
+  # Change the date of Scott 2016 to 2013 since this is the date the latest paper can be found for this study
+  mutate(study_id = if_else(study_id == "Scott 2016", "Scott 2013", study_id),
+  # BarthVedoy 2020 and 2021 and Jonsdottir 2020 haven't matched properly (probably because of special characters in the name). Add the DOIs in manually.
+         DOI = case_when(id_number == 41 ~ "http://dx.doi.org/10.1016/j.mhpa.2020.100322",
+                         id_number == 142 ~ "http://dx.doi.org/10.1093/eurpub/ckz192",
+                         id_number == 208 ~ "http://dx.doi.org/10.1186/s12966-021-01211-x",
+                         TRUE ~ DOI)) %>%
+  # Some remaining papers without a match in the main extract because the covidence numbers aren't consistent with those from the main extract. These papers still appear in the data, so remove all papers with a missing ID number.
+  filter(!is.na(id_number))
   
 # Separate out adult and CYP
-adult_mwb_separated <- pivot_subdomains_with_links %>%
+adult_mwb_separated <- pivot_subdomains_with_links_cleaned %>%
   filter(population == "Adults") %>%
   # Remove 'adult' from end of subdomains
   mutate(subdomain = gsub(" adult$", "", subdomain)) %>%
-  # Add in subdomains that don't appear in data
+  # There are no subdomains that don't appear in data, so no need to add any here. Mark all existing subdomains as not dummy.
   mutate(dummy = 0) %>%
-  add_row(domain = "Structural", subdomain = "Stigma, discrimination and harassment", dummy = 1) %>%
   # Turn domains and subdomains into factors so that sorting works as expected
   mutate(domain = factor(domain, levels = c("Individual", "Community", "Structural")),
          subdomain = factor(subdomain, levels = c("Learning and development", "Healthy living", "Family support", "Social media", "General health", "Spirituality", "Participation", "Social support", "Trust", "Safety", "Equality", "Social inclusion", "Poverty and material deprivation", "Stigma, discrimination and harassment", "Financial security debt", "Physical environment", "Working life", "Violence", "Other"))) %>%
   # Add overall outcome column (so that later multiple outcomes could be added)
   mutate(overall_outcome = "WEMWEBS")
 
-cyp_mwb_separated <- pivot_subdomains_with_links %>%
+cyp_mwb_separated <- pivot_subdomains_with_links_cleaned %>%
   filter(population == "CYP") %>%
   # Remove 'cyp' from end of subdomains
   mutate(subdomain = gsub(" cyp$", "", subdomain)) %>%
-  # Add in subdomains that don't appear in data
+  # Add in subdomains that don't appear in data and mark them as dummy
   mutate(dummy = 0) %>%
   add_row(domain = "Individual", subdomain = "Body image", dummy = 1) %>%
   add_row(domain = "Individual", subdomain = "Perinatal environment", dummy = 1) %>%
@@ -238,24 +265,24 @@ cyp_mwb_separated <- pivot_subdomains_with_links %>%
 # First for adult
 adult_mwb_table <- adult_mwb_separated %>%
   # The domain and subdomain and topic need to be grouped together again
-  group_by(across(c(study_id, title, aim, intervention_exposure_short, DOI, dummy))) %>%
+  group_by(across(c(study_id, title, aim, intervention_exposure_short, DOI, dummy, id_number))) %>%
   summarise(domain = paste(unique(domain), collapse = "; "),
             subdomain = paste(unique(subdomain), collapse = "; "),
             subdomain_topic = paste(unique(subdomain_topic), collapse = "; ")) %>%
   filter(dummy == 0) %>%
   ungroup() %>%
-  select(study_id, title, aim, intervention_exposure_short, domain, subdomain, subdomain_topic, DOI)
+  select(study_id, title, aim, intervention_exposure_short, domain, subdomain, subdomain_topic, DOI, id_number)
 
 # Then for CYP
 cyp_mwb_table <- cyp_mwb_separated %>%
   # The domain and subdomain and topic need to be grouped together again
-  group_by(across(c(study_id, title, aim, intervention_exposure_short, DOI, dummy))) %>%
+  group_by(across(c(study_id, title, aim, intervention_exposure_short, DOI, dummy, id_number))) %>%
   summarise(domain = paste(unique(domain), collapse = "; "),
             subdomain = paste(unique(subdomain), collapse = "; "),
             subdomain_topic = paste(unique(subdomain_topic), collapse = "; ")) %>%
   filter(dummy == 0) %>%
   ungroup() %>%
-  select(study_id, title, aim, intervention_exposure_short, domain, subdomain, subdomain_topic, DOI)
+  select(study_id, title, aim, intervention_exposure_short, domain, subdomain, subdomain_topic, DOI, id_number)
 
 ## Save data to be read into EGM
 write_parquet(adult_mwb_separated, "data/wemwebs_adult_chart_data.parquet")

@@ -17,38 +17,10 @@ observeEvent(input$video_link_button, {
   updateTabsetPanel(session, "tabset_navbar", selected = "intro")
 })
 
-## Render trees for jsTreeR inputs
-output$outcome_tree <- renderJstree({
-  jstree(
-    outcome_nodes,
-    checkboxes = TRUE
-  )
-})
-
+## Render tree for jsTreeR inputs
 output$domains_tree <- renderJstree({
   jstree(
     domain_subs_nodes,
-    checkboxes = TRUE
-  )
-})
-
-output$age_tree <- renderJstree({
-  jstree(
-    age_nodes,
-    checkboxes = TRUE
-  )
-})
-
-output$intervention_risk_tree <- renderJstree({
-  jstree(
-    intervention_risk_nodes,
-    checkboxes = TRUE
-  )
-})
-
-output$sub_pop_tree <- renderJstree({
-  jstree(
-    sub_pop_nodes,
     checkboxes = TRUE
   )
 })
@@ -59,7 +31,7 @@ output$sub_pop_tree <- renderJstree({
 
 # Define full dataframe (can't seem to define filtered dataframe since it's reactive)
 
-full_dataframe <- reviews_chart %>%
+full_dataframe <- adult_reviews_chart %>%
                   mutate(selected = if_else(dummy == 0, 1, 0))
 
 # Create a reactive value for chart data and set it as the full dataframe initially
@@ -73,10 +45,6 @@ chart_data(full_dataframe)
 observeEvent(input$clear_all_filters_top, {
   shinyjs::reset("filter_panel")
   jstreeUpdate(session, "outcome_tree", clear_tree(outcome_df, "first_level", "second_level"))
-  jstreeUpdate(session, "domains_tree", clear_tree(domains_df, "domain", "subdomain"))
-  jstreeUpdate(session, "age_tree", clear_tree(age_df, "first_level", "second_level"))
-  jstreeUpdate(session, "intervention_risk_tree", clear_tree(intervention_risk_df, "intervention_exposure_short", "intervention_classification"))
-  jstreeUpdate(session, "sub_pop_tree", clear_tree(sub_pop_df, "overall_population", "sub_population"))
   
   chart_data(full_dataframe)
 })
@@ -85,22 +53,6 @@ observeEvent(input$clear_all_filters_top, {
 
 # Create observe events for clicking each info button
 # Some information is different from the list of definitions in the glossary
-
-# Outcomes information
-observeEvent(input$outcome_defs, {
-             outcome_defs_filtered <- glossary_list %>%
-               filter(Topic == "Outcomes") %>%
-               select(-Topic)
-             
-             output$outcome_defs_table <- renderTable(outcome_defs_filtered)
-             
-             showModal(modalDialog(
-               title = "Outcome definitions",
-               "All reviews have a synthesis for some form of self-harm. Selecting 'exclusively non-suicidal self-harm', for example, returns reviews where the results only consider self-harm with the specific measure of non-suicidal self-injury.",
-               linebreaks(2),
-               tableOutput("outcome_defs_table"),
-               easyClose = TRUE))
-})
 
 # Domains and subdomains information
 observeEvent(input$domains_defs, {
@@ -154,40 +106,20 @@ observeEvent(input$domains_defs, {
     easyClose = TRUE))
 })
 
-# Population age information
-observeEvent(input$pop_age_defs,
-             {showModal(modalDialog(
-               title = "Population age information",
-               "All reviews have some kind of synthesis that applies to young people under 18yrs, but by selecting 'exclusively 0-18 years' you can see reviews where ALL the results are relevant to under 18 years.",
-               easyClose = TRUE))})
-
 # All other definitions
-observeEvent(input$pop_characteristics_defs, {defs_topic_modal("Population characteristics")})
-observeEvent(input$study_setting_defs, {defs_topic_modal("Study setting")})
 observeEvent(input$int_exposure_defs, {defs_topic_modal("Interventions and risk/protective factors")})
-observeEvent(input$synth_type_defs, {defs_topic_modal("Type of synthesis")})
-observeEvent(input$quality_appraisal_defs, {defs_topic_modal("Quality appraisal")})
-observeEvent(input$pre_reg_defs, {defs_topic_modal("Pre-registration")})
-observeEvent(input$study_design_defs, {defs_topic_modal("Study Design (of reviewed literature)")})
+
 # Filter on term, rather than topic
 observeEvent(input$empty_defs, {defs_term_modal("Empty review")}) # Empty reviews, on 'Included reviews' tab
 
 # Filtered dataframe
 
 observeEvent(input$filter_update_top, {
-  chart_data(reviews_chart %>%
-               mutate(outcomes_filter = if(is.null(unlist(input$outcome_tree_selected)) | "Any form of self-injurious thoughts and behaviours" %in% unlist(input$outcome_tree_selected)) TRUE else if_else(outcome_definition %in% unlist(input$outcome_tree_selected), TRUE, FALSE),
-                      domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
-                      age_filter = if(is.null(unlist(input$age_tree_selected)) | "All ages" %in% unlist(input$age_tree_selected)) TRUE else if_else(age %in% unlist(input$age_tree_selected), TRUE, FALSE),
-                      sub_pop_filter = if(is.null(unlist(input$sub_pop_tree_selected))) TRUE else if_else(sub_population %in% unlist(input$sub_pop_tree_selected) | ("General population" %in% unlist(input$sub_pop_tree_selected) & is.na(sub_population)), TRUE, FALSE),
-                      study_setting_filter = if(is.null(input$study_setting_input)) TRUE else if_else(study_setting %in% input$study_setting_input, TRUE, FALSE),
-                      int_exposure_filter = if(is.null(unlist(input$intervention_risk_tree_selected))) TRUE else if_else(("Risk/protective factor" %in% unlist(input$intervention_risk_tree_selected) & intervention_exposure_short == "Risk/protective factor") | (intervention_classification %in% unlist(input$intervention_risk_tree_selected) & intervention_exposure_short == "Intervention"), TRUE, FALSE),
-                      synth_type_filter = if(is.null(input$synth_type_input)) TRUE else if_else(type_of_review %in% input$synth_type_input, TRUE, FALSE),
-                      qual_appraisal_filter = if_else(input$qual_appraisal_input == "No" | (input$qual_appraisal_input == "Yes" & quality_appraisal == "Yes"), TRUE, FALSE),
-                      pre_reg_filter = if_else(input$pre_reg_input == "No" | (input$pre_reg_input == "Yes" & pre_registered_protocol == "Yes"), TRUE, FALSE),
-                      selected = if_else(outcomes_filter + domains_filter + age_filter + sub_pop_filter + study_setting_filter + int_exposure_filter + synth_type_filter +
-                                           qual_appraisal_filter +
-                                           pre_reg_filter  + dummy == 9, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
+  chart_data(adult_reviews_chart %>%
+               mutate(domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
+                      study_type_filter = if(is.null(input$study_type_input)) TRUE else if_else(study_type %in% input$study_type_input, TRUE, FALSE),
+                      selected = if_else(domains_filter + study_type_filter
+                                         + dummy == 2, 1, 0))) # All of the filter checks are true, but the record isn't a dummy one
   })
 
 # Print out chart data for debugging
@@ -195,33 +127,36 @@ observeEvent(input$filter_update_top, {
 
 # Get data into the right format for the EGM
 count_pivot <- reactive({
-  chart_data() %>%
-    group_by(domain, subdomain, overall_outcome, intervention_exposure_short) %>%
+  count_pivot_adult_mwb <- 
+    adult_mwb_separated %>%
+    mutate(overall_outcome = "WEMWEBS") %>% # Create an overall outcome (in case we want to add other outcomes in later)
+    group_by(domain, subdomain, study_type, overall_outcome) %>%
     summarise(count = length(unique(covidence_number[selected == 1]))) %>% # Count the covidence numbers (unique IDs) for studies that have been selected
     ungroup() %>%
-    mutate(overall_outcome = gsub(" |-", "_", overall_outcome),
-           intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
-    pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
+    pivot_wider(names_from = c(overall_outcome, study_type), values_from = count, names_sep = ".") %>%
     mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
-    arrange(domain) %>%
+    # Turn domains and subdomains into factors so that sorting works as expected
+    mutate(domain = factor(domain, levels = c("Individual", "Community", "Structural")),
+           # Have queried with Emma whether 'Other' should be included
+           subdomain = factor(subdomain, levels = c("Learning and development", "Healthy living", "Family support", "Social media", "General health", "Spirituality", "Participation", "Social support", "Trust", "Safety", "Equality", "Social inclusion", "Poverty and material deprivation", "Stigma, discrimination and harassment", "Financial security debt", "Physical environment", "Working life", "Violence", "Other"))) %>%
+    arrange(domain, subdomain) %>%
     mutate(padding = "") %>%
-    select(padding, domain, subdomain, Self_harm.Risk_protective_factor, Self_harm.Intervention)
+    select(padding, everything()) %>%
+    clean_names()
 })
 
 # Create aggregated EGM table
 
 egm_aggregated_count <- reactive({
   chart_data() %>%
-    group_by(domain, overall_outcome, intervention_exposure_short) %>%
+    group_by(domain, overall_outcome, study_type) %>%
     summarise(count = length(unique(covidence_number[selected == 1]))) %>% # Count the covidence numbers (unique IDs) for studies that have been selected
     ungroup() %>%
-    mutate(overall_outcome = gsub(" |-", "_", overall_outcome),
-           intervention_exposure_short = gsub(" |-|/", "_", intervention_exposure_short)) %>% # Replace spaces, slashes and hyphens with underscores for better variable names (hyphens seem to cause problems with grouping columns below)
-    pivot_wider(names_from = c(overall_outcome, intervention_exposure_short), values_from = count, names_sep = ".") %>%
+    pivot_wider(names_from = c(overall_outcome, study_type), values_from = count, names_sep = ".") %>%
     mutate(across(everything(), ~replace_na(., 0))) %>% # Replace NAs with 0
     arrange(domain) %>%
     mutate(subdomain = "") %>%
-    select(domain, subdomain, Self_harm.Risk_protective_factor, Self_harm.Intervention)
+    select(domain, subdomain, wemwebs_association_study, wemwebs_intervention_study)
 })
 
 # Create table with both aggregated and disaggregated data
@@ -249,19 +184,19 @@ reactable(
   fullWidth = FALSE,
   sortable = FALSE,
   defaultExpanded = TRUE,
-  onClick = get_click_data, # Function defined in core functions
+  onClick = get_click_data, # Function defined in EGM functions script
   theme = reactableTheme(backgroundColor = "#BCD9DA"),
   columns = list(
     domain = colDef(name = "Domain"),
     subdomain = colDef(name = "Sub-domain"),
-    Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor",
+    wemwebs_association_study = colDef(name = "Association study",
                                     cell = bubble_grid_modified(
                                       data = egm_agg_disag(),
                                       colors = '#83BB26',
                                       tooltip = TRUE,
                                       shape = "squares"
                                     )),
-    Self_harm.Intervention = colDef(name = "Intervention",
+    wemwebs_intervention_study = colDef(name = "Intervention study",
                            cell = bubble_grid_modified(
                              data = egm_agg_disag(),
                              colors = '#3F3685',
@@ -279,7 +214,7 @@ reactable(
               fullWidth = FALSE,
               sortable = FALSE,
               class = "hidden-column-headers", # Use custom CSS in tables.css script. See: https://github.com/glin/reactable/issues/102
-              onClick = get_click_data, # Function defined in core functions
+              onClick = get_click_data, # Function defined in EGM functions script
               columns = list(
                 padding = colDef(name = "",
                                  width = 44),
@@ -287,7 +222,7 @@ reactable(
                                 width = 150),
                 subdomain = colDef(name = "Sub-domain",
                                    width = 150),
-                Self_harm.Risk_protective_factor = colDef(name = "",
+                wemwebs_association_study = colDef(name = "",
                                                 vAlign = "bottom",
                                                 cell = bubble_grid_modified(
                                                   data = egm_agg_disag(),
@@ -295,7 +230,7 @@ reactable(
                                                   tooltip = TRUE,
                                                   shape = "squares"
                                                 )),
-                Self_harm.Intervention = colDef(name = "",
+                wemwebs_intervention_study = colDef(name = "",
                                                           vAlign = "top",
                                                           cell = bubble_grid_modified(
                                                             data = egm_agg_disag(),
@@ -316,15 +251,6 @@ type_click <- reactive({sub("Risk_protective_factor", "Risk/protective factor", 
 # When the map is clicked, select the relevant filters and then filter the dataframe
 
 observeEvent(input$click_details, {
-  # Only update if nothing is currently selected in the filter
-  if(is.null(unlist(input$outcome_tree_selected))){
-  jstreeUpdate(session,
-               "outcome_tree",
-               outcome_df %>%
-                 mutate(selected = TRUE) %>% # When there is more than one outcome, this will need to change
-                 create_nodes_from_df("first_level", "second_level")
-  )
-  }
   # Update regardless of what's in the current filter
   jstreeUpdate(session,
                "domains_tree",
@@ -343,7 +269,7 @@ observeEvent(input$click_details, {
   }
   # Use delay to give filters time to update before dataframe is updated
   delay(100,
-        chart_data(reviews_chart %>%
+        chart_data(adult_reviews_chart %>%
                mutate(outcomes_filter = if(is.null(unlist(input$outcome_tree_selected)) | "Any form of self-injurious thoughts and behaviours" %in% unlist(input$outcome_tree_selected)) TRUE else if_else(outcome_definition %in% unlist(input$outcome_tree_selected), TRUE, FALSE),
                       domains_filter = if(is.null(unlist(input$domains_tree_selected))) TRUE else if_else(subdomain %in% unlist(input$domains_tree_selected), TRUE, FALSE),
                       age_filter = if(is.null(unlist(input$age_tree_selected)) | "All ages" %in% unlist(input$age_tree_selected)) TRUE else if_else(age %in% unlist(input$age_tree_selected), TRUE, FALSE),
@@ -365,9 +291,9 @@ table_data <- reactive({
     chart_data() %>%
     filter(selected == 1)
   
-  reviews_table %>%
+  adult_reviews_table %>%
              filter(covidence_number %in% only_selected$covidence_number) %>%
-             dplyr::select(study_id, title, aim_of_study, author_conclusions = summary, overall_outcome, outcome_definition, age, overall_population, sub_population, intervention_or_exposure, intervention_classification, study_setting, overall_domain, subdomain, type_of_review, design_of_reviewed_studies, number_of_primary_studies, quality_appraisal, pre_registered_protocol, empty_review, DOI) %>%
+             #dplyr::select(study_id, title, aim_of_study = aim, study_type, domain, subdomain, subdomain_topic) %>%
              arrange(study_id)
 })
 
@@ -390,11 +316,11 @@ output$egm_numbers <- renderReactable({
                         width = 150),
         subdomain = colDef(name = "Sub-domain",
                            width = 150),
-        Self_harm.Risk_protective_factor = colDef(name = "Risk/protective factor"),
-        Self_harm.Intervention = colDef(name = "Intervention")
+        wemwebs_association_study = colDef(name = "Association study"),
+        wemwebs_intervention_study = colDef(name = "Intervention study")
       ),
       columnGroups = list(
-        colGroup(name = "Self-harm", columns = c("Self_harm.Risk_protective_factor", "Self_harm.Intervention"))
+        colGroup(name = "Mental wellbeing", columns = c("wemwebs_association_study", "wemwebs_intervention_study"))
       )
     )
 })
