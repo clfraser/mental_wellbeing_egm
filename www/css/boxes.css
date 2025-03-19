@@ -46,7 +46,7 @@
   display: inline-block;
 }
 
-/* box for total reviews count*/
+/* box for total studies count*/
 .box-info {
   background-color: var(--phs-teal-30);
   border-radius: 5px 5px 5px 5px;

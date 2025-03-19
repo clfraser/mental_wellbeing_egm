@@ -642,7 +642,7 @@ egm_reactable_server <- function(id, dataset) {
       # Output the number of unique records
       
       output$record_count <- renderText({
-        paste("Number of unique reviews:", nrow(table_data()))
+        paste("Number of unique studies:", nrow(table_data()))
       })
       
       # Switch tabset panel on click
