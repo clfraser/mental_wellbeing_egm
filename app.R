@@ -13,9 +13,6 @@ source("setup.R")
 # Get EGM module --------------
 source("modules/egm_reactable_mod.R")
 
-# Get core functions
-source("functions/core_functions.R")
-
 # Get egm functions
 source("functions/egm_functions.R")
 
@@ -54,6 +51,9 @@ tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css)
              windowTitle = "Mental wellbeing evidence and gap map" # Title for browser tab
              ),
   
+  p("This evidence and gap map contains primary-level evidence") %>% 
+    tagAppendAttributes(class = 'box'),
+  linebreaks(2),
 
   selectInput("dataset_input", "Select population of interest:",
             choices = c("Adults", "Children and young people")),
