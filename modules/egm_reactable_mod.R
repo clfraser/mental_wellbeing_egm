@@ -611,6 +611,8 @@ egm_reactable_server <- function(id, dataset) {
             resizable = TRUE,
             filterable = TRUE,
             showPageSizeOptions = TRUE,
+            pageSizeOptions = c(2, 5, 10),
+            defaultPageSize = 2,
             defaultColDef = colDef(
               minWidth = 200),
             columns = list(
