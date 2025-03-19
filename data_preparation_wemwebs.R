@@ -178,12 +178,14 @@ pivot_subdomains <- no_dups %>%
            (domain == "structural" & subdomain %in% structural_subs)) %>%
   # Expand rows with multiple subdomain topics
   separate_longer_delim(subdomain_topic, delim = "; ") %>%
-  # Change various columns to sentence case. Add in a comma for one of the subdomains.
+  # Change various columns to sentence case. Add in a comma for one of the subdomains and a slash for another.
   mutate(subdomain_topic = str_to_sentence(subdomain_topic),
          domain = str_to_sentence(domain),
          subdomain = str_to_sentence(subdomain),
          subdomain = gsub("_", " ", subdomain),
-         subdomain = if_else(subdomain == "Stigma discrimination and harassment adult", "Stigma, discrimination and harassment adult", subdomain),
+         subdomain = case_when(subdomain == "Stigma discrimination and harassment adult" ~ "Stigma, discrimination and harassment adult",
+                               subdomain == "Financial security debt adult" ~ "Financial security/debt adult",
+                               TRUE ~ subdomain),
          domain = gsub("_", " ", domain)) %>%
   # Remove domain_desc column
   select(-domain_desc)
@@ -225,7 +227,7 @@ adult_mwb_separated <- pivot_subdomains_with_links_cleaned %>%
   mutate(dummy = 0) %>%
   # Turn domains and subdomains into factors so that sorting works as expected
   mutate(domain = factor(domain, levels = c("Individual", "Community", "Structural")),
-         subdomain = factor(subdomain, levels = c("Learning and development", "Healthy living", "Family support", "Social media", "General health", "Spirituality", "Participation", "Social support", "Trust", "Safety", "Equality", "Social inclusion", "Poverty and material deprivation", "Stigma, discrimination and harassment", "Financial security debt", "Physical environment", "Working life", "Violence", "Other"))) %>%
+         subdomain = factor(subdomain, levels = c("Learning and development", "Healthy living", "Family support", "Social media", "General health", "Spirituality", "Participation", "Social support", "Trust", "Safety", "Equality", "Social inclusion", "Poverty and material deprivation", "Stigma, discrimination and harassment", "Financial security/debt", "Physical environment", "Working life", "Violence", "Other"))) %>%
   # Add overall outcome column (so that later multiple outcomes could be added)
   mutate(overall_outcome = "WEMWEBS")
 
