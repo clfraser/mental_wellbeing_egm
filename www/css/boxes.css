@@ -56,3 +56,12 @@
   font-weight: bold;
   font-size: 18px;
 }
+
+/* box for evidence type note */
+.box-evidence-type {
+  background-color: var(--phs-magenta-30);
+  border-radius: 5px 5px 5px 5px;
+  padding: 10px 20px;
+  margin: 0px 10px 0px 10px;
+  display: inline-block;
+}

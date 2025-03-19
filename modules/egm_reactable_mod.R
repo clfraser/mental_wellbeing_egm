@@ -91,7 +91,6 @@ egm_reactable_ui <- function(id, dataset){
                              p("To see more columns, use the scroll bar at the bottom of the table, or click inside the table and use the left and right arrow keys on your keyboard."),
                              linebreaks(1),
                              csvDownloadButton(ns("studies_table"), filename = "egm_studies.csv"), # To download table as a CSV (defined in core functions script)
-                             #withNavySpinner(tableOutput(ns("studies_table_not_reactable"))),
                              withNavySpinner(reactableOutput(ns("studies_table"))),
                              value = ns("included_studies")) # For switching tabs on click
     ) # tabsetPanel

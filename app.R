@@ -18,7 +18,6 @@ source("functions/egm_functions.R")
 
 # UI
 ui <- 
-#secure_app( # For password protection
   
   fluidPage(
 tagList(
@@ -51,10 +50,12 @@ tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css)
              windowTitle = "Mental wellbeing evidence and gap map" # Title for browser tab
              ),
   
-  p("This evidence and gap map contains primary-level evidence") %>% 
-    tagAppendAttributes(class = 'box'),
+  # Add note about the type of evidence that the EGM contains
+  p("This evidence and gap map contains primary studies") %>%
+    tagAppendAttributes(class = 'box-evidence-type'),
   linebreaks(2),
-
+  
+  # Allow user to choose population of interest
   selectInput("dataset_input", "Select population of interest:",
             choices = c("Adults", "Children and young people")),
 
@@ -62,18 +63,10 @@ tags$style("@import url(https://use.fontawesome.com/releases/v6.2.0/css/all.css)
 
 ) # taglist
 ) # ui fluidpage
-#) # Secure app, for password protection
 
 # Server
 
 server <- function(input, output, session) {
-
-  
-  credentials <- readRDS(here("admin/credentials.rds"))
-
-  res_auth <- secure_server(
-    check_credentials = check_credentials(credentials)
-  )
   
   # EGM reactable module server
   egm_reactable_server("egm_reactable", dataset = reactive({input$dataset_input}))
