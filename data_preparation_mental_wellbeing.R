@@ -25,7 +25,7 @@ library(arrow) # Read and write Parquet files
 library(here)
 
 ## Set working directory - only need to do this if you can't get into the R project
-#setwd("/PHI_conf/PHSci/Catriona/EGM/wemwebs_egm/")
+#setwd("/PHI_conf/PHSci/Catriona/EGM/mental_wellbeing_egm/")
 
 ## Read in data
 
