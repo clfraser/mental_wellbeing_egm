@@ -82,7 +82,8 @@ egm_reactable_ui <- function(id, dataset){
                              linebreaks(1),
                              actionButton(ns("show_egm_numbers"), "Show EGM as text", `aria-label` = "Show EGM as text button. The visual evidence and gap map (EGM) is not accessible via screenreader. Please click this button to access and download a text version of the EGM. You can use the filters to update this."),
                              linebreaks(2),
-                             tags$div(withNavySpinner(reactableOutput(ns("egm_chart"))), value = "graph",'aria-label' = "The visual EGM is not accessible by screen reader. Please use the Show EGM as text button above to access an accessible version.")),
+                             tags$div(withNavySpinner(reactableOutput(ns("egm_chart"))), value = "graph",'aria-label' = "The visual EGM is not accessible by screen reader. Please use the Show EGM as text button above to access an accessible version."),
+                             value = ns("EGM")), # For switching tabs on click
                     tabPanel("Included studies",
                              linebreaks(1),
                              textOutput(ns("record_count")) %>% 
