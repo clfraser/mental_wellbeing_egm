@@ -1,6 +1,6 @@
 # Mental wellbeing evidence and gap map
 
-This app will soon (likely by the end of March 2025) be published to the [Public Health Scotland website] (https://publichealthscotland.scot/population-health/mental-health/prevention-of-mental-ill-health-and-improved-wellbeing/mental-health-evidence-and-addressing-gaps/)
+This app will soon (likely by the end of March 2025) be published to the [Public Health Scotland website](https://publichealthscotland.scot/population-health/mental-health/prevention-of-mental-ill-health-and-improved-wellbeing/mental-health-evidence-and-addressing-gaps/)
 
 ## Structure of the app
 
@@ -13,4 +13,4 @@ This app will soon (likely by the end of March 2025) be published to the [Public
 
 ## More information
 
-For more information (and access to a full technical handover document for PHS colleagues), please contact [phs.egm@phs.scot] (mailto:phs.egm@phs.scot)
+For more information (and access to a full technical handover document for PHS colleagues), please contact [phs.egm@phs.scot](mailto:phs.egm@phs.scot)
